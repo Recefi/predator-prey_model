@@ -6,26 +6,18 @@ import source.graphical_interface as gui
 import source.csv_data as cd
 
 
-# Либо
-Aj, Bj, Aa, Ba = gs.genStrats(40)
-stratData = cd.collectStratData(Aj, Bj, Aa, Ba)
-cd.writeData(stratData, "strat_data")
-# # Либо
-# stratData = cd.readData("strat_data")
-# Aj, Bj, Aa, Ba = cd.parseStratData(stratData)
 
-# Либо
-Mps, OrigIndxs, pqrsData = gs.calcMps(stratData)
-mpData = cd.collectMpData(Mps, OrigIndxs)
+stratData = gs.genStrats(40)
+cd.writeData(stratData, "strat_data")
+# stratData = cd.readData("strat_data")
+
+mpData, pqrsData = gs.calcMps(stratData)
 cd.writeData(mpData, "mp_data")
 cd.writeData(pqrsData, "pqrs_data")
-# # Либо
 # mpData = cd.readData("mp_data")
 # pqrsData = cd.readData("pqrs_data")
-# Mps, OrigIndxs = cd.parseMpData(mpData)
 
 gui.showCorrMps(mpData)
-
 # gui.showAllSins(stratData.loc[mpData.index])
 
 rawPopData = gs.calcPopDynamics(pqrsData)

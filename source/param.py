@@ -1,6 +1,6 @@
 
-depth = 140
-optimal_depth = 80
+D = 140  # depth
+D0 = 80  # optimal depth
 
 sigma1 = 1.4
 sigma2 = 1

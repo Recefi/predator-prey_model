@@ -11,88 +11,82 @@ def genStrats(n):
         в каждом по 4 стратегии отличающихся лишь знаком при (Bj,Ba)
             стратегии в наборе идут в порядке: (+,+), (-,+), (+,-), (-,-)
     """
-    A_jun = []
-    B_jun = []
-    A_adult = []
-    B_adult = []
+    Aj = []
+    Bj = []
+    Aa = []
+    Ba = []
     for i in range(n):
-        a_j = np.random.random()*(-param.depth)
-        m_j = min(-a_j, a_j+param.depth)
+        a_j = np.random.random()*(-param.D)
+        m_j = min(-a_j, a_j + param.D)
         b_j = np.random.uniform(0, m_j)
-        a_a = np.random.random()*(-param.depth)
-        m_a = min(-a_a, a_a+param.depth)
+        a_a = np.random.random()*(-param.D)
+        m_a = min(-a_a, a_a + param.D)
         b_a = np.random.uniform(0, m_a)
 
-        A_jun.append(a_j)
-        B_jun.append(b_j)
-        A_adult.append(a_a)
-        B_adult.append(b_a)
+        Aj.append(a_j)
+        Bj.append(b_j)
+        Aa.append(a_a)
+        Ba.append(b_a)
 
-        A_jun.append(a_j)
-        B_jun.append(-b_j)
-        A_adult.append(a_a)
-        B_adult.append(b_a)
+        Aj.append(a_j)
+        Bj.append(-b_j)
+        Aa.append(a_a)
+        Ba.append(b_a)
 
-        A_jun.append(a_j)
-        B_jun.append(b_j)
-        A_adult.append(a_a)
-        B_adult.append(-b_a)
+        Aj.append(a_j)
+        Bj.append(b_j)
+        Aa.append(a_a)
+        Ba.append(-b_a)
 
-        A_jun.append(a_j)
-        B_jun.append(-b_j)
-        A_adult.append(a_a)
-        B_adult.append(-b_a)
+        Aj.append(a_j)
+        Bj.append(-b_j)
+        Aa.append(a_a)
+        Ba.append(-b_a)
 
-    return A_jun, B_jun, A_adult, B_adult
+    stratData = pd.DataFrame({'Aj': Aj, 'Bj': Bj, 'Aa': Aa, 'Ba': Ba})
+    return stratData
 
 def calcMps(stratData):
-    """
-    Подсчет макропараметров
-        Возвращает: Mps, OrigIndxs, pqrsData
-            OrigIndxs[индекс Mps] = исходный индекс
-                pqrsData в исходных индексах стратегий, а не в индексах массива Mps
-    """
-    A_jun = stratData['Aj']
-    B_jun = stratData['Bj']
-    A_adult = stratData['Aa']
-    B_adult = stratData['Ba']
+    Aj = stratData['Aj']
+    Bj = stratData['Bj']
+    Aa = stratData['Aa']
+    Ba = stratData['Ba']
 
-    k = 0
     Mps = []
-    OrigIndxs = []
     pqrs = []
-    for i in A_jun.index:  # используем исходные индексы стратегий
-        res = []
+    for i in Aj.index:  # используем исходные индексы стратегий
+        M1 = param.sigma1 * (Aj[i] + param.D)
+        M2 = -param.sigma2 * (Aj[i] + param.D + Bj[i]/2)
+        M3 = -2*(np.pi*Bj[i])**2
+        M4 = -((Aj[i]+param.D0)**2 + (Bj[i]**2)/2)
 
-        M1 = param.sigma1 * (A_jun[i] + param.depth)
-        M2 = -param.sigma2 * (A_jun[i] + param.depth + B_jun[i]/2)
-        M3 = -2*(np.pi*B_jun[i])**2
-        M4 = -((A_jun[i]+param.optimal_depth)**2 + (B_jun[i]**2)/2)
+        M5 = param.sigma1 * (Aa[i] + param.D)
+        M6 = -param.sigma2 * (Aa[i] + param.D + Ba[i]/2)
+        M7 = -2*(np.pi*Ba[i])**2
+        M8 = -((Aa[i]+param.D0)**2 + (Ba[i]**2)/2)
 
-        M5 = param.sigma1 * (A_adult[i] + param.depth)
-        M6 = -param.sigma2 * (A_adult[i] + param.depth + B_adult[i]/2)
-        M7 = -2*(np.pi*B_adult[i])**2
-        M8 = -((A_adult[i]+param.optimal_depth)**2 + (B_adult[i]**2)/2)
+        res = [M1,M2,M3,M4,M5,M6,M7,M8]
+        for m in range(8):
+            for j in range(m,8):
+                res.append(res[m+1]*res[j+1])
+        Mps.append(res)
 
         p = param.alpha_j*M1 + param.beta_j*M3 + param.delta_j*M4
         r = param.alpha_a*M5 + param.beta_a*M7 + param.delta_a*M8
         q = -param.gamma_j*M2
         s = -param.gamma_a*M6
-
-        res = [M1,M2,M3,M4,M5,M6,M7,M8]
-
-        for m in range(8):
-            for j in range(m,8):
-                res.append(res[m+1]*res[j+1])
-        Mps.append(res)
         pqrs.append([p, q, r, s])
 
-        OrigIndxs.append(i)
-        k+=1
-    print("strats:",k)
+    cols = []
+    for i in range(1, 9):
+        cols.append('M'+str(i))
+    for i in range(1, 9):
+        for j in range(i, 9):
+            cols.append('M'+str(i) + 'M'+str(j))
 
-    pqrsData = pd.DataFrame(pqrs, columns=["p", "q", "r", "s"], index=OrigIndxs)
-    return Mps, OrigIndxs, pqrsData
+    mpData = pd.DataFrame(Mps, columns=cols, index=stratData.index)
+    pqrsData = pd.DataFrame(pqrs, columns=["p", "q", "r", "s"], index=stratData.index)
+    return mpData, pqrsData
 
 def calcPopDynamics(pqrsData):
     n = len(pqrsData.index)
@@ -175,7 +169,6 @@ def calcSelection(mpData, popData):
     return selData
 
 def normSelection(selData):
-    """Нормирование по макс. значению в столбце начиная со 2-го столбца"""
     colMaxs = []
     for i in range(1, len(selData.columns)):
         max = selData.iloc[:, i].abs().max()
