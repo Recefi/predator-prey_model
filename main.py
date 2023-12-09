@@ -30,5 +30,6 @@ cd.writeData(pqrsData, "pqrs_data")
 # # все синусоиды
 # gui.show_all_sinss(stratData.loc[FitIndxs])
 
-pop = gs.calcStratsPop(pqrsData)
-gui.showStratsPop(pop)
+rawPopData = gs.calcPopData(pqrsData)
+cd.writeData(rawPopData, "raw_pop_data")
+gui.showPopData(rawPopData)

@@ -94,36 +94,46 @@ def calcMps(stratData):
     pqrsData = pd.DataFrame(pqrs, columns=["p", "q", "r", "s"], index=OrigIndxs)
     return Mps, OrigIndxs, pqrsData
 
-def calcStratsPop(pqrsData):
-    strats = pqrsData.index
-    n = len(strats)
+def calcPopData(pqrsData):
+    n = len(pqrsData.index)
+    p = pqrsData['p'].values
+    q = pqrsData['q'].values
+    r = pqrsData['r'].values
+    s = pqrsData['s'].values
 
     def func(t, z):
-        p = pqrsData['p']
-        q = pqrsData['q']
-        r = pqrsData['r']
-        s = pqrsData['s']
-
-        sum1 = 0
-        sum2 = 0
-        for i in strats:
-            sum1 += (z[i] + z[i+n])
-            sum2 += (q[i]*z[i] + s[i]*z[i+n])
+        sumComp = 0
+        sumDeath = 0
+        for i in range(n):
+            sumComp += (z[i] + z[i+n])
+            sumDeath += (q[i]*z[i] + s[i]*z[i+n])
 
         result = []
         F = z[2*n]
-        for i in strats:
-            result.append(-p[i]*z[i] - q[i]*F*z[i] + r[i]*z[i+n] - z[i]*sum1)
-        for i in strats:
-            result.append(p[i]*z[i] - s[i]*F*z[i+n] - z[i+n]*sum1)
-        result.append(F*sum2 - F)
+        for i in range(n):
+            result.append(-p[i]*z[i] - q[i]*z[i]*F + r[i]*z[i+n] - z[i]*sumComp)
+        for i in range(n):
+            result.append(p[i]*z[i] - s[i]*z[i+n]*F - z[i+n]*sumComp)
+        result.append(sumDeath*F - F)
 
         return result
     
     z_0 = np.full(2*n, 0.0001)
     z_0 = np.append(z_0, 0.0001)
-    t_span = np.array([0, 100])
+    t_span = np.array([0, 1000])
 
     pop = integrate.solve_ivp(func, t_span, z_0, method='RK45', dense_output=True)
-    return pop
+
+    indxs = []
+    for i in range(n):
+        indxs.append('z1_v'+str(pqrsData.index[i]))
+    for i in range(n):
+        indxs.append('z2_v'+str(pqrsData.index[i]))
+    indxs.append('F')
+    popData = pd.DataFrame(pop.y, columns=pop.t, index=indxs)
+    return popData
+    
+def analyzePopData(stratIndxs, rawData):
+    n = len(stratIndxs)
+
     

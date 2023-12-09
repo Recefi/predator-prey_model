@@ -134,35 +134,24 @@ def fixCorr(fitData, xName, yName, shift):
 
     return fitData
 
-def showStratsPop(pop):
-    n = int(len(pop.y)/2)
+def showPopData(popData):
+    n = int(len(popData.index)/2)
+
+    j_popData = popData.iloc[:n]
+    a_popData = popData.iloc[n:2*n]
+    F_popData = popData.loc['F']
 
     fig1, ax1 = plt.subplots()
-    ax1.plot(pop.t, (pop.y[:n]).T)
-    ax1.set_xlabel('t')
-    leg = []
-    for i in range(n):
-        leg.append('z1_'+str(i))
-    #ax1.legend(leg, shadow=True)
-    ax1.set_title("Молодые особи")
+    (j_popData).T.plot(ax=ax1, title="Молодые особи", xlabel="t", legend=False)
     ylim = ax1.get_ylim()
-    
+
     fig2, ax2 = plt.subplots()
-    ax2.plot(pop.t, (pop.y[n:2*n]).T)
-    ax2.set_xlabel('t')
-    leg = []
-    for i in range(n):
-        leg.append('z2_'+str(i))
-    #ax2.legend(leg, shadow=True)
-    ax2.set_title("Взрослые особи")
+    (a_popData).T.plot(ax=ax2, title="Взрослые особи", xlabel="t", legend=False)
     if (ax2.get_ylim()[1] > ylim[1]):
         ylim = ax2.get_ylim()
-
+    
     fig3, ax3 = plt.subplots()
-    ax3.plot(pop.t, (pop.y[2*n]).T)
-    ax3.set_xlabel('t')
-    #ax3.legend('F', shadow=True)
-    ax3.set_title("Хищник")
+    (F_popData).T.plot(ax=ax3, title="Хищник", xlabel="t", legend=False)
     # if (ax3.get_ylim()[1] > ylim[1]):
     #     ylim = ax3.get_ylim()
 
