@@ -94,7 +94,7 @@ def calcMps(stratData):
     pqrsData = pd.DataFrame(pqrs, columns=["p", "q", "r", "s"], index=OrigIndxs)
     return Mps, OrigIndxs, pqrsData
 
-def calcPopData(pqrsData):
+def calcPopDynamics(pqrsData):
     n = len(pqrsData.index)
     p = pqrsData['p'].values
     q = pqrsData['q'].values
@@ -133,7 +133,7 @@ def calcPopData(pqrsData):
     popData = pd.DataFrame(pop.y, columns=pop.t, index=indxs)
     return popData
     
-def analyzePopData(stratIndxs, rawData, eps):
+def analyzePopDynamics(stratIndxs, rawData, eps):
     n = len(stratIndxs)
     t = len(rawData.columns)
 
@@ -155,31 +155,12 @@ def analyzePopData(stratIndxs, rawData, eps):
     data = pd.DataFrame(strats, columns=['t', 'z1', 'z2'], index=stratIndxs)
     return data
 
-def calcSelData1(mpData, popData):
-    """Выборка без обратных пар"""
+def calcSelection(mpData, popData):
     n = len(mpData.index)
 
     selection = []
     for i in range(n):
-        for j in range(i+1, n):
-            elem = []
-            if (popData.iloc[i, 0] > popData.iloc[j, 0]):
-                elem.append(1)
-            else:
-                elem.append(0)
-            elem.extend(mpData.iloc[i].subtract(mpData.iloc[j]).values)
-            selection.append(elem)
-
-    selData = pd.DataFrame(selection, columns=['class']+mpData.columns.to_list())
-    return selData
-
-def calcSelData2(mpData, popData):
-    """Выборка с обратными парами (как раньше)"""
-    n = len(mpData.index)
-
-    selection = []
-    for i in range(n):
-        for j in range(n):
+        for j in range(n):  # выборка с обратными парами, иначе классы могут получиться сильно несбалансированными
             if (i == j):
                 continue
             elem = []
@@ -192,3 +173,12 @@ def calcSelData2(mpData, popData):
 
     selData = pd.DataFrame(selection, columns=['class']+mpData.columns.to_list())
     return selData
+
+def normSelection(selData):
+    """Нормирование по макс. значению в столбце начиная со 2-го столбца"""
+    colMaxs = []
+    for i in range(1, len(selData.columns)):
+        max = selData.iloc[:, i].abs().max()
+        selData.iloc[:, i]/=max
+        colMaxs.append(max)
+    return selData, colMaxs

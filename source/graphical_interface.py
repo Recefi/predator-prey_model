@@ -54,33 +54,25 @@ def showComparisonSins(stratData, maxTrueFitId, maxRestrFitId):
     ax.legend()
     plt.show()
 
-def showGistogram(array, tittle):
-    a_min = min(array)
-    a_max = max(array)
-    fig, histMp = plt.subplots()
-
-    histMp.hist(array, bins=50, linewidth=0.5, edgecolor="white")
-
-    histMp.set(xlim=(-1, 1), xticks=np.linspace(a_min, a_max, 9))
-    histMp.set_title(tittle)
+def showHist(normSelData):
+    normSelData.iloc[:,1:9].hist(layout=(2, 4), figsize=(12, 6))
     plt.show()
 
-def drawCorrellation(array, arg_names):
-    array_cor=np.round(np.corrcoef(array),2)
+def showCorrMps(mpData):
+    corrMatr=np.round(np.corrcoef(mpData.loc[:,'M1':'M8'].T.values),2)
     
-    fig, cor = plt.subplots()
-    im = cor.imshow(array_cor)
+    fig, ax = plt.subplots()
+    im = ax.imshow(corrMatr)
 
-    cor.set_xticks(np.arange(8), labels=arg_names)
-    cor.set_yticks(np.arange(8), labels=arg_names)
+    ax.set_xticks(np.arange(8), labels=mpData.loc[:,'M1':'M8'].columns)
+    ax.set_yticks(np.arange(8), labels=mpData.loc[:,'M1':'M8'].columns)
 
     for i in range(8):
         for j in range(8):
-            text = cor.text(j, i, array_cor[i, j],
-                        ha="center", va="center", color="r")
+            ax.text(j, i, corrMatr[i, j], ha="center", va="center", color="r")
 
     fig.tight_layout()
-    plt.draw()
+    plt.show()
 
 
 def drawRegLine(x, y):
@@ -137,25 +129,24 @@ def fixCorr(fitData, xName, yName, shift):
 def showPopDynamics(rawData):
     n = int(len(rawData.index)/2)
 
-    j_rawData = rawData.iloc[:n]
-    a_rawData = rawData.iloc[n:2*n]
-    F_rawData = rawData.loc['F']
+    j_data = rawData.iloc[:n]
+    a_data = rawData.iloc[n:2*n]
+    F_data = rawData.loc['F']
 
     fig1, ax1 = plt.subplots()
-    (j_rawData).T.plot(ax=ax1, title="Молодые особи", xlabel="t", legend=False)
-    ylim = ax1.get_ylim()
+    (j_data).T.plot(ax=ax1, title="Молодые особи", xlabel="t", legend=False)
+    aj_yMax = j_data.max().max()
 
     fig2, ax2 = plt.subplots()
-    (a_rawData).T.plot(ax=ax2, title="Взрослые особи", xlabel="t", legend=False)
-    if (ax2.get_ylim()[1] > ylim[1]):
-        ylim = ax2.get_ylim()
+    (a_data).T.plot(ax=ax2, title="Взрослые особи", xlabel="t", legend=False)
+    a_yMax = a_data.max().max()
+    if (a_yMax > aj_yMax):
+        aj_yMax = a_yMax
     
     fig3, ax3 = plt.subplots()
-    (F_rawData).T.plot(ax=ax3, title="Хищник", xlabel="t", legend=False)
-    # if (ax3.get_ylim()[1] > ylim[1]):
-    #     ylim = ax3.get_ylim()
+    (F_data).T.plot(ax=ax3, title="Хищник", xlabel="t", legend=False)
 
-    ax1.set_ylim(ylim)
-    ax2.set_ylim(ylim)
-    # ax3.set_ylim(ylim)
+    ax1.set_ylim([0, aj_yMax*1.1])
+    ax2.set_ylim([0, aj_yMax*1.1])
+    ax3.set_ylim([0, F_data.max()*1.1])
     plt.show()

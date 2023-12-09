@@ -24,19 +24,21 @@ cd.writeData(pqrsData, "pqrs_data")
 # pqrsData = cd.readData("pqrs_data")
 # Mps, OrigIndxs = cd.parseMpData(mpData)
 
-# gui.drawCorrellation(np.transpose(Mps)[:8],["M1","M2","M3","M4","M5","M6","M7","M8"])
+gui.showCorrMps(mpData)
 
-# gui.showAllSins(stratData.loc[OrigIndxs])
+# gui.showAllSins(stratData.loc[mpData.index])
 
-rawPopData = gs.calcPopData(pqrsData)
+rawPopData = gs.calcPopDynamics(pqrsData)
 cd.writeData(rawPopData, "raw_pop_data")
 gui.showPopDynamics(rawPopData)
 
-popData = gs.analyzePopData(pqrsData.index, rawPopData, 10**(-10))
+popData = gs.analyzePopDynamics(pqrsData.index, rawPopData, 10**(-10))
 cd.writeData(popData, "pop_data")
 
-selData1 = gs.calcSelData1(mpData, popData)
-print(selData1)
+selData = gs.calcSelection(mpData, popData)
+cd.writeData(selData, "sel_data")
 
-selData2 = gs.calcSelData2(mpData, popData)
-print(selData2)
+normSelData, colMaxs = gs.normSelection(selData)
+cd.writeData(normSelData, "norm_sel_data")
+
+#gui.showHist(normSelData)
