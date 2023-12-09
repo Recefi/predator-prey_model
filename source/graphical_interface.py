@@ -134,24 +134,24 @@ def fixCorr(fitData, xName, yName, shift):
 
     return fitData
 
-def showPopData(popData):
-    n = int(len(popData.index)/2)
+def showPopDynamics(rawData):
+    n = int(len(rawData.index)/2)
 
-    j_popData = popData.iloc[:n]
-    a_popData = popData.iloc[n:2*n]
-    F_popData = popData.loc['F']
+    j_rawData = rawData.iloc[:n]
+    a_rawData = rawData.iloc[n:2*n]
+    F_rawData = rawData.loc['F']
 
     fig1, ax1 = plt.subplots()
-    (j_popData).T.plot(ax=ax1, title="Молодые особи", xlabel="t", legend=False)
+    (j_rawData).T.plot(ax=ax1, title="Молодые особи", xlabel="t", legend=False)
     ylim = ax1.get_ylim()
 
     fig2, ax2 = plt.subplots()
-    (a_popData).T.plot(ax=ax2, title="Взрослые особи", xlabel="t", legend=False)
+    (a_rawData).T.plot(ax=ax2, title="Взрослые особи", xlabel="t", legend=False)
     if (ax2.get_ylim()[1] > ylim[1]):
         ylim = ax2.get_ylim()
     
     fig3, ax3 = plt.subplots()
-    (F_popData).T.plot(ax=ax3, title="Хищник", xlabel="t", legend=False)
+    (F_rawData).T.plot(ax=ax3, title="Хищник", xlabel="t", legend=False)
     # if (ax3.get_ylim()[1] > ylim[1]):
     #     ylim = ax3.get_ylim()
 

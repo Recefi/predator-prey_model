@@ -24,12 +24,19 @@ cd.writeData(pqrsData, "pqrs_data")
 # pqrsData = cd.readData("pqrs_data")
 # Mps, OrigIndxs = cd.parseMpData(mpData)
 
-# # матрица корреляции
-# gui.draw_correllation(np.transpose(Mps)[:8],["M1","M2","M3","M4","M5","M6","M7","M8"])
+# gui.drawCorrellation(np.transpose(Mps)[:8],["M1","M2","M3","M4","M5","M6","M7","M8"])
 
-# # все синусоиды
-# gui.show_all_sinss(stratData.loc[FitIndxs])
+# gui.showAllSins(stratData.loc[OrigIndxs])
 
 rawPopData = gs.calcPopData(pqrsData)
 cd.writeData(rawPopData, "raw_pop_data")
-gui.showPopData(rawPopData)
+gui.showPopDynamics(rawPopData)
+
+popData = gs.analyzePopData(pqrsData.index, rawPopData, 10**(-10))
+cd.writeData(popData, "pop_data")
+
+selData1 = gs.calcSelData1(mpData, popData)
+print(selData1)
+
+selData2 = gs.calcSelData2(mpData, popData)
+print(selData2)

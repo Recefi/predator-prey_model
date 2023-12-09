@@ -133,7 +133,62 @@ def calcPopData(pqrsData):
     popData = pd.DataFrame(pop.y, columns=pop.t, index=indxs)
     return popData
     
-def analyzePopData(stratIndxs, rawData):
+def analyzePopData(stratIndxs, rawData, eps):
     n = len(stratIndxs)
+    t = len(rawData.columns)
 
+    strats = []
+    for i in range(n):
+        strat = []
+        for j in range(t):
+            if (rawData.iloc[i,j] < eps and rawData.iloc[i+n,j] < eps):
+                strat.append(rawData.columns[j])
+                strat.append(rawData.iloc[i,j])
+                strat.append(rawData.iloc[i+n,j])
+                break
+        if not strat:
+            strat.append(-1)
+            strat.append(rawData.iloc[i,t-1])
+            strat.append(rawData.iloc[i+n,t-1])
+        strats.append(strat)
     
+    data = pd.DataFrame(strats, columns=['t', 'z1', 'z2'], index=stratIndxs)
+    return data
+
+def calcSelData1(mpData, popData):
+    """Выборка без обратных пар"""
+    n = len(mpData.index)
+
+    selection = []
+    for i in range(n):
+        for j in range(i+1, n):
+            elem = []
+            if (popData.iloc[i, 0] > popData.iloc[j, 0]):
+                elem.append(1)
+            else:
+                elem.append(0)
+            elem.extend(mpData.iloc[i].subtract(mpData.iloc[j]).values)
+            selection.append(elem)
+
+    selData = pd.DataFrame(selection, columns=['class']+mpData.columns.to_list())
+    return selData
+
+def calcSelData2(mpData, popData):
+    """Выборка с обратными парами (как раньше)"""
+    n = len(mpData.index)
+
+    selection = []
+    for i in range(n):
+        for j in range(n):
+            if (i == j):
+                continue
+            elem = []
+            if (popData.iloc[i, 0] > popData.iloc[j, 0]):
+                elem.append(1)
+            else:
+                elem.append(0)
+            elem.extend(mpData.iloc[i].subtract(mpData.iloc[j]).values)
+            selection.append(elem)
+
+    selData = pd.DataFrame(selection, columns=['class']+mpData.columns.to_list())
+    return selData
