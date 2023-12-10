@@ -1,11 +1,17 @@
 import numpy as np
 import pandas as pd
+import multiprocessing as mp
 
 import source.gen_selection as gs
 import source.graphical_interface as gui
 import source.csv_data as cd
 
 
+def asyncCall(func, args):
+    job = mp.Process(target=func, args=(args, ))
+    job.start()
+
+print(mp.current_process().name)
 
 stratData = gs.genStrats(40)
 cd.writeData(stratData, "strat_data")
@@ -17,12 +23,12 @@ cd.writeData(pqrsData, "pqrs_data")
 # mpData = cd.readData("mp_data")
 # pqrsData = cd.readData("pqrs_data")
 
-gui.showCorrMps(mpData)
-# gui.showAllSins(stratData.loc[mpData.index])
+asyncCall(gui.showCorrMps, mpData)
+#gui.showAllSins(stratData)  # bug??? (The X11 connection broke: No error (code 0))
 
 rawPopData = gs.calcPopDynamics(pqrsData)
 cd.writeData(rawPopData, "raw_pop_data")
-gui.showPopDynamics(rawPopData)
+asyncCall(gui.showPopDynamics, rawPopData)
 
 popData = gs.analyzePopDynamics(pqrsData.index, rawPopData, 10**(-10))
 cd.writeData(popData, "pop_data")
@@ -33,4 +39,4 @@ cd.writeData(selData, "sel_data")
 normSelData, colMaxs = gs.normSelection(selData)
 cd.writeData(normSelData, "norm_sel_data")
 
-#gui.showHist(normSelData)
+asyncCall(gui.showHist, normSelData)
