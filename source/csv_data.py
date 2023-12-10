@@ -30,4 +30,3 @@ def writeData(data, fileName):
     
     checkDirs(callerName)
     data.to_csv("csv/" + callerName + "/" + fileName + ".csv", index=True)
-    

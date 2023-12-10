@@ -176,7 +176,7 @@ def calcSelection(keyData, mpData):
 
     if (cd.getCallerName() == "fixed_pred"):
         fit = keyData['fit'].values
-        def detectClass(i, j):
+        def assignClass(i, j):
             if (fit[i] > fit[j]):
                 elem = 1
             else:
@@ -187,7 +187,7 @@ def calcSelection(keyData, mpData):
         t = keyData['t'].values
         z1 = keyData['z1'].values
         z2 = keyData['z2'].values
-        def detectClass(i, j):
+        def assignClass(i, j):
             if (t[i] == t[j]):
                 if (z1[i] + z2[i] > z1[j] + z2[j]):
                     elem = 1
@@ -204,9 +204,9 @@ def calcSelection(keyData, mpData):
     for i in range(n):
         for j in range(n):  # выборка с обратными парами, иначе классы могут получаться сильно несбалансированными
             if (i == j): continue
-            sel.append([detectClass(i, j)] + mpData.iloc[i].subtract(mpData.iloc[j]).to_list())
+            sel.append([assignClass(i, j)] + mpData.iloc[i].subtract(mpData.iloc[j]).to_list())
         # for j in (i+1, n):  # выборка без обратных пар, классы могут получаться сильно несбалансированными (проверить)
-        #     sel.append([detectClass(i, j)] + mpData.iloc[i].subtract(mpData.iloc[j]).to_list())
+        #     sel.append([assignClass(i, j)] + mpData.iloc[i].subtract(mpData.iloc[j]).to_list())
 
     selData = pd.DataFrame(sel, columns=['class']+mpData.columns.to_list())
     return selData
