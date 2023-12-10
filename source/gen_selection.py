@@ -3,6 +3,7 @@ import pandas as pd
 import scipy.integrate as integrate
 
 import source.param as param
+import source.csv_data as cd
 
 
 def genStrats(n):
@@ -54,7 +55,7 @@ def calcMps(stratData):
 
     Mps = []
     pqrs = []
-    for i in Aj.index:  # используем исходные индексы стратегий
+    for i in Aj.index:
         M1 = param.sigma1 * (Aj[i] + param.D)
         M2 = -param.sigma2 * (Aj[i] + param.D + Bj[i]/2)
         M3 = -2*(np.pi*Bj[i])**2
@@ -88,6 +89,23 @@ def calcMps(stratData):
     pqrsData = pd.DataFrame(pqrs, columns=["p", "q", "r", "s"], index=stratData.index)
     return mpData, pqrsData
 
+def calcFitness(stratData, pqrsData):
+    p = pqrsData['p']
+    q = pqrsData['q']
+    r = pqrsData['r']
+    s = pqrsData['s']
+
+    fitness = []
+    indxs = []
+    for i in pqrsData.index:
+        if(4*r[i]*p[i]+(p[i]+q[i]-s[i])**2 >= 0):
+            fit = -s[i]-p[i]-q[i]+(np.sqrt((4*r[i]*p[i]+(p[i]+q[i]-s[i])**2)))
+            fitness.append(fit)
+            indxs.append(i)
+    fitData = pd.DataFrame(fitness, columns=['fit'], index=indxs)
+    stratFitData = pd.concat([stratData.loc[fitData.index], fitData], axis=1)
+    return stratFitData
+
 def calcPopDynamics(pqrsData):
     n = len(pqrsData.index)
     p = pqrsData['p'].values
@@ -102,8 +120,8 @@ def calcPopDynamics(pqrsData):
             sumComp += (z[i] + z[i+n])
             sumDeath += (q[i]*z[i] + s[i]*z[i+n])
 
-        result = []
         F = z[2*n]
+        result = []
         for i in range(n):
             result.append(-p[i]*z[i] - q[i]*z[i]*F + r[i]*z[i+n] - z[i]*sumComp)
         for i in range(n):
@@ -114,9 +132,12 @@ def calcPopDynamics(pqrsData):
     
     z_0 = np.full(2*n, 0.0001)
     z_0 = np.append(z_0, 0.0001)
-    t_span = np.array([0, 1000])
 
-    pop = integrate.solve_ivp(func, t_span, z_0, method='RK45', dense_output=True)
+    pop = integrate.solve_ivp(func, t_span=[0, 500], y0=z_0, method='RK45', dense_output=True)
+    t = np.linspace(0, 500, 5000)
+    # dense_output=True need only for .sol(t)
+    # .sol(t) is better than .y & .t !!!
+    # max_step doesn't change .sol(t), it calculates in parallel when dense_output=True !!!
 
     indxs = []
     for i in range(n):
@@ -124,48 +145,70 @@ def calcPopDynamics(pqrsData):
     for i in range(n):
         indxs.append('z2_v'+str(pqrsData.index[i]))
     indxs.append('F')
-    popData = pd.DataFrame(pop.y, columns=pop.t, index=indxs)
+    popData = pd.DataFrame(pop.sol(t), columns=t, index=indxs)
     return popData
     
-def analyzePopDynamics(stratIndxs, rawData, eps):
-    n = len(stratIndxs)
-    t = len(rawData.columns)
+def analyzePopDynamics(stratData, rawPopData, eps):
+    n = len(stratData.index)
+    t = len(rawPopData.columns)
 
     strats = []
     for i in range(n):
         strat = []
         for j in range(t):
-            if (rawData.iloc[i,j] < eps and rawData.iloc[i+n,j] < eps):
-                strat.append(rawData.columns[j])
-                strat.append(rawData.iloc[i,j])
-                strat.append(rawData.iloc[i+n,j])
+            if (rawPopData.iloc[i,j] < eps and rawPopData.iloc[i+n,j] < eps):
+                strat.append(rawPopData.columns[j])
+                strat.append(rawPopData.iloc[i,j])
+                strat.append(rawPopData.iloc[i+n,j])
                 break
         if not strat:
-            strat.append(-1)
-            strat.append(rawData.iloc[i,t-1])
-            strat.append(rawData.iloc[i+n,t-1])
+            strat.append(rawPopData.columns[t-1])  #
+            strat.append(rawPopData.iloc[i,t-1])
+            strat.append(rawPopData.iloc[i+n,t-1])
         strats.append(strat)
     
-    data = pd.DataFrame(strats, columns=['t', 'z1', 'z2'], index=stratIndxs)
-    return data
+    popData = pd.DataFrame(strats, columns=['t', 'z1', 'z2'], index=stratData.index)
+    stratPopData = pd.concat([stratData, popData], axis=1)
+    return stratPopData
 
-def calcSelection(mpData, popData):
+def calcSelection(keyData, mpData):
     n = len(mpData.index)
 
-    selection = []
-    for i in range(n):
-        for j in range(n):  # выборка с обратными парами, иначе классы могут получиться сильно несбалансированными
-            if (i == j):
-                continue
-            elem = []
-            if (popData.iloc[i, 0] > popData.iloc[j, 0]):
-                elem.append(1)
+    if (cd.getCallerName() == "fixed_pred"):
+        fit = keyData['fit'].values
+        def detectClass(i, j):
+            if (fit[i] > fit[j]):
+                elem = 1
             else:
-                elem.append(0)
-            elem.extend(mpData.iloc[i].subtract(mpData.iloc[j]).values)
-            selection.append(elem)
+                elem = -1
+            return elem
 
-    selData = pd.DataFrame(selection, columns=['class']+mpData.columns.to_list())
+    if (cd.getCallerName() == "dynam_pred"):
+        t = keyData['t'].values
+        z1 = keyData['z1'].values
+        z2 = keyData['z2'].values
+        def detectClass(i, j):
+            if (t[i] == t[j]):
+                if (z1[i] + z2[i] > z1[j] + z2[j]):
+                    elem = 1
+                else:
+                    elem = -1
+            else:
+                if (t[i] > t[j]):
+                    elem = 1
+                else:
+                    elem = -1
+            return elem
+
+    sel = []
+    for i in range(n):
+        for j in range(n):  # выборка с обратными парами, иначе классы могут получаться сильно несбалансированными
+            if (i == j): continue
+            sel.append([detectClass(i, j)] + mpData.iloc[i].subtract(mpData.iloc[j]).to_list())
+        # for j in (i+1, n):  # выборка без обратных пар, классы могут получаться сильно несбалансированными (проверить)
+        #     sel.append([detectClass(i, j)] + mpData.iloc[i].subtract(mpData.iloc[j]).to_list())
+
+    selData = pd.DataFrame(sel, columns=['class']+mpData.columns.to_list())
     return selData
 
 def normSelection(selData):

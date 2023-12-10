@@ -19,6 +19,14 @@ def showSin(Aj, Bj, Aa, Ba):
     ax.legend()
     plt.show()
 
+def showOptSin(stratFitData):
+    maxFitId = stratFitData['fit'].idxmax()
+    Aj = stratFitData['Aj'].loc[maxFitId]
+    Bj = stratFitData['Bj'].loc[maxFitId]
+    Aa = stratFitData['Aa'].loc[maxFitId]
+    Ba = stratFitData['Ba'].loc[maxFitId]
+    showSin(Aj, Bj, Aa, Ba)
+
 def showAllSins(stratData):
     Aj = stratData['Aj']
     Bj = stratData['Bj']
@@ -55,6 +63,31 @@ def showComparisonSins(stratData, maxTrueFitId, maxRestrFitId):
     ax.plot(xa, ya, c="orange", label="Взрослые (по восст. функции)")
 
     ax.legend()
+    plt.show()
+
+def showPopDynamics(rawData):
+    n = int(len(rawData.index)/2)
+
+    j_data = rawData.iloc[:n]
+    a_data = rawData.iloc[n:2*n]
+    F_data = rawData.loc['F']
+
+    fig1, ax1 = plt.subplots()
+    j_data.T.plot(ax=ax1, title="Молодые особи", xlabel="t", legend=False)
+    aj_yMax = j_data.max().max()
+
+    fig2, ax2 = plt.subplots()
+    a_data.T.plot(ax=ax2, title="Взрослые особи", xlabel="t", legend=False)
+    a_yMax = a_data.max().max()
+    if (a_yMax > aj_yMax):
+        aj_yMax = a_yMax
+    
+    fig3, ax3 = plt.subplots()
+    F_data.T.plot(ax=ax3, title="Хищник", xlabel="t", legend=False)
+
+    ax1.set_ylim([0, aj_yMax*1.1])
+    ax2.set_ylim([0, aj_yMax*1.1])
+    ax3.set_ylim([0, F_data.max()*1.1])
     plt.show()
 
 def showHist(normSelData):
@@ -130,27 +163,3 @@ def fixCorr(fitData, xName, yName, shift):
 
     return fitData
 
-def showPopDynamics(rawData):
-    n = int(len(rawData.index)/2)
-
-    j_data = rawData.iloc[:n]
-    a_data = rawData.iloc[n:2*n]
-    F_data = rawData.loc['F']
-
-    fig1, ax1 = plt.subplots()
-    (j_data).T.plot(ax=ax1, title="Молодые особи", xlabel="t", legend=False)
-    aj_yMax = j_data.max().max()
-
-    fig2, ax2 = plt.subplots()
-    (a_data).T.plot(ax=ax2, title="Взрослые особи", xlabel="t", legend=False)
-    a_yMax = a_data.max().max()
-    if (a_yMax > aj_yMax):
-        aj_yMax = a_yMax
-    
-    fig3, ax3 = plt.subplots()
-    (F_data).T.plot(ax=ax3, title="Хищник", xlabel="t", legend=False)
-
-    ax1.set_ylim([0, aj_yMax*1.1])
-    ax2.set_ylim([0, aj_yMax*1.1])
-    ax3.set_ylim([0, F_data.max()*1.1])
-    plt.show()

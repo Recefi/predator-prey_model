@@ -16,17 +16,16 @@ cd.writeData(pqrsData, "pqrs_data")
 # mpData = cd.readData("mp_data")
 # pqrsData = cd.readData("pqrs_data")
 
-#gui.showCorrMps(mpData)
-#gui.showAllSins(stratData)
+# gui.showCorrMps(mpData)
 
 rawPopData = gs.calcPopDynamics(pqrsData)
 cd.writeData(rawPopData, "raw_pop_data")
 gui.showPopDynamics(rawPopData)
 
-popData = gs.analyzePopDynamics(pqrsData.index, rawPopData, 10**(-10))
-cd.writeData(popData, "pop_data")
+stratPopData = gs.analyzePopDynamics(stratData, rawPopData, 10**(-10))
+cd.writeData(stratPopData, "strat_pop_data")
 
-selData = gs.calcSelection(mpData, popData)
+selData = gs.calcSelection(stratPopData, mpData)
 cd.writeData(selData, "sel_data")
 
 normSelData, colMaxs = gs.normSelection(selData)
