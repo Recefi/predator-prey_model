@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import stats
-import multiprocessing as mp
 
 import source.csv_data as cd
 
@@ -60,7 +59,7 @@ def showComparisonSins(stratData, maxTrueFitId, maxRestrFitId):
 
 def showHist(normSelData):
     normSelData.iloc[:,1:9].hist(layout=(2, 4), figsize=(12, 6))
-    print(mp.current_process().name)
+    plt.tight_layout()
     plt.show()
 
 def showCorrMps(mpData):
@@ -68,7 +67,7 @@ def showCorrMps(mpData):
     
     fig, ax = plt.subplots()
     im = ax.imshow(corrMatr)
-    print(mp.current_process().name)
+
     ax.set_xticks(np.arange(8), labels=mpData.loc[:,'M1':'M8'].columns)
     ax.set_yticks(np.arange(8), labels=mpData.loc[:,'M1':'M8'].columns)
 
@@ -137,7 +136,7 @@ def showPopDynamics(rawData):
     j_data = rawData.iloc[:n]
     a_data = rawData.iloc[n:2*n]
     F_data = rawData.loc['F']
-    print(mp.current_process().name)
+
     fig1, ax1 = plt.subplots()
     (j_data).T.plot(ax=ax1, title="Молодые особи", xlabel="t", legend=False)
     aj_yMax = j_data.max().max()
