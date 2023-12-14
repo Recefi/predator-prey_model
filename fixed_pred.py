@@ -4,6 +4,7 @@ import pandas as pd
 import source.gen_selection as gs
 import source.graphical_interface as gui
 import source.csv_data as cd
+import source.machine_learning as ml
 
 
 stratData = gs.genStrats(40)
@@ -27,7 +28,12 @@ gui.showOptSin(stratFitData)
 selData = gs.calcSelection(stratFitData, mpData.loc[stratFitData.index])
 cd.writeData(selData, "sel_data")
 
-normSelData, colMaxs = gs.normSelection(selData)
-cd.writeData(normSelData, "norm_sel_data")
+norm_selData, colMaxs = gs.normSelection(selData)
+cd.writeData(norm_selData, "norm_sel_data")
 
-gui.showHist(normSelData)
+gui.showHistMps(norm_selData)
+
+norm_mlLams, intercept = ml.runClfSVM2(norm_selData)
+
+gui.drawClfOneSlice(norm_selData, norm_mlLams, intercept, 0, 2)
+gui.showClfSlices(norm_selData, norm_mlLams, intercept)

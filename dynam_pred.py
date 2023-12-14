@@ -28,7 +28,7 @@ cd.writeData(stratPopData, "strat_pop_data")
 selData = gs.calcSelection(stratPopData, mpData)
 cd.writeData(selData, "sel_data")
 
-normSelData, colMaxs = gs.normSelection(selData)
-cd.writeData(normSelData, "norm_sel_data")
+norm_selData, colMaxs = gs.normSelection(selData)
+cd.writeData(norm_selData, "norm_sel_data")
 
-gui.showHist(normSelData)
+gui.showHistMps(norm_selData)

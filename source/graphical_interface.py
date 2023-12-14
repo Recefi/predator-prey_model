@@ -90,8 +90,8 @@ def showPopDynamics(rawData):
     ax3.set_ylim([0, F_data.max()*1.1])
     plt.show()
 
-def showHist(normSelData):
-    normSelData.iloc[:,1:9].hist(layout=(2, 4), figsize=(12, 6))
+def showHistMps(mpData):
+    mpData.loc[:,'M1':'M8'].hist(layout=(2, 4), figsize=(12, 6))
     plt.tight_layout()
     plt.show()
 
@@ -101,12 +101,76 @@ def showCorrMps(mpData):
     fig, ax = plt.subplots()
     im = ax.imshow(corrMatr)
 
-    ax.set_xticks(np.arange(8), labels=mpData.loc[:,'M1':'M8'].columns)
+    ax.set_xticks(np.arange(8), labels=mpData[['M1','M2','M3','M4','M5','M6','M7','M8']].columns)
     ax.set_yticks(np.arange(8), labels=mpData.loc[:,'M1':'M8'].columns)
 
     for i in range(8):
         for j in range(8):
             ax.text(j, i, corrMatr[i, j], ha="center", va="center", color="r")
+
+    fig.tight_layout()
+    plt.show()
+
+def drawClfOneSlice(selData, mlLams, intercept, i, j):
+    """(i,j)<->(y,x)"""
+    x1 = selData['M'+str(j+1)].values
+    x2 = selData['M'+str(i+1)].values
+    y = selData['class'].values
+    
+    fig, ax = plt.subplots(figsize=(6, 6))
+    ax.set_xlabel('M'+str(j+1))
+    ax.set_ylabel('M'+str(i+1))
+    s = ax.scatter(x1, x2, c=y, s=5, cmap=plt.cm.Paired, alpha=0.5)
+
+    x_visual = np.linspace(-1,1)
+    y_visual = -(mlLams[j] / mlLams[i]) * x_visual - intercept / mlLams[i]
+    ax.plot(x_visual, y_visual, color="blue", label="ML")
+    
+    leg1 = ax.legend(handles=s.legend_elements(alpha=1)[0], labels=s.legend_elements(alpha=1)[1], loc="lower left", title="Class", draggable=True)
+    ax.add_artist(leg1)  # for ax.plot legend
+    ax.legend(loc="upper right", title="Hyperplane", draggable=True)  # for ax.plot legend
+
+    fig.tight_layout()
+    plt.draw()
+
+def showClfSlices(selData, mlLams, intercept):
+    X = selData.loc[:,'M1':'M8'].values
+    y = selData['class'].values
+
+    fig, ax = plt.subplots(nrows=8, ncols=8, figsize=(8, 8))
+    for i in range(8):
+        for j in range(8):  # (i,j)<->(y,x), тогда: по строкам - i, по столбцам - j
+            ax[i][j].set(xlim=(-1, 1), ylim=(-1, 1))
+            if j==0:
+                ax[i][j].set_ylabel('M'+str(i+1))
+            if i==7:
+                ax[i][j].set_xlabel('M'+str(j+1))
+            if i<7:
+                ax[i][j].set_xticks([])
+                ax[i][j].set_xticks([], minor=True)
+            if j>0:
+                ax[i][j].set_yticks([])
+                ax[i][j].set_yticks([], minor=True)
+            if i!=j:
+                ax[i][j].scatter(X[:, j], X[:, i], c=y, s=1, cmap=plt.cm.Paired, alpha=0.5)
+
+                x_visual = np.linspace(-1, 1)
+                y_visual = -(mlLams[j] / mlLams[i]) * x_visual - intercept / mlLams[i]
+                ax[i][j].plot(x_visual, y_visual, color="blue")
+
+                # уравнение гиперплоскости:
+                # intercept + lam[0]*M1 + lam[1]*M2 + lam[2]*M3 + ... + lam[43]*M8M8 = 0  ||  lam[0]*M1 + lam[1]*M2 + lam[2]*M3 + ... + lam[43]*M8M8 = b
+
+                #   пусть:
+                # W := (w1,w2), X := (x,y), b := -w0
+                #   тогда:
+                # w0 + <W,X> = 0 ---> W^T * X - b = 0 ---> (w1,w2)*(x,y)^T - b = 0 ---> w1*x + w2*y - b = 0 ---> y = -(w1/w2)*x + b/w2 ---> y = -(w1/w2) - w0/w2
+                #   в данном случае:
+                # w := (lam[1],lam[2],...,lam[43])^T, x := (M1,M2,...,M8M8), b := -intercept
+                #   тогда для двухмерной проекции:
+                # w^T * x - b = 0 ---> (lam[0],lam[1]) * (M1, M2)^T - b = 0 ---> lam[0]*M1 + lam[1]*M2 + intercept = 0 ---> M2 = -(lam[0]/lam[1])*M1 - intercept/lam[1]
+                #   для трехмерной проекции итд:
+                # lam[0]*M1 + lam[1]*M2 + lam[2]*M3 + ... + intercept = 0 ---> ...
 
     fig.tight_layout()
     plt.show()
