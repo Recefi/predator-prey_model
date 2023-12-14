@@ -1,9 +1,9 @@
 from sklearn import svm
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
-
 import matplotlib.pyplot as plt
 import numpy as np
+import time
 
 
 def runClfSVM1(selData):
@@ -14,7 +14,7 @@ def runClfSVM1(selData):
     """
     X = selData.loc[:,'M1':'M8M8'].values
     y = selData['class'].values
-    print(len(y))
+    print("sel size: ", len(y))
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20)
 
     # Train
@@ -38,9 +38,10 @@ def runClfSVM2(selData):
     "LinearSVC is less sensitive to C when it becomes large, and prediction results stop improving after a certain threshold. 
         Meanwhile, larger C values will take more time to train, sometimes up to 10 times longer."
     """
+    start = time.time()
     X = selData.loc[:,'M1':'M8M8'].values
     y = selData['class'].values
-    print(len(y))
+    print("sel size: ", len(y))
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20)
 
     # Train
@@ -54,5 +55,8 @@ def runClfSVM2(selData):
 
     lams = clf.coef_[0]
     intercept = clf.intercept_[0]
+    print("w0 = ", intercept)
 
+    end = time.time()
+    print ("svm: ", end - start)
     return lams, intercept

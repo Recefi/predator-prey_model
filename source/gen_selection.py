@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import scipy.integrate as integrate
+import time
 
 import source.param as param
 import source.csv_data as cd
@@ -107,6 +108,7 @@ def calcFitness(stratData, pqrsData):
     return stratFitData
 
 def calcPopDynamics(pqrsData):
+    start = time.time()
     n = len(pqrsData.index)
     p = pqrsData['p'].values
     q = pqrsData['q'].values
@@ -133,8 +135,8 @@ def calcPopDynamics(pqrsData):
     z_0 = np.full(2*n, 0.0001)
     z_0 = np.append(z_0, 0.0001)
 
-    pop = integrate.solve_ivp(func, t_span=[0, 500], y0=z_0, method='RK45', dense_output=True)
-    t = np.linspace(0, 500, 5000)
+    pop = integrate.solve_ivp(func, t_span=[0, 500], y0=z_0, method='Radau', dense_output=True)
+    t = np.linspace(0, 500, 10000)
     # dense_output=True need only for .sol(t)
     # .sol(t) is better than .y & .t !!!
     # max_step doesn't change .sol(t), it calculates in parallel when dense_output=True !!!
@@ -146,6 +148,8 @@ def calcPopDynamics(pqrsData):
         indxs.append('z2_v'+str(pqrsData.index[i]))
     indxs.append('F')
     popData = pd.DataFrame(pop.sol(t), columns=t, index=indxs)
+    end = time.time()
+    print ("calcPopDynamics: ", end - start)
     return popData
     
 def analyzePopDynamics(stratData, rawPopData, eps):
@@ -189,7 +193,7 @@ def calcSelection(keyData, mpData):
         z2 = keyData['z2'].values
         def assignClass(i, j):
             if (t[i] == t[j]):
-                if (z1[i] + z2[i] > z1[j] + z2[j]):
+                if (abs(z1[i] + z2[i]) > abs(z1[j] + z2[j])):
                     elem = 1
                 else:
                     elem = -1

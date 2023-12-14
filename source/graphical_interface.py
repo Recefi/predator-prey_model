@@ -1,20 +1,20 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import stats
+import time
 
 import source.csv_data as cd
+import source.param as param
 
 
 def showSin(Aj, Bj, Aa, Ba):
     fig, ax = plt.subplots()
 
-    xj = np.linspace(0, 1)
-    yj = Aj + Bj * np.cos(2 * np.pi * xj)
-    ax.plot(xj, yj, c="blue", label="Молодые особи")
-
-    xa = np.linspace(0, 1)
-    ya = Aa + Ba * np.cos(2 * np.pi * xa)
-    ax.plot(xa, ya, c="red", label="Взрослые особи")
+    x = np.linspace(0, 1)
+    yj = Aj + Bj * np.cos(2 * np.pi * x)
+    ax.plot(x, yj, c="blue", label="Молодые особи")
+    ya = Aa + Ba * np.cos(2 * np.pi * x)
+    ax.plot(x, ya, c="red", label="Взрослые особи")
 
     ax.legend()
     plt.show()
@@ -26,6 +26,32 @@ def showOptSin(stratFitData):
     Aa = stratFitData['Aa'].loc[maxFitId]
     Ba = stratFitData['Ba'].loc[maxFitId]
     showSin(Aj, Bj, Aa, Ba)
+
+def showMostOptSins(stratFitData, rows, cols):
+    optStratData = stratFitData.sort_values(by=['fit'], ascending=False).head(12)
+    indxs = optStratData.index
+    fit = optStratData['fit'].values
+    Aj = optStratData['Aj'].values
+    Bj = optStratData['Bj'].values
+    Aa = optStratData['Aa'].values
+    Ba = optStratData['Ba'].values
+
+    fig, ax = plt.subplots(nrows=rows, ncols=cols, figsize=(12, 8))
+    x = np.linspace(0, 1)
+    for i in range(rows):
+        for j in range(cols):
+            yj = Aj[i*4+j] + Bj[i*4+j] * np.cos(2 * np.pi * x)
+            # ax[i][j].plot(x, yj, c="blue", label="Aj: "+str(np.round(Aj[i*4+j], 2))+"\nBj: "+str(np.round(Bj[i*4+j], 2)))
+            ax[i][j].plot(x, yj, c="blue")
+            ya = Aa[i*4+j] + Ba[i*4+j] * np.cos(2 * np.pi * x)
+            # ax[i][j].plot(x, ya, c="red", label="Aa: "+str(np.round(Aa[i*4+j], 2))+"\nBa: "+str(np.round(Ba[i*4+j], 2)))
+            ax[i][j].plot(x, ya, c="red")
+            ax[i][j].set_title("strat: " + str(indxs[i*4+j]) + "\n" + "fit: " + str(fit[i*4+j]))
+            ax[i][j].set_ylim(-param.D - 0.5, 0.5)
+            # ax[i][j].legend()
+
+    fig.tight_layout()
+    plt.show()
 
 def showAllSins(stratData):
     Aj = stratData['Aj']
@@ -50,17 +76,16 @@ def showComparisonSins(stratData, maxTrueFitId, maxRestrFitId):
     trueOptStrat = stratData.loc[maxTrueFitId]
     restrOptStrat = stratData.loc[maxRestrFitId]
 
-    xj = np.linspace(0, 1)
-    yj = trueOptStrat['Aj'] + trueOptStrat['Bj'] * np.cos(2 * np.pi * xj)
-    ax.plot(xj, yj, c="blue", label="Молодые (по исх. функции)")
-    xa = np.linspace(0, 1)
-    ya = trueOptStrat['Aa'] + trueOptStrat['Ba'] * np.cos(2 * np.pi * xa)
-    ax.plot(xa, ya, c="red", label="Взрослые (по исх. функции)")
+    x = np.linspace(0, 1)
+    yj = trueOptStrat['Aj'] + trueOptStrat['Bj'] * np.cos(2 * np.pi * x)
+    ax.plot(x, yj, c="blue", label="Молодые (по исх. функции)")
+    ya = trueOptStrat['Aa'] + trueOptStrat['Ba'] * np.cos(2 * np.pi * x)
+    ax.plot(x, ya, c="red", label="Взрослые (по исх. функции)")
 
-    yj = restrOptStrat['Aj'] + restrOptStrat['Bj'] * np.cos(2 * np.pi * xj)
-    ax.plot(xj, yj, c="green", label="Молодые (по восст. функции)")
-    ya = restrOptStrat['Aa'] + restrOptStrat['Ba'] * np.cos(2 * np.pi * xa)
-    ax.plot(xa, ya, c="orange", label="Взрослые (по восст. функции)")
+    yj = restrOptStrat['Aj'] + restrOptStrat['Bj'] * np.cos(2 * np.pi * x)
+    ax.plot(x, yj, c="green", label="Молодые (по восст. функции)")
+    ya = restrOptStrat['Aa'] + restrOptStrat['Ba'] * np.cos(2 * np.pi * x)
+    ax.plot(x, ya, c="orange", label="Взрослые (по восст. функции)")
 
     ax.legend()
     plt.show()
@@ -111,7 +136,7 @@ def showCorrMps(mpData):
     fig.tight_layout()
     plt.show()
 
-def drawClfOneSlice(selData, mlLams, intercept, i, j):
+def drawClf2dPlane(selData, mlLams, intercept, i, j):
     """(i,j)<->(y,x)"""
     x1 = selData['M'+str(j+1)].values
     x2 = selData['M'+str(i+1)].values
@@ -133,7 +158,7 @@ def drawClfOneSlice(selData, mlLams, intercept, i, j):
     fig.tight_layout()
     plt.draw()
 
-def showClfSlices(selData, mlLams, intercept):
+def showClf2dPlanes(selData, mlLams, intercept):
     X = selData.loc[:,'M1':'M8'].values
     y = selData['class'].values
 
@@ -172,8 +197,13 @@ def showClfSlices(selData, mlLams, intercept):
                 #   для трехмерной проекции итд:
                 # lam[0]*M1 + lam[1]*M2 + lam[2]*M3 + ... + intercept = 0 ---> ...
 
+    print(type(ax))
     fig.tight_layout()
+
+    start = time.time()
     plt.show()
+    end = time.time()
+    print ("show 8x8 planes: ", end - start)
 
 
 def drawRegLine(x, y):

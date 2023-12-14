@@ -6,7 +6,7 @@ import source.graphical_interface as gui
 import source.csv_data as cd
 
 
-stratData = gs.genStrats(40)
+stratData = gs.genStrats(200)
 cd.writeData(stratData, "strat_data")
 # stratData = cd.readData("strat_data")
 
@@ -22,13 +22,13 @@ rawPopData = gs.calcPopDynamics(pqrsData)
 cd.writeData(rawPopData, "raw_pop_data")
 gui.showPopDynamics(rawPopData)
 
-stratPopData = gs.analyzePopDynamics(stratData, rawPopData, 10**(-10))
+stratPopData = gs.analyzePopDynamics(stratData, rawPopData, 0)
 cd.writeData(stratPopData, "strat_pop_data")
 
-selData = gs.calcSelection(stratPopData, mpData)
-cd.writeData(selData, "sel_data")
+# selData = gs.calcSelection(stratPopData, mpData)
+# cd.writeData(selData, "sel_data")
 
-norm_selData, colMaxs = gs.normSelection(selData)
-cd.writeData(norm_selData, "norm_sel_data")
+# norm_selData, colMaxs = gs.normSelection(selData)
+# cd.writeData(norm_selData, "norm_sel_data")
 
-gui.showHistMps(norm_selData)
+# gui.showHistMps(norm_selData)
