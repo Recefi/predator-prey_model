@@ -4,7 +4,7 @@ import scipy.integrate as integrate
 import time
 
 import source.param as param
-import source.csv_data as cd
+import source.utility as ut
 
 
 def genStrats(n):
@@ -166,7 +166,7 @@ def analyzePopDynamics(stratData, rawPopData, eps):
                 strat.append(rawPopData.iloc[i+n,j])
                 break
         if not strat:
-            strat.append(rawPopData.columns[t-1])  #
+            strat.append(rawPopData.columns[t-1])
             strat.append(rawPopData.iloc[i,t-1])
             strat.append(rawPopData.iloc[i+n,t-1])
         strats.append(strat)
@@ -178,7 +178,7 @@ def analyzePopDynamics(stratData, rawPopData, eps):
 def calcSelection(keyData, mpData):
     n = len(mpData.index)
 
-    if (cd.getCallerName() == "fixed_pred"):
+    if (ut.getCallerName() == "fixed_pred"):
         fit = keyData['fit'].values
         def assignClass(i, j):
             if (fit[i] > fit[j]):
@@ -187,7 +187,7 @@ def calcSelection(keyData, mpData):
                 elem = -1
             return elem
 
-    if (cd.getCallerName() == "dynam_pred"):
+    if (ut.getCallerName() == "dynam_pred"):
         t = keyData['t'].values
         z1 = keyData['z1'].values
         z2 = keyData['z2'].values

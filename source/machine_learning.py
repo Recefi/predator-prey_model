@@ -6,32 +6,7 @@ import numpy as np
 import time
 
 
-def runClfSVM1(selData):
-    """
-    "The implementation is based on libsvm. The fit time scales at least quadratically with the number of samples
-        and may be impractical beyond a couple of 10000 samples. For large datasets consider using LinearSVC or SGDClassifier instead, 
-            possibly [for non-linear kernel] after a Nystroem transformer or other Kernel Approximation."
-    """
-    X = selData.loc[:,'M1':'M8M8'].values
-    y = selData['class'].values
-    print("sel size: ", len(y))
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20)
-
-    # Train
-    clf = svm.SVC(kernel="linear")
-    clf.fit(X_train, y_train)
-
-    # Test
-    y_preds = clf.predict(X_test)
-    print('Точность классификатора:')
-    print('     SVM: ', accuracy_score(y_test, y_preds)*100)
-
-    lams = clf.coef_[0]
-    intercept = clf.intercept_[0]
-
-    return lams, intercept
-
-def runClfSVM2(selData):
+def runClfSVM(selData):
     """
     "For the linear case, the algorithm used in LinearSVC by the liblinear implementation is much more efficient
         than its libsvm-based SVC counterpart and can scale almost linearly to millions of samples and/or features."
@@ -54,9 +29,9 @@ def runClfSVM2(selData):
     print('     SVM: ', accuracy_score(y_test, y_preds)*100)
 
     lams = clf.coef_[0]
-    intercept = clf.intercept_[0]
-    print("w0 = ", intercept)
+    lam0 = clf.intercept_[0]
+    print("lam0 = ", lam0)
 
     end = time.time()
-    print ("svm: ", end - start)
-    return lams, intercept
+    print ("ml time: ", end - start)
+    return lams, lam0

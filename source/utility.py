@@ -3,17 +3,17 @@ import inspect
 import os
 
 
-def getCallerName():
-    callerFrame = inspect.stack()[2]
+def getCallerName(lvl = 2):
+    callerFrame = inspect.stack()[lvl]
     callerFullFilename = callerFrame.filename
     callerName = os.path.splitext(os.path.basename(callerFullFilename))[0]
     return callerName
 
-def checkDirs(callerName):
-    if not os.path.exists("csv"):
-        os.mkdir("csv")
-    if not os.path.exists("csv/" + callerName):
-        os.mkdir("csv/" + callerName)
+def checkDirs(dirName, callerName):
+    if not os.path.exists(dirName):
+        os.mkdir(dirName)
+    if not os.path.exists(dirName + "/" + callerName):
+        os.mkdir(dirName + "/" + callerName)
 
 def readData(fileName):
     callerFrame = inspect.stack()[1]
@@ -21,12 +21,18 @@ def readData(fileName):
     callerFilename = os.path.basename(callerFullFilename)  # get rid of the directory
     callerName = os.path.splitext(callerFilename)[0]  # split filename and extension
 
-    checkDirs(callerName)
+    checkDirs("csv", callerName)
     data = pd.read_csv("csv/" + callerName + "/" + fileName + ".csv", index_col=0)
     return data
 
 def writeData(data, fileName):
     callerName = getCallerName()
     
-    checkDirs(callerName)
+    checkDirs("csv", callerName)
     data.to_csv("csv/" + callerName + "/" + fileName + ".csv", index=True)
+
+def writeImage(fig, fileName):
+    callerName = getCallerName(3)
+
+    checkDirs("images", callerName)
+    fig.savefig("images/" + callerName + "/" + fileName)

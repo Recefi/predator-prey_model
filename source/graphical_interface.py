@@ -3,7 +3,7 @@ import numpy as np
 from scipy import stats
 import time
 
-import source.csv_data as cd
+import source.utility as ut
 import source.param as param
 
 
@@ -41,14 +41,14 @@ def showMostOptSins(stratFitData, rows, cols):
     for i in range(rows):
         for j in range(cols):
             yj = Aj[i*4+j] + Bj[i*4+j] * np.cos(2 * np.pi * x)
-            # ax[i][j].plot(x, yj, c="blue", label="Aj: "+str(np.round(Aj[i*4+j], 2))+"\nBj: "+str(np.round(Bj[i*4+j], 2)))
-            ax[i][j].plot(x, yj, c="blue")
+            ax[i][j].plot(x, yj, c="blue", label="Aj: "+str(np.round(Aj[i*4+j], 2))+"\nBj: "+str(np.round(Bj[i*4+j], 2)))
+            # ax[i][j].plot(x, yj, c="blue")
             ya = Aa[i*4+j] + Ba[i*4+j] * np.cos(2 * np.pi * x)
-            # ax[i][j].plot(x, ya, c="red", label="Aa: "+str(np.round(Aa[i*4+j], 2))+"\nBa: "+str(np.round(Ba[i*4+j], 2)))
-            ax[i][j].plot(x, ya, c="red")
+            ax[i][j].plot(x, ya, c="red", label="Aa: "+str(np.round(Aa[i*4+j], 2))+"\nBa: "+str(np.round(Ba[i*4+j], 2)))
+            # ax[i][j].plot(x, ya, c="red")
             ax[i][j].set_title("strat: " + str(indxs[i*4+j]) + "\n" + "fit: " + str(fit[i*4+j]))
             ax[i][j].set_ylim(-param.D - 0.5, 0.5)
-            # ax[i][j].legend()
+            ax[i][j].legend()
 
     fig.tight_layout()
     plt.show()
@@ -136,29 +136,29 @@ def showCorrMps(mpData):
     fig.tight_layout()
     plt.show()
 
-def drawClf2dPlane(selData, mlLams, intercept, i, j):
+def drawClf2dPlane(selData, lams, lam0, i, j):
     """(i,j)<->(y,x)"""
     x1 = selData['M'+str(j+1)].values
     x2 = selData['M'+str(i+1)].values
     y = selData['class'].values
     
-    fig, ax = plt.subplots(figsize=(6, 6))
+    fig, ax = plt.subplots(figsize=(7, 6))
     ax.set_xlabel('M'+str(j+1))
     ax.set_ylabel('M'+str(i+1))
     s = ax.scatter(x1, x2, c=y, s=5, cmap=plt.cm.Paired, alpha=0.5)
 
     x_visual = np.linspace(-1,1)
-    y_visual = -(mlLams[j] / mlLams[i]) * x_visual - intercept / mlLams[i]
+    y_visual = -(lams[j] / lams[i]) * x_visual - lam0 / lams[i]
     ax.plot(x_visual, y_visual, color="blue", label="ML")
     
-    leg1 = ax.legend(handles=s.legend_elements(alpha=1)[0], labels=s.legend_elements(alpha=1)[1], loc="lower left", title="Class", draggable=True)
+    leg1 = ax.legend(*s.legend_elements(alpha=1), loc="lower left", title="Class", draggable=True)
     ax.add_artist(leg1)  # for ax.plot legend
     ax.legend(loc="upper right", title="Hyperplane", draggable=True)  # for ax.plot legend
 
     fig.tight_layout()
     plt.draw()
 
-def showClf2dPlanes(selData, mlLams, intercept):
+def writeClfPlanes(selData, lams, lam0):
     X = selData.loc[:,'M1':'M8'].values
     y = selData['class'].values
 
@@ -180,80 +180,32 @@ def showClf2dPlanes(selData, mlLams, intercept):
                 ax[i][j].scatter(X[:, j], X[:, i], c=y, s=1, cmap=plt.cm.Paired, alpha=0.5)
 
                 x_visual = np.linspace(-1, 1)
-                y_visual = -(mlLams[j] / mlLams[i]) * x_visual - intercept / mlLams[i]
+                y_visual = -(lams[j] / lams[i]) * x_visual - lam0 / lams[i]
                 ax[i][j].plot(x_visual, y_visual, color="blue")
 
                 # уравнение гиперплоскости:
-                # intercept + lam[0]*M1 + lam[1]*M2 + lam[2]*M3 + ... + lam[43]*M8M8 = 0  ||  lam[0]*M1 + lam[1]*M2 + lam[2]*M3 + ... + lam[43]*M8M8 = b
+                    # lam0 + lams[0]*M1 + lams[1]*M2 + lams[2]*M3 + ... + lams[43]*M8M8 = 0  ||  lams[0]*M1 + lams[1]*M2 + lams[2]*M3 + ... + lams[43]*M8M8 = b
 
-                #   пусть:
-                # W := (w1,w2), X := (x,y), b := -w0
-                #   тогда:
-                # w0 + <W,X> = 0 ---> W^T * X - b = 0 ---> (w1,w2)*(x,y)^T - b = 0 ---> w1*x + w2*y - b = 0 ---> y = -(w1/w2)*x + b/w2 ---> y = -(w1/w2) - w0/w2
-                #   в данном случае:
-                # w := (lam[1],lam[2],...,lam[43])^T, x := (M1,M2,...,M8M8), b := -intercept
-                #   тогда для двухмерной проекции:
-                # w^T * x - b = 0 ---> (lam[0],lam[1]) * (M1, M2)^T - b = 0 ---> lam[0]*M1 + lam[1]*M2 + intercept = 0 ---> M2 = -(lam[0]/lam[1])*M1 - intercept/lam[1]
-                #   для трехмерной проекции итд:
-                # lam[0]*M1 + lam[1]*M2 + lam[2]*M3 + ... + intercept = 0 ---> ...
-
-    print(type(ax))
+                # пусть:
+                    # W := (w1,w2), X := (x,y), b := -w0
+                # тогда:
+                    # w0 + <W,X> = 0 ---> W^T * X - b = 0 ---> (w1,w2)*(x,y)^T - b = 0 ---> w1*x + w2*y - b = 0 ---> y = -(w1/w2)*x + b/w2 ---> y = -(w1/w2) - w0/w2
+                # в данном случае:
+                    # w := (lams[1],lams[2],...,lams[43])^T, x := (M1,M2,...,M8M8), b := -lam0
+                # тогда для двухмерной проекции:
+                    # w^T * x - b = 0 ---> (lams[0],lams[1]) * (M1, M2)^T - b = 0 ---> lams[0]*M1 + lams[1]*M2 + lam0 = 0 ---> M2 = -(lams[0]/lams[1])*M1 - lam0/lams[1]
+                # для трехмерной проекции итд:
+                    # lams[0]*M1 + lams[1]*M2 + lams[2]*M3 + ... + lam0 = 0 ---> ...
+    
     fig.tight_layout()
 
+    # start = time.time()
+    # ut.writeImage(fig, "8x8clfPlanes.png")
+    # end = time.time()
+    # print ("write 8x8 planes time: ", end - start)
+    # plt.close()
+    # !!! If at once, then the time doubles !!!
     start = time.time()
     plt.show()
     end = time.time()
-    print ("show 8x8 planes: ", end - start)
-
-
-def drawRegLine(x, y):
-    slope, intercept, r, p, stderr = stats.linregress(x, y)
-
-    fig, ax = plt.subplots()
-    ax.scatter(x, y, s=3, label = str(len(x))+" points", color="red")
-    ax.plot(x, intercept + slope * x, label = f'corr={r:.2f}', color="blue")
-    ax.set_xlabel(x.name)
-    ax.set_ylabel(y.name)
-    ax.legend()
-    xlim = ax.get_xlim()
-    ylim = ax.get_ylim()
-
-    plt.draw()
-    return intercept, slope, xlim, ylim
-
-def cleanRegLine(fitData, xName, yName, a, b, shift):
-    x0 = fitData[xName]
-    y0 = fitData[yName]
-    indexes = []
-    for i in x0.index:
-        y1 = a - shift + b*x0[i]
-        y2 = a + shift + b*x0[i]
-        if (y0[i] > y1 and y0[i] < y2):
-            indexes.append(i)
-    return fitData.drop(indexes)
-
-def drawLimRegLine(x, y, xlim, ylim):
-    slope, intercept, r, p, stderr = stats.linregress(x, y)
-
-    fig, ax = plt.subplots()
-    ax.set_xlim(xlim)
-    ax.set_ylim(ylim)
-    ax.scatter(x, y, s=3, label = str(len(x))+" points", color="red")
-    ax.plot(x, intercept + slope * x, label = f'corr={r:.2f}', color="blue")
-    ax.set_xlabel(x.name)
-    ax.set_ylabel(y.name)
-    ax.legend()
-
-    plt.draw()
-
-def fixCorr(fitData, xName, yName, shift):
-    """
-    исправление корреляции между xName и yName 
-        удалением стратегий с отступами от линии регрессии на shift
-    """
-    a, b, xlim, ylim = draw_regLine(fitData[xName], fitData[yName])
-    fitData = clean_regLine(fitData, xName, yName, a, b, shift)
-    draw_limRegLine(fitData[xName], fitData[yName], xlim, ylim)
-
-    return fitData
-
+    print ("show 8x8 planes time: ", end - start)
