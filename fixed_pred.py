@@ -33,6 +33,7 @@ selData = gs.calcSelection(stratFitData, mpData.loc[stratFitData.index])
 ut.writeData(selData, "sel_data")
 
 norm_selData, colMaxs = gs.normSelection(selData)
+# norm_selData = gs.stdSelection(selData)
 ut.writeData(norm_selData, "norm_sel_data")
 end = time.time()
 print ("sel time: ", end - start)
@@ -41,6 +42,6 @@ gui.showHistMps(norm_selData)
 
 norm_mlLams, lam0 = ml.runClfSVM(norm_selData)
 
-gui.writeClfPlanes(norm_selData, norm_mlLams, lam0)
 gui.drawClf2dPlane(norm_selData, norm_mlLams, lam0, 0, 2)
 plt.show()
+gui.showClfPlanes(norm_selData, norm_mlLams, lam0)

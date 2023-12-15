@@ -158,7 +158,7 @@ def drawClf2dPlane(selData, lams, lam0, i, j):
     fig.tight_layout()
     plt.draw()
 
-def writeClfPlanes(selData, lams, lam0):
+def showClfPlanes(selData, lams, lam0):
     X = selData.loc[:,'M1':'M8'].values
     y = selData['class'].values
 
@@ -183,8 +183,9 @@ def writeClfPlanes(selData, lams, lam0):
                 y_visual = -(lams[j] / lams[i]) * x_visual - lam0 / lams[i]
                 ax[i][j].plot(x_visual, y_visual, color="blue")
 
-                # уравнение гиперплоскости:
+                # в отличии от исх.свертки макропараметров уравнение восст.гиперплоскости скорее всего содержит lam0!=0, если точность класс-ра не 100%:
                     # lam0 + lams[0]*M1 + lams[1]*M2 + lams[2]*M3 + ... + lams[43]*M8M8 = 0  ||  lams[0]*M1 + lams[1]*M2 + lams[2]*M3 + ... + lams[43]*M8M8 = b
+                # lam0 следует использовать при демонстрации рез-та обучения, но не в дальнейшем!
 
                 # пусть:
                     # W := (w1,w2), X := (x,y), b := -w0

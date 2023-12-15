@@ -206,19 +206,32 @@ def calcSelection(keyData, mpData):
 
     sel = []
     for i in range(n):
-        for j in range(n):  # выборка с обратными парами, иначе классы могут получаться сильно несбалансированными
+        for j in range(n):  # выборка с обр.парами, чтобы гиперплоскость из машинного обучения проходила примерно(с погр-тью до точн-ти класс-ра) ч-з центр координат и lam0 можно было приравнять нулю
             if (i == j): continue
             sel.append([assignClass(i, j)] + mpData.iloc[i].subtract(mpData.iloc[j]).to_list())
-        # for j in (i+1, n):  # выборка без обратных пар, классы могут получаться сильно несбалансированными (проверить)
+        # for j in (i+1, n):  # выборка без обратных пар, проверить насколько все плохо при восстановке по Тейлору
         #     sel.append([assignClass(i, j)] + mpData.iloc[i].subtract(mpData.iloc[j]).to_list())
 
     selData = pd.DataFrame(sel, columns=['class']+mpData.columns.to_list())
     return selData
 
 def normSelection(selData):
+    normSelData = selData#.copy()  # check time & memory
     colMaxs = []
     for i in range(1, len(selData.columns)):
         max = selData.iloc[:, i].abs().max()
-        selData.iloc[:, i]/=max
+        normSelData.iloc[:, i]/=max
         colMaxs.append(max)
-    return selData, colMaxs
+    return normSelData, colMaxs
+
+def stdSelection(selData):
+    stdSelData = selData#.copy()
+    colMeans = []
+    colStds = []
+    for i in range(1, len(selData.columns)):
+        mean = selData.iloc[:, i].mean()
+        std = selData.iloc[:, i].std()
+        stdSelData.iloc[:, i] = (selData.iloc[:, i] - mean) / std
+        colMeans.append(mean)
+        colStds.append(std)
+    return stdSelData
