@@ -138,14 +138,14 @@ def showCorrMps(mpData):
 
 def drawClf2dPlane(selData, lams, lam0, i, j):
     """(i,j)<->(y,x)"""
-    x1 = selData['M'+str(j+1)].values
-    x2 = selData['M'+str(i+1)].values
+    x_x = selData['M'+str(j+1)].values
+    x_y = selData['M'+str(i+1)].values
     y = selData['class'].values
     
     fig, ax = plt.subplots(figsize=(7, 6))
     ax.set_xlabel('M'+str(j+1))
     ax.set_ylabel('M'+str(i+1))
-    s = ax.scatter(x1, x2, c=y, s=5, cmap=plt.cm.Paired, alpha=0.5)
+    s = ax.scatter(x_x, x_y, c=y, s=5, cmap=plt.cm.Paired, alpha=0.5)
 
     x_visual = np.linspace(-1,1)
     y_visual = -(lams[j] / lams[i]) * x_visual - lam0 / lams[i]

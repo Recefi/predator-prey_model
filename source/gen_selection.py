@@ -152,7 +152,7 @@ def calcPopDynamics(pqrsData):
     print ("calcPopDynamics: ", end - start)
     return popData
     
-def analyzePopDynamics(stratData, rawPopData, eps):
+def analyzePopDynamics(stratData, rawPopData):
     n = len(stratData.index)
     t = len(rawPopData.columns)
 
@@ -160,7 +160,7 @@ def analyzePopDynamics(stratData, rawPopData, eps):
     for i in range(n):
         strat = []
         for j in range(t):
-            if (rawPopData.iloc[i,j] < eps and rawPopData.iloc[i+n,j] < eps):
+            if (rawPopData.iloc[i,j] < 0 and rawPopData.iloc[i+n,j] < 0):
                 strat.append(rawPopData.columns[j])
                 strat.append(rawPopData.iloc[i,j])
                 strat.append(rawPopData.iloc[i+n,j])
@@ -206,11 +206,13 @@ def calcSelection(keyData, mpData):
 
     sel = []
     for i in range(n):
-        for j in range(n):  # выборка с обр.парами, чтобы гиперплоскость из машинного обучения проходила примерно(с погр-тью до точн-ти класс-ра) ч-з центр координат и lam0 можно было приравнять нулю
-            if (i == j): continue
-            sel.append([assignClass(i, j)] + mpData.iloc[i].subtract(mpData.iloc[j]).to_list())
-        # for j in (i+1, n):  # выборка без обратных пар, проверить насколько все плохо при восстановке по Тейлору
-        #     sel.append([assignClass(i, j)] + mpData.iloc[i].subtract(mpData.iloc[j]).to_list())
+        for j in range(i+1, n):  
+            elemClass = assignClass(i, j)
+            elemDiffs = mpData.iloc[i].subtract(mpData.iloc[j])
+            sel.append([elemClass] + elemDiffs.to_list())
+            sel.append([-elemClass] + (-elemDiffs).to_list())
+    # с обр.парами, чтобы получить 1)центрированную выборку 2)со сбалансированными классами 3)в которой противоположные по классу элементы симметричны относительно нуля по каждому макропараметру
+    # за счет этого восст.гиперплоскость будет проходить примерно(с погр-тью до точн-ти класс-ра) ч-з центр координат и lam0 можно будет приравнять нулю (или сообщить класс-ру считать lam0 = 0)
 
     selData = pd.DataFrame(sel, columns=['class']+mpData.columns.to_list())
     return selData
@@ -218,20 +220,20 @@ def calcSelection(keyData, mpData):
 def normSelection(selData):
     normSelData = selData#.copy()  # check time & memory
     colMaxs = []
-    for i in range(1, len(selData.columns)):
-        max = selData.iloc[:, i].abs().max()
-        normSelData.iloc[:, i]/=max
+    for col in selData.loc[:,'M1':'M8M8'].columns:
+        max = selData[col].abs().max()
+        normSelData[col] /= max
         colMaxs.append(max)
     return normSelData, colMaxs
 
 def stdSelection(selData):
-    stdSelData = selData#.copy()
+    stdSelData = selData#.copy()  # check time & memory
     colMeans = []
     colStds = []
-    for i in range(1, len(selData.columns)):
-        mean = selData.iloc[:, i].mean()
-        std = selData.iloc[:, i].std()
-        stdSelData.iloc[:, i] = (selData.iloc[:, i] - mean) / std
+    for col in selData.loc[:,'M1':'M8M8'].columns:
+        mean = selData[col].mean()
+        std = selData[col].std()
+        stdSelData[col] = (selData[col] - mean) / std
         colMeans.append(mean)
         colStds.append(std)
     return stdSelData

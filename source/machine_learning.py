@@ -16,11 +16,15 @@ def runClfSVM(selData):
     start = time.time()
     X = selData.loc[:,'M1':'M8M8'].values
     y = selData['class'].values
-    print("sel size: ", len(y))
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20)
 
+    print("sel size: ", len(y))
+    print("-1:", selData[selData['class'] == -1]['class'].count())
+    print("1:", selData[selData['class'] == 1]['class'].count())
+    print("sel mean:", selData.loc[:,'M1':'M8M8'].mean(), sep='\n')
+
     # Train
-    clf = svm.LinearSVC()
+    clf = svm.LinearSVC(fit_intercept=False, dual="auto")
     clf.fit(X_train, y_train)
 
     # Test
@@ -29,8 +33,9 @@ def runClfSVM(selData):
     print('     SVM: ', accuracy_score(y_test, y_preds)*100)
 
     lams = clf.coef_[0]
-    lam0 = clf.intercept_[0]
-    print("lam0 = ", lam0)
+    if (clf.intercept_): lam0 = clf.intercept_[0]
+    else: lam0 = clf.intercept_
+    print("lam0 =",lam0)
 
     end = time.time()
     print ("ml time: ", end - start)

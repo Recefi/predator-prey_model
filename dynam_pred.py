@@ -22,7 +22,7 @@ rawPopData = gs.calcPopDynamics(pqrsData)
 ut.writeData(rawPopData, "raw_pop_data")
 gui.showPopDynamics(rawPopData)
 
-stratPopData = gs.analyzePopDynamics(stratData, rawPopData, 0)
+stratPopData = gs.analyzePopDynamics(stratData, rawPopData)
 ut.writeData(stratPopData, "strat_pop_data")
 
 # selData = gs.calcSelection(stratPopData, mpData)
