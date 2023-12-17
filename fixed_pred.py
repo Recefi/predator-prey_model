@@ -44,7 +44,7 @@ plt.show()
 norm_mlLams = ml.runClfSVM(norm_selData)
 
 ut.writeData(pd.DataFrame({'ml': norm_mlLams}), "norm_coef_data")
-#subprocess.run("python clfPlanes.py fixed_pred True", shell=True, check=True)  # for debug
+#subprocess.run("python clfPlanes.py fixed_pred --show", shell=True, check=True)  # for debug
 subprocess.Popen("python clfPlanes.py fixed_pred --show", shell=True)
 
 gui.clf3dPlaneMPL(norm_selData, norm_mlLams, 'M1', 'M3', 'M4', 25, -130)

@@ -10,7 +10,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument("callerName", type=str)
 parser.add_argument("--show", default=True, action=argparse.BooleanOptionalAction)
 args = parser.parse_args()
-#print(args)
 
 norm_selData = ut.readData("norm_sel_data", args.callerName)
 norm_coefData = ut.readData("norm_coef_data", args.callerName)
