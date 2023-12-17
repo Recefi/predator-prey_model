@@ -13,14 +13,12 @@ ut.writeData(stratData, "strat_data")
 mpData, pqrsData = gs.calcMps(stratData)
 ut.writeData(mpData, "mp_data")
 ut.writeData(pqrsData, "pqrs_data")
-# mpData = ut.readData("mp_data")
-# pqrsData = ut.readData("pqrs_data")
 
-# gui.showCorrMps(mpData)
+# gui.corrMps(mpData)
 
 rawPopData = gs.calcPopDynamics(pqrsData)
 ut.writeData(rawPopData, "raw_pop_data")
-gui.showPopDynamics(rawPopData)
+gui.popDynamics(rawPopData)
 
 stratPopData = gs.analyzePopDynamics(stratData, rawPopData)
 ut.writeData(stratPopData, "strat_pop_data")
@@ -28,7 +26,7 @@ ut.writeData(stratPopData, "strat_pop_data")
 # selData = gs.calcSelection(stratPopData, mpData)
 # ut.writeData(selData, "sel_data")
 
-# norm_selData, colMaxs = gs.normSelection(selData)
+# norm_selData = gs.normSelection(selData)
 # ut.writeData(norm_selData, "norm_sel_data")
 
-# gui.showHistMps(norm_selData)
+# gui.histMps(norm_selData)

@@ -3,6 +3,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import time
 
 
@@ -16,7 +17,7 @@ def runClfSVM(selData):
     start = time.time()
     X = selData.loc[:,'M1':'M8M8'].values
     y = selData['class'].values
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, shuffle=False)
 
     print("sel size: ", len(y))
     print("-1:", selData[selData['class'] == -1]['class'].count())
@@ -24,7 +25,7 @@ def runClfSVM(selData):
     print("sel mean:", selData.loc[:,'M1':'M8M8'].mean(), sep='\n')
 
     # Train
-    clf = svm.LinearSVC(fit_intercept=False, dual="auto")
+    clf = svm.LinearSVC(fit_intercept=False, dual=False)
     clf.fit(X_train, y_train)
 
     # Test
@@ -33,10 +34,12 @@ def runClfSVM(selData):
     print('     SVM: ', accuracy_score(y_test, y_preds)*100)
 
     lams = clf.coef_[0]
-    if (clf.intercept_): lam0 = clf.intercept_[0]
-    else: lam0 = clf.intercept_
-    print("lam0 =",lam0)
+    if (clf.intercept_): lams = np.concatenate([clf.intercept_, lams])
+    else: lams = np.concatenate([[clf.intercept_], lams])
+
+    print("lam0 =",lams[0])
+    print(lams)
 
     end = time.time()
     print ("ml time: ", end - start)
-    return lams, lam0
+    return lams

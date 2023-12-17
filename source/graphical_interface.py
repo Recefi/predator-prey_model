@@ -1,4 +1,6 @@
 import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
+from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 from scipy import stats
 import time
@@ -7,7 +9,7 @@ import source.utility as ut
 import source.param as param
 
 
-def showSin(Aj, Bj, Aa, Ba):
+def stratSins(Aj, Bj, Aa, Ba):
     fig, ax = plt.subplots()
 
     x = np.linspace(0, 1)
@@ -17,17 +19,16 @@ def showSin(Aj, Bj, Aa, Ba):
     ax.plot(x, ya, c="red", label="Взрослые особи")
 
     ax.legend()
-    plt.show()
 
-def showOptSin(stratFitData):
+def optStratSins(stratFitData):
     maxFitId = stratFitData['fit'].idxmax()
     Aj = stratFitData['Aj'].loc[maxFitId]
     Bj = stratFitData['Bj'].loc[maxFitId]
     Aa = stratFitData['Aa'].loc[maxFitId]
     Ba = stratFitData['Ba'].loc[maxFitId]
-    showSin(Aj, Bj, Aa, Ba)
+    stratSin(Aj, Bj, Aa, Ba)
 
-def showMostOptSins(stratFitData, rows, cols):
+def mostOptStratSins(stratFitData, rows, cols):
     optStratData = stratFitData.sort_values(by=['fit'], ascending=False).head(12)
     indxs = optStratData.index
     fit = optStratData['fit'].values
@@ -51,9 +52,8 @@ def showMostOptSins(stratFitData, rows, cols):
             ax[i][j].legend()
 
     fig.tight_layout()
-    plt.show()
 
-def showAllSins(stratData):
+def allSins(stratData):
     Aj = stratData['Aj']
     Bj = stratData['Bj']
     Aa = stratData['Aa']
@@ -69,9 +69,7 @@ def showAllSins(stratData):
         ya = Aa[i] + Ba[i] * np.cos(2 * np.pi * xa)
         ax.plot(xa, ya, c="red")
 
-    plt.show()
-
-def showComparisonSins(stratData, maxTrueFitId, maxRestrFitId):
+def comparisonSins(stratData, maxTrueFitId, maxRestrFitId):
     fig, ax = plt.subplots()
     trueOptStrat = stratData.loc[maxTrueFitId]
     restrOptStrat = stratData.loc[maxRestrFitId]
@@ -88,9 +86,8 @@ def showComparisonSins(stratData, maxTrueFitId, maxRestrFitId):
     ax.plot(x, ya, c="orange", label="Взрослые (по восст. функции)")
 
     ax.legend()
-    plt.show()
 
-def showPopDynamics(rawData):
+def popDynamics(rawData):
     n = int(len(rawData.index)/2)
 
     j_data = rawData.iloc[:n]
@@ -113,14 +110,12 @@ def showPopDynamics(rawData):
     ax1.set_ylim([0, aj_yMax*1.1])
     ax2.set_ylim([0, aj_yMax*1.1])
     ax3.set_ylim([0, F_data.max()*1.1])
-    plt.show()
 
-def showHistMps(mpData):
+def histMps(mpData):
     mpData.loc[:,'M1':'M8'].hist(layout=(2, 4), figsize=(12, 6))
     plt.tight_layout()
-    plt.show()
 
-def showCorrMps(mpData):
+def corrMps(mpData):
     corrMatr=np.round(np.corrcoef(mpData.loc[:,'M1':'M8'].T.values),2)
     
     fig, ax = plt.subplots()
@@ -134,31 +129,59 @@ def showCorrMps(mpData):
             ax.text(j, i, corrMatr[i, j], ha="center", va="center", color="r")
 
     fig.tight_layout()
-    plt.show()
 
-def drawClf2dPlane(selData, lams, lam0, i, j):
-    """(i,j)<->(y,x)"""
-    x_x = selData['M'+str(j+1)].values
-    x_y = selData['M'+str(i+1)].values
+def clf2dPlane(selData, lams, M1, M2):
+    x_x = selData[M1].values
+    x_y = selData[M2].values
     y = selData['class'].values
+    lam0 = lams[0]
+    lam1 = lams[selData.columns == M1]
+    lam2 = lams[selData.columns == M2]
     
     fig, ax = plt.subplots(figsize=(7, 6))
-    ax.set_xlabel('M'+str(j+1))
-    ax.set_ylabel('M'+str(i+1))
-    s = ax.scatter(x_x, x_y, c=y, s=5, cmap=plt.cm.Paired, alpha=0.5)
+    ax.set_xlabel(M1)
+    ax.set_ylabel(M2)
+    ax.set(xlim=(-1, 1), ylim=(-1, 1))
+    s = ax.scatter(x_x, x_y, c=y, cmap=ListedColormap(["xkcd:tomato", "xkcd:lightblue"]), s=5, alpha=0.1)
 
     x_visual = np.linspace(-1,1)
-    y_visual = -(lams[j] / lams[i]) * x_visual - lam0 / lams[i]
+    y_visual = -(lam1/lam2)*x_visual - lam0/lam2
     ax.plot(x_visual, y_visual, color="blue", label="ML")
     
     leg1 = ax.legend(*s.legend_elements(alpha=1), loc="lower left", title="Class", draggable=True)
-    ax.add_artist(leg1)  # for ax.plot legend
-    ax.legend(loc="upper right", title="Hyperplane", draggable=True)  # for ax.plot legend
+    ax.add_artist(leg1)  # needs for ax.plot legend
+    ax.legend(loc="upper right", title="Hyperplane", draggable=True)  # needs for ax.plot legend
 
     fig.tight_layout()
-    plt.draw()
 
-def showClfPlanes(selData, lams, lam0):
+def clf3dPlaneMPL(selData, lams, M1, M2, M3, elevation=30, azimuth=-60):
+    x_x = selData[M1].values
+    x_y = selData[M2].values
+    x_z = selData[M3].values
+    y = selData['class'].values
+    lam0 = lams[0]
+    lam1 = lams[selData.columns == M1]
+    lam2 = lams[selData.columns == M2]
+    lam3 = lams[selData.columns == M3]
+
+    fig = plt.figure(figsize=(7, 6))
+    ax = fig.add_subplot(111, projection='3d')
+    ax.set_xlabel(M1)
+    ax.set_ylabel(M2)
+    ax.set_zlabel(M3)
+    s = ax.scatter(x_x, x_y, x_z, c=y, cmap=ListedColormap(["xkcd:tomato", "xkcd:lightblue"]), alpha=0.1)
+
+    tmp = np.linspace(-1,1)
+    x_visual, y_visual = np.meshgrid(tmp,tmp)
+    z_visual = lambda x_vis,y_vis: -(lam1/lam3)*x_vis - (lam2/lam3)*y_vis - lam0/lam3
+    ax.plot_surface(x_visual, y_visual, z_visual(x_visual, y_visual))
+
+    ax.view_init(elevation, azimuth)
+
+    ax.legend(*s.legend_elements(alpha=1), title="Class")
+    fig.tight_layout()
+
+def clfPlanes(selData, lams):
     X = selData.loc[:,'M1':'M8'].values
     y = selData['class'].values
 
@@ -177,36 +200,22 @@ def showClfPlanes(selData, lams, lam0):
                 ax[i][j].set_yticks([])
                 ax[i][j].set_yticks([], minor=True)
             if i!=j:
-                ax[i][j].scatter(X[:, j], X[:, i], c=y, s=1, cmap=plt.cm.Paired, alpha=0.5)
+                ax[i][j].scatter(X[:, j], X[:, i], c=y, cmap=ListedColormap(["xkcd:tomato", "xkcd:lightblue"]), s=5, alpha=0.1)
 
                 x_visual = np.linspace(-1, 1)
-                y_visual = -(lams[j] / lams[i]) * x_visual - lam0 / lams[i]
+                y_visual = -(lams[j+1]/lams[i+1])*x_visual - lams[0]/lams[i+1]
                 ax[i][j].plot(x_visual, y_visual, color="blue")
 
-                # в отличии от исх.свертки макропараметров уравнение восст.гиперплоскости скорее всего содержит lam0!=0, если точность класс-ра не 100%:
-                    # lam0 + lams[0]*M1 + lams[1]*M2 + lams[2]*M3 + ... + lams[43]*M8M8 = 0  ||  lams[0]*M1 + lams[1]*M2 + lams[2]*M3 + ... + lams[43]*M8M8 = b
+                # в отличии от исх.свертки макропар-ов ур-е восст.гиперплоскости скорее всего содержит lam0!=0, если точность класс-ра не 100% и ему не сообщили считать lam0=0:
+                    # lam0 + lam1*M1 + lam2*M2 + lam3*M3 + ... + lam44*M8M8 = 0  ||  lam1*M1 + lam2*M2 + lam3*M3 + ... + lam44*M8M8 = b
                 # lam0 следует использовать при демонстрации рез-та обучения, но не в дальнейшем!
 
-                # пусть:
-                    # W := (w1,w2), X := (x,y), b := -w0
-                # тогда:
-                    # w0 + <W,X> = 0 ---> W^T * X - b = 0 ---> (w1,w2)*(x,y)^T - b = 0 ---> w1*x + w2*y - b = 0 ---> y = -(w1/w2)*x + b/w2 ---> y = -(w1/w2) - w0/w2
                 # в данном случае:
-                    # w := (lams[1],lams[2],...,lams[43])^T, x := (M1,M2,...,M8M8), b := -lam0
+                    # w := (lam1,lam2,...,lam44)^T, x := (M1,M2,...,M8M8), b := -lam0
                 # тогда для двухмерной проекции:
-                    # w^T * x - b = 0 ---> (lams[0],lams[1]) * (M1, M2)^T - b = 0 ---> lams[0]*M1 + lams[1]*M2 + lam0 = 0 ---> M2 = -(lams[0]/lams[1])*M1 - lam0/lams[1]
+                    # <w,x> - b = 0 ---> w^T * x - b = 0 ---> (lam1,lam2) * (M1, M2)^T - b = 0 ---> lam1*M1 + lam2*M2 + lam0 = 0 ---> M2 = -(lam1/lam2)*M1 - lam0/lam2
                 # для трехмерной проекции итд:
-                    # lams[0]*M1 + lams[1]*M2 + lams[2]*M3 + ... + lam0 = 0 ---> ...
+                    # lam1*M1 + lam2*M2 + lam3*M3 + ... + lam0 = 0 ---> ...
     
     fig.tight_layout()
-
-    # start = time.time()
-    # ut.writeImage(fig, "8x8clfPlanes.png")
-    # end = time.time()
-    # print ("write 8x8 planes time: ", end - start)
-    # plt.close()
-    # !!! If at once, then the time doubles !!!
-    start = time.time()
-    plt.show()
-    end = time.time()
-    print ("show 8x8 planes time: ", end - start)
+    return fig

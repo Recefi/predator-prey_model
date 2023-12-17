@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import time
+import subprocess
 
 import source.gen_selection as gs
 import source.graphical_interface as gui
@@ -16,17 +17,16 @@ ut.writeData(stratData, "strat_data")
 mpData, pqrsData = gs.calcMps(stratData)
 ut.writeData(mpData, "mp_data")
 ut.writeData(pqrsData, "pqrs_data")
-# mpData = ut.readData("mp_data")
-# pqrsData = ut.readData("pqrs_data")
 
 stratFitData = gs.calcFitness(stratData, pqrsData)
 ut.writeData(stratFitData, "strat_fit_data")
 
-# gui.showCorrMps(mpData.loc[stratFitData.index])
-# gui.showAllSins(stratData)
-# gui.showAllSins(stratFitData)
-# gui.showOptSin(stratFitData)
-gui.showMostOptSins(stratFitData, 3, 4)
+# gui.allStratSins(stratData)
+# gui.allStratSins(stratFitData)
+# gui.optStratSin(stratFitData)
+gui.mostOptStratSins(stratFitData, 3, 4)
+gui.corrMps(mpData.loc[stratFitData.index])
+plt.show()
 
 start = time.time()
 selData = gs.calcSelection(stratFitData, mpData.loc[stratFitData.index])
@@ -38,10 +38,23 @@ ut.writeData(norm_selData, "norm_sel_data")
 end = time.time()
 print ("sel time: ", end - start)
 
-gui.showHistMps(norm_selData)
-
-norm_mlLams, lam0 = ml.runClfSVM(norm_selData)
-
-gui.drawClf2dPlane(norm_selData, norm_mlLams, lam0, 0, 2)
+gui.histMps(norm_selData)
 plt.show()
-gui.showClfPlanes(norm_selData, norm_mlLams, lam0)
+
+norm_mlLams = ml.runClfSVM(norm_selData)
+
+ut.writeData(pd.DataFrame({'ml': norm_mlLams}), "norm_coef_data")
+#subprocess.run("python clfPlanes.py fixed_pred True", shell=True, check=True)  # for debug
+subprocess.Popen("python clfPlanes.py fixed_pred --show", shell=True)
+
+gui.clf3dPlaneMPL(norm_selData, norm_mlLams, 'M1', 'M3', 'M4', 25, -130)
+gui.clf3dPlaneMPL(norm_selData, norm_mlLams, 'M2', 'M6', 'M4M8', 0, -45)
+gui.clf2dPlane(norm_selData, norm_mlLams, 'M2', 'M4M8')
+gui.clf2dPlane(norm_selData, norm_mlLams, 'M6', 'M4M8')
+gui.clf3dPlaneMPL(norm_selData, norm_mlLams, 'M2', 'M6', 'M4', 0, -45)
+gui.clf3dPlaneMPL(norm_selData, norm_mlLams, 'M2', 'M6', 'M8', 0, -45)
+
+gui.clf3dPlaneMPL(norm_selData, norm_mlLams, 'M1', 'M5', 'M4M8', 0, -45)
+
+plt.show()
+
