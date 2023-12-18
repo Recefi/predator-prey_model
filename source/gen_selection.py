@@ -208,7 +208,7 @@ def calcSelection(keyData, mpData):
     for i in range(n):
         for j in range(i+1, n):  
             elemClass = assignClass(i, j)
-            elemDiffs = mpData.iloc[i].subtract(mpData.iloc[j])
+            elemDiffs = mpData.iloc[i] - mpData.iloc[j]
             sel.append([elemClass] + elemDiffs.to_list())
             sel.append([-elemClass] + (-elemDiffs).to_list())
     # с обр.парами, чтобы получить 1)центрированную выборку 2)со сбалансированными классами 3)в которой противоположные по классу элементы симметричны относительно нуля по каждому макропараметру
@@ -218,22 +218,20 @@ def calcSelection(keyData, mpData):
     return selData
 
 def normSelection(selData):
-    normSelData = selData#.copy()  # check time & memory
-    colMaxs = []
-    for col in selData.loc[:,'M1':'M8M8'].columns:
-        max = selData[col].abs().max()
-        normSelData[col] /= max
-        colMaxs.append(max)
-    return normSelData, colMaxs
+    norm_selData = selData#.copy()  # optimization moment (selData == norm_selData)
+    maxs = norm_selData.loc[:,'M1':'M8M8'].abs().max()
+    norm_selData.loc[:,'M1':'M8M8'] = norm_selData.loc[:,'M1':'M8M8'] / maxs
+    norm_selData.loc[-1] = [0]+maxs.to_list()
+    norm_selData.sort_index(inplace=True) 
+    return norm_selData
 
 def stdSelection(selData):
-    stdSelData = selData#.copy()  # check time & memory
-    colMeans = []
-    colStds = []
-    for col in selData.loc[:,'M1':'M8M8'].columns:
-        mean = selData[col].mean()
-        std = selData[col].std()
-        stdSelData[col] = (selData[col] - mean) / std
-        colMeans.append(mean)
-        colStds.append(std)
-    return stdSelData
+    std_selData = selData#.copy()  # optimization moment (selData == std_selData)
+    means = std_selData.loc[0:,'M1':'M8M8'].mean()  # == [0,0,...,0], the selection is already centered! (because of reverse pairs)
+    stds = std_selData.loc[0:,'M1':'M8M8'].std()
+    std_selData.loc[0:,'M1':'M8M8'] = (std_selData.loc[0:,'M1':'M8M8'] - means) / stds  # == std_selData.loc[0:,'M1':'M8M8'] / stds, the selection is already centered! (because of reverse pairs)
+    if np.any(means != 0.0):
+        print("!!! ERROR: the selection is not centered !!!")
+    std_selData.loc[-1] = [0]+stds.to_list()
+    std_selData.sort_index(inplace=True) 
+    return std_selData

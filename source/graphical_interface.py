@@ -112,7 +112,7 @@ def popDynamics(rawData):
     ax3.set_ylim([0, F_data.max()*1.1])
 
 def histMps(mpData):
-    mpData.loc[:,'M1':'M8'].hist(layout=(2, 4), figsize=(12, 6))
+    mpData.loc[:,'M1':'M8'].hist(layout=(2, 4), figsize=(12, 6), bins=np.linspace(-1,1,100))
     plt.tight_layout()
 
 def corrMps(mpData):
