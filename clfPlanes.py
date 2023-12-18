@@ -15,7 +15,7 @@ norm_selData = ut.readData("norm_sel_data", args.callerName)
 norm_coefData = ut.readData("norm_coef_data", args.callerName)
 norm_mlLams = norm_coefData['ml'].values
 
-fig = gui.clfPlanes(norm_selData, norm_mlLams)
+fig = gui.clfPlanes(norm_selData[0:], norm_mlLams)
 
 start = time.time()
 if (args.show):

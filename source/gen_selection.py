@@ -20,30 +20,30 @@ def genStrats(n):
     for i in range(n):
         a_j = np.random.random()*(-param.D)
         m_j = min(-a_j, a_j + param.D)
-        b_j = np.random.uniform(0, m_j)
+        b_j = np.random.uniform(-m_j, m_j)
         a_a = np.random.random()*(-param.D)
         m_a = min(-a_a, a_a + param.D)
-        b_a = np.random.uniform(0, m_a)
+        b_a = np.random.uniform(-m_a, m_a)
 
         Aj.append(a_j)
         Bj.append(b_j)
         Aa.append(a_a)
         Ba.append(b_a)
 
-        Aj.append(a_j)
-        Bj.append(-b_j)
-        Aa.append(a_a)
-        Ba.append(b_a)
+        # Aj.append(a_j)
+        # Bj.append(-b_j)
+        # Aa.append(a_a)
+        # Ba.append(b_a)
 
-        Aj.append(a_j)
-        Bj.append(b_j)
-        Aa.append(a_a)
-        Ba.append(-b_a)
+        # Aj.append(a_j)
+        # Bj.append(b_j)
+        # Aa.append(a_a)
+        # Ba.append(-b_a)
 
-        Aj.append(a_j)
-        Bj.append(-b_j)
-        Aa.append(a_a)
-        Ba.append(-b_a)
+        # Aj.append(a_j)
+        # Bj.append(-b_j)
+        # Aa.append(a_a)
+        # Ba.append(-b_a)
 
     stratData = pd.DataFrame({'Aj': Aj, 'Bj': Bj, 'Aa': Aa, 'Ba': Ba})
     return stratData
@@ -218,20 +218,8 @@ def calcSelection(keyData, mpData):
     return selData
 
 def normSelection(selData):
-    norm_selData = selData#.copy()  # optimization moment (selData == norm_selData)
-    maxs = norm_selData.loc[:,'M1':'M8M8'].abs().max()
-    norm_selData.loc[:,'M1':'M8M8'] = norm_selData.loc[:,'M1':'M8M8'] / maxs
-    norm_selData.loc[-1] = [0]+maxs.to_list()
-    norm_selData.sort_index(inplace=True) 
-    return norm_selData
+    maxs = selData.loc[:,'M1':'M8M8'].abs().max()
+    selData.loc[:,'M1':'M8M8'] = selData.loc[:,'M1':'M8M8'] / maxs
+    selData.loc[-1] = [0]+maxs.to_list()
+    selData.sort_index(inplace=True) 
 
-def stdSelection(selData):
-    std_selData = selData#.copy()  # optimization moment (selData == std_selData)
-    means = std_selData.loc[0:,'M1':'M8M8'].mean()  # == [0,0,...,0], the selection is already centered! (because of reverse pairs)
-    stds = std_selData.loc[0:,'M1':'M8M8'].std()
-    std_selData.loc[0:,'M1':'M8M8'] = (std_selData.loc[0:,'M1':'M8M8'] - means) / stds  # == std_selData.loc[0:,'M1':'M8M8'] / stds, the selection is already centered! (because of reverse pairs)
-    if np.any(means != 0.0):
-        print("!!! ERROR: the selection is not centered !!!")
-    std_selData.loc[-1] = [0]+stds.to_list()
-    std_selData.sort_index(inplace=True) 
-    return std_selData
