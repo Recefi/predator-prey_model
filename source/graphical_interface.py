@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
-from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 from scipy import stats
 import time
@@ -142,11 +141,11 @@ def clf2dPlane(selData, lams, M1, M2):
     ax.set_xlabel(M1)
     ax.set_ylabel(M2)
     ax.set(xlim=(-1, 1), ylim=(-1, 1))
-    s = ax.scatter(x_x, x_y, c=y, cmap=ListedColormap(["xkcd:tomato", "xkcd:lightblue"]), s=5, alpha=0.1)
+    s = ax.scatter(x_x, x_y, c=y, cmap=ListedColormap(["xkcd:tomato", "deepskyblue"]), s=5, alpha=0.03)
 
     x_visual = np.linspace(-1,1)
     y_visual = -(lam1/lam2)*x_visual - lam0/lam2
-    ax.plot(x_visual, y_visual, color="blue", label="ML")
+    ax.plot(x_visual, y_visual, color="navy", label="ML")
     
     leg1 = ax.legend(*s.legend_elements(alpha=1), loc="lower left", title="Class", draggable=True)
     ax.add_artist(leg1)  # needs for ax.plot legend
@@ -169,12 +168,12 @@ def clf3dPlaneMPL(selData, lams, M1, M2, M3, elevation=30, azimuth=-60):
     ax.set_xlabel(M1)
     ax.set_ylabel(M2)
     ax.set_zlabel(M3)
-    s = ax.scatter(x_x, x_y, x_z, c=y, cmap=ListedColormap(["xkcd:tomato", "xkcd:lightblue"]), alpha=0.1)
+    s = ax.scatter(x_x, x_y, x_z, c=y, cmap=ListedColormap(["xkcd:tomato", "deepskyblue"]), alpha=0.01)
 
     tmp = np.linspace(-1,1)
     x_visual, y_visual = np.meshgrid(tmp,tmp)
     z_visual = lambda x_vis,y_vis: -(lam1/lam3)*x_vis - (lam2/lam3)*y_vis - lam0/lam3
-    ax.plot_surface(x_visual, y_visual, z_visual(x_visual, y_visual))
+    ax.plot_surface(x_visual, y_visual, z_visual(x_visual, y_visual), color="navy", alpha=0.5)
 
     ax.view_init(elevation, azimuth)
 
@@ -200,11 +199,11 @@ def clfPlanes(selData, lams):
                 ax[i][j].set_yticks([])
                 ax[i][j].set_yticks([], minor=True)
             if i!=j:
-                ax[i][j].scatter(X[:, j], X[:, i], c=y, cmap=ListedColormap(["xkcd:tomato", "xkcd:lightblue"]), s=5, alpha=0.1)
+                ax[i][j].scatter(X[:, j], X[:, i], c=y, cmap=ListedColormap(["xkcd:tomato", "deepskyblue"]), s=5, alpha=0.03)
 
                 x_visual = np.linspace(-1, 1)
                 y_visual = -(lams[j+1]/lams[i+1])*x_visual - lams[0]/lams[i+1]
-                ax[i][j].plot(x_visual, y_visual, color="blue")
+                ax[i][j].plot(x_visual, y_visual, color="navy")
 
                 # в отличии от исх.свертки макропар-ов ур-е восст.гиперплоскости скорее всего содержит lam0!=0, если точность класс-ра не 100% и ему не сообщили считать lam0=0:
                     # lam0 + lam1*M1 + lam2*M2 + lam3*M3 + ... + lam44*M8M8 = 0  ||  lam1*M1 + lam2*M2 + lam3*M3 + ... + lam44*M8M8 = b

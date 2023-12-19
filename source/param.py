@@ -14,7 +14,7 @@
 # delta_a=0.00006
 
 
-D = 130  # depth
+D = 140  # depth
 D0 = 80  # optimal depth
 
 sigma1 = 1.4

@@ -175,6 +175,27 @@ def analyzePopDynamics(stratData, rawPopData):
     stratPopData = pd.concat([stratData, popData], axis=1)
     return stratPopData
 
+def сlearSelection(stratData, eps, rest=2):
+    Bj = stratData['Bj']
+    Ba = stratData['Ba']
+
+    toDelList = []
+    toDel_j = 1
+    toDel_a = 1
+    for i in stratData.index:
+        if abs(Bj[i]) < eps:
+            if toDel_j < rest: 
+                toDelList.append(i)
+                toDel_j += 1
+            else: toDel_j = 1
+        if abs(Ba[i]) < eps:
+            if toDel_a < rest: 
+                toDelList.append(i)
+                toDel_a += 1
+            else: toDel_a = 1
+    stratData = stratData.drop(toDelList)
+    return stratData
+
 def calcSelection(keyData, mpData):
     n = len(mpData.index)
 

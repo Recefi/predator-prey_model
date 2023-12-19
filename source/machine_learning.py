@@ -17,12 +17,16 @@ def runClfSVM(selData):
     start = time.time()
     X = selData.loc[:,'M1':'M8M8'].values
     y = selData['class'].values
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, shuffle=False)
+    X_train, X_test, y_train, y_test = train_test_split(X, y,
+                                                        random_state=74,
+                                                        train_size=4*(len(y)//5), shuffle=False)
 
     print("sel size: ", len(y))
-    print("-1:", selData[selData['class'] == -1]['class'].count())
-    print("1:", selData[selData['class'] == 1]['class'].count())
-    print("sel mean:", selData.loc[:,'M1':'M8M8'].mean(), sep='\n')
+    print("train sel size: ", len(y_train))
+    print("-1:", len(y_train[y_train == -1]))
+    print("1:", len(y_train[y_train == 1]))
+    print("sel mean:")
+    print(pd.DataFrame({"orig": selData.loc[:,'M1':'M8M8'].mean(), "train": X_train.mean(axis=0)}))
 
     # Train
     clf = svm.LinearSVC(fit_intercept=False, dual=False)
@@ -30,8 +34,7 @@ def runClfSVM(selData):
 
     # Test
     y_preds = clf.predict(X_test)
-    print('Точность классификатора:')
-    print('     SVM: ', accuracy_score(y_test, y_preds)*100)
+    print("Точность классификатора:", accuracy_score(y_test, y_preds)*100)
 
     lams = clf.coef_[0]
     if (clf.intercept_): lams = np.concatenate([clf.intercept_, lams])
