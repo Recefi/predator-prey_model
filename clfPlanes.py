@@ -2,8 +2,8 @@ import argparse
 import matplotlib.pyplot as plt
 import time
 
-import source.graphical_interface as gui
-import source.utility as ut
+import libs.graphical_interface as gui
+import libs.utility as ut
 
 
 parser = argparse.ArgumentParser()

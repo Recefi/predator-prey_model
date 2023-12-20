@@ -3,8 +3,8 @@ import pandas as pd
 import scipy.integrate as integrate
 import time
 
-import source.param as param
-import source.utility as ut
+import libs.param as param
+import libs.utility as ut
 
 
 def genStrats(n, distrA="uniform", by4=False):
@@ -202,7 +202,7 @@ def сlearSelection(stratData, eps, rest=2):
 def calcSelection(keyData, mpData):
     n = len(mpData.index)
 
-    if (ut.getCallerName() == "fixed_pred"):
+    if (ut.getCallerName() == "static_pred"):
         fit = keyData['fit'].values
         def assignClass(i, j):
             if (fit[i] > fit[j]):
@@ -211,7 +211,7 @@ def calcSelection(keyData, mpData):
                 elem = -1
             return elem
 
-    if (ut.getCallerName() == "dynam_pred"):
+    if (ut.getCallerName() == "dynamic_pred"):
         t = keyData['t'].values
         z1 = keyData['z1'].values
         z2 = keyData['z2'].values

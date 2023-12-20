@@ -4,8 +4,8 @@ import numpy as np
 from scipy import stats
 import time
 
-import source.utility as ut
-import source.param as param
+import libs.utility as ut
+import libs.param as param
 
 
 def stratSins(Aj, Bj, Aa, Ba):

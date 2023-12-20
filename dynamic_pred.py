@@ -1,9 +1,9 @@
 import numpy as np
 import pandas as pd
 
-import source.gen_selection as gs
-import source.graphical_interface as gui
-import source.utility as ut
+import libs.gen_selection as gs
+import libs.graphical_interface as gui
+import libs.utility as ut
 
 
 stratData = gs.genStrats(125)

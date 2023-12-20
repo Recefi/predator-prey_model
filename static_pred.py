@@ -4,24 +4,23 @@ import matplotlib.pyplot as plt
 import time
 import subprocess
 
-import source.gen_selection as gs
-import source.graphical_interface as gui
-import source.utility as ut
-import source.machine_learning as ml
+import libs.gen_selection as gs
+import libs.graphical_interface as gui
+import libs.utility as ut
+import libs.machine_learning as ml
 
 
 stratData = gs.genStrats(500)
 ut.writeData(stratData, "strat_data")
 # stratData = ut.readData("strat_data")
 
-gui.histStrats(stratData)
-
 mpData, pqrsData = gs.calcMps(stratData)
 ut.writeData(mpData, "mp_data")
 ut.writeData(pqrsData, "pqrs_data")
 
-mpData.plot.scatter(x='M2', y='M1', s=5)
-plt.show()
+# gui.histStrats(stratData)
+# mpData.plot.scatter(x='M2', y='M1', s=5)
+# plt.show()
 
 stratFitData = gs.calcFitness(stratData, pqrsData)
 ut.writeData(stratFitData, "strat_fit_data")
@@ -52,7 +51,7 @@ plt.show()
 norm_mlLams = ml.runClfSVM(_selData)
 
 ut.writeData(pd.DataFrame({'ml': norm_mlLams}), "norm_coef_data")
-subprocess.Popen("python clfPlanes.py fixed_pred --show", shell=True)
+subprocess.Popen("python clfPlanes.py static_pred --show", shell=True)
 
 gui.clf3dPlane(_selData, norm_mlLams, 'M1', 'M3', 'M4', 25, -130)
 gui.clf3dPlane(_selData, norm_mlLams, 'M5', 'M7', 'M8', 25, -130)
