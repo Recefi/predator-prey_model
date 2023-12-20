@@ -110,8 +110,12 @@ def popDynamics(rawData):
     ax2.set_ylim([0, aj_yMax*1.1])
     ax3.set_ylim([0, F_data.max()*1.1])
 
+def histStrats(stratData):
+    stratData[['Aj','Bj','Aa','Ba']].hist(layout=(2, 2), figsize=(12, 6), bins=200)
+    plt.tight_layout()
+
 def histMps(mpData):
-    mpData.loc[:,'M1':'M8'].hist(layout=(2, 4), figsize=(12, 6), bins=np.linspace(-1,1,200))
+    mpData.loc[:,'M1':'M8'].hist(layout=(2, 4), figsize=(12, 6), bins=200)
     plt.tight_layout()
 
 def corrMps(mpData):
@@ -153,7 +157,7 @@ def clf2dPlane(selData, lams, M1, M2):
 
     fig.tight_layout()
 
-def clf3dPlaneMPL(selData, lams, M1, M2, M3, elevation=30, azimuth=-60):
+def clf3dPlane(selData, lams, M1, M2, M3, elevation=30, azimuth=-60):
     x_x = selData[M1].values
     x_y = selData[M2].values
     x_z = selData[M3].values
@@ -168,7 +172,7 @@ def clf3dPlaneMPL(selData, lams, M1, M2, M3, elevation=30, azimuth=-60):
     ax.set_xlabel(M1)
     ax.set_ylabel(M2)
     ax.set_zlabel(M3)
-    s = ax.scatter(x_x, x_y, x_z, c=y, cmap=ListedColormap(["xkcd:tomato", "deepskyblue"]), alpha=0.01)
+    s = ax.scatter(x_x, x_y, x_z, c=y, cmap=ListedColormap(["xkcd:tomato", "deepskyblue"]), alpha=0.02)
 
     tmp = np.linspace(-1,1)
     x_visual, y_visual = np.meshgrid(tmp,tmp)

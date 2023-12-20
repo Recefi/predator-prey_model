@@ -7,43 +7,46 @@ import source.param as param
 import source.utility as ut
 
 
-def genStrats(n):
-    """
-    Генерирует n наборов стратегий (Aj,Bj,Aa,Ba) 
-        в каждом по 4 стратегии отличающихся лишь знаком при (Bj,Ba)
-            стратегии в наборе идут в порядке: (+,+), (-,+), (+,-), (-,-)
-    """
+def genStrats(n, distrA="uniform", by4=False):
+    if (distrA == "uniform"):  # r12,r56:~0.96  # r34,r78:~-0.2  # Точн-ть класс-ра:~94-95%   # =beta(1,1)  # у взрослых особей также повышенная корреляция, чего нет в распред-ях ниже
+        a_j = np.random.uniform(0, -param.D, size=n)
+        a_a = np.random.uniform(0, -param.D, size=n)
+    if (distrA == "triangular"):   # r12,r56:~0.9  # r34,r78:~0.1  # Точн-ть класс-ра:~97%   # распределения A и B примерно идентичны
+        a_j = np.random.triangular(-param.D, -param.D/2, 0, size=n)
+        a_a = np.random.triangular(-param.D, -param.D/2, 0, size=n)
+    if (distrA == "beta"):   # по мере увеличения (a=b) A сужает диапозон и повышает предельную высоту гистограммы, B наоборот
+        a_j = -param.D * np.random.beta(5, 5, size=n)
+        a_a = -param.D * np.random.beta(5, 5, size=n)
+        # при (4,4)  # r12,r56:~0.84  # r34,r78:~0.3  # Точн-ть класс-ра:~97.7%   # предельное высота A уже выше предельной B, диапозон отн-но в порядке
+        # при (5,5)  # r12,r56:~0.8  # r34,r78:~0.5  # Точн-ть класс-ра:~98%   # диапозон все еще отн-но в порядке
+        # при (6,6)  # r12,r56:~0.77  # r34,r78:~0.55  # Точн-ть класс-ра:~98.3%   # диапозон A уже сводится к ~(-120,-20)~
+        # при (7,7)  # r12,r56:~0.75  # r34,r78:~0.65  # Точн-ть класс-ра:~98.3%   # диапозон A уже фактичски свелся к ~(-120,-20)~
+
+    # ни в одном из случаев by4 ни на что особо не влияет, максимум гистограммы норм.макропараметров немного лучше становятся и проекции за счет уменьшения разброса
+
     Aj = []
     Bj = []
     Aa = []
     Ba = []
     for i in range(n):
-        a_j = np.random.random()*(-param.D)
-        m_j = min(-a_j, a_j + param.D)
-        b_j = np.random.uniform(-m_j, m_j)
-        a_a = np.random.random()*(-param.D)
-        m_a = min(-a_a, a_a + param.D)
-        b_a = np.random.uniform(-m_a, m_a)
+        m_j = min(-a_j[i], a_j[i] + param.D)
+        m_a = min(-a_a[i], a_a[i] + param.D)
 
-        Aj.append(a_j)
-        Bj.append(b_j)
-        Aa.append(a_a)
-        Ba.append(b_a)
+        if(by4):
+            b_j = np.random.uniform(0, m_j)
+            b_a = np.random.uniform(0, m_a)
+            Aj.extend([a_j[i], a_j[i], a_j[i], a_j[i]])
+            Bj.extend([b_j, -b_j, b_j, -b_j])
+            Aa.extend([a_a[i], a_a[i], a_a[i], a_a[i]])
+            Ba.extend([b_a, b_a, -b_a, -b_a])
+        else:
+            b_j = np.random.uniform(-m_j, m_j)
+            b_a = np.random.uniform(-m_a, m_a)
+            Aj.append(a_j[i])
+            Bj.append(b_j)
+            Aa.append(a_a[i])
+            Ba.append(b_a)
 
-        # Aj.append(a_j)
-        # Bj.append(-b_j)
-        # Aa.append(a_a)
-        # Ba.append(b_a)
-
-        # Aj.append(a_j)
-        # Bj.append(b_j)
-        # Aa.append(a_a)
-        # Ba.append(-b_a)
-
-        # Aj.append(a_j)
-        # Bj.append(-b_j)
-        # Aa.append(a_a)
-        # Ba.append(-b_a)
 
     stratData = pd.DataFrame({'Aj': Aj, 'Bj': Bj, 'Aa': Aa, 'Ba': Ba})
     return stratData
