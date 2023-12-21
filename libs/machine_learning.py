@@ -21,15 +21,14 @@ def runClfSVM(selData):
                                                         random_state=74,
                                                         train_size=4*(len(y)//5), shuffle=False)
 
+    # выборка должна быть центрированной как по значениям фетчей, так и по меткам класса, чтобы использовать fit_intercept=False
     print("sel size: ", len(y))
     print("train sel size: ", len(y_train))
-    print("-1:", len(y_train[y_train == -1]))
-    print("1:", len(y_train[y_train == 1]))
     print("sel mean:")
-    print(pd.DataFrame({"orig": selData.loc[:,'M1':'M8M8'].mean(), "train": X_train.mean(axis=0)}))
+    print(pd.DataFrame({"orig_X": selData.loc[:,'M1':'M8M8'].mean(), "orig_y": y.mean(), "train_X": X_train.mean(axis=0), "train_y": y_train.mean()}))
 
     # Train
-    clf = svm.LinearSVC(fit_intercept=False, dual=False)
+    clf = svm.LinearSVC(fit_intercept=False, dual=False)  # fit_intercept=False меняет выводимые лямбда, это можно проверить при заданном random_state
     clf.fit(X_train, y_train)
 
     # Test

@@ -8,12 +8,13 @@ import libs.utility as ut
 
 parser = argparse.ArgumentParser()
 parser.add_argument("callerName", type=str)
-parser.add_argument("--show", default=True, action=argparse.BooleanOptionalAction)
+parser.add_argument("--lam0", default=0.0, type=float)  # --lam0=...
+parser.add_argument("--show", default=True, action=argparse.BooleanOptionalAction)  # --show | --no-show
 args = parser.parse_args()
 
 norm_selData = ut.readData("norm_sel_data", args.callerName)
-norm_coefData = ut.readData("norm_coef_data", args.callerName)
-norm_mlLams = norm_coefData['ml'].values
+norm_coefData = ut.readData("coef_data", args.callerName)
+norm_mlLams = [args.lam0] + norm_coefData.loc[-2].to_list()
 
 fig = gui.clfPlanes(norm_selData[0:], norm_mlLams)
 

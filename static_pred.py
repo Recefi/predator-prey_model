@@ -8,6 +8,7 @@ import libs.gen_selection as gs
 import libs.graphical_interface as gui
 import libs.utility as ut
 import libs.machine_learning as ml
+import libs.test_result as tr
 
 
 stratData = gs.genStrats(500)
@@ -49,9 +50,12 @@ gui.histMps(_selData)
 plt.show()
 
 norm_mlLams = ml.runClfSVM(_selData)
+mlLams = tr.denormMlLams(norm_mlLams, selData)
 
-ut.writeData(pd.DataFrame({'ml': norm_mlLams}), "norm_coef_data")
-subprocess.Popen("python clfPlanes.py static_pred --show", shell=True)
+coefData = tr.getCoefData(pqrsData, norm_mlLams[1:], mlLams[1:])
+ut.writeData(coefData, "coef_data")
+
+subprocess.Popen("python clfPlanes.py static_pred --lam0="+str(norm_mlLams[0])+" --show", shell=True)
 
 gui.clf3dPlane(_selData, norm_mlLams, 'M1', 'M3', 'M4', 25, -130)
 gui.clf3dPlane(_selData, norm_mlLams, 'M5', 'M7', 'M8', 25, -130)
