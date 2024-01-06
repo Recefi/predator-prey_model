@@ -15,6 +15,22 @@ g_a = param.gamma_a
 b_a = param.beta_a
 d_a = param.delta_a
 
+def denormMlLams(norm_mlLams, maxs):
+    """
+    lam0 у "разнормированных" лямбд не имеет физического смысла, но тем не менее здесь она сохраняется,
+        т.к. гипотетически может быть использована для построения графиков проекций по исходным разностям и оценки погрешности, которая из-за lam0 возникает...
+    """
+    mlLams = [norm_mlLams[0]]
+    for i in range(44):
+        mlLams.append(norm_mlLams[i+1] / maxs[i])
+    return mlLams
+
+def normCalcLams(calcLams, maxs):
+    norm_calcLams = []
+    for i in range(44):
+        norm_calcLams.append(calcLams[i] * maxs[i])
+    return norm_calcLams
+
 def getDerivatives(p, q, r, s):
     """Считаем частные производные в конкретной точке (p,q,r,s)"""
     hp = -1 + (4*r + 2*(p + q - s))/(2*sqrt(4*p*r + (p + q - s)**2))
@@ -34,26 +50,8 @@ def getDerivatives(p, q, r, s):
 
     return hp, hq, hr, hs, hpp, hpq, hpr, hps, hqq, hqr, hqs, hrr, hrs, hss
 
-def denormMlLams(norm_mlLams, selData):
-    """
-    lam0 у "разнормированных" лямбд не имеет физичемкого смысла, но тем не менее здесь она сохраняется,
-        т.к. гипотетически может быть использована для построения графиков проекций по исходным разностям и оценки погрешности, которая из-за lam0 возникает...
-    """
-    maxs = selData.loc[-1,'M1':'M8M8'].to_list()
-    mlLams = [norm_mlLams[0]]
-    for i in range(44):
-        mlLams.append(norm_mlLams[i+1] / maxs[i])
-    return mlLams
-
-def normCalcLams(calcLams, selData):
-    maxs = selData.loc[-1,'M1':'M8M8'].to_list()
-    norm_calcLams = []
-    for i in range(44):
-        mlLams.append(norm_mlLams[i] * maxs[i])
-    return norm_calcLams
-
 def getCoefData(pqrsData, norm_mlLams, mlLams):
-    """Считаем коэф-ты для всех точек (p,q,r,s) по сокращенной формуле"""
+    """Считаем коэф-ты для всех точек (p,q,r,s)"""
     lamCol = []
     for i in range(1,9):
         lamCol.append('lam'+str(i))
@@ -61,11 +59,14 @@ def getCoefData(pqrsData, norm_mlLams, mlLams):
         for j in range(i,9):
             lamCol.append('lam'+str(i)+str(j))
     
+    indexes = [-2, -1]
     coefTable = []
     coefTable.append(norm_mlLams)
     coefTable.append(mlLams)
     for i in pqrsData.index:
         p, q, r, s = pqrsData.loc[i]
+        if (4*p*r + (p + q - s)**2 < 0):
+            continue
         hp, hq, hr, hs, hpp, hpq, hpr, hps, hqq, hqr, hqs, hrr, hrs, hss = getDerivatives(p, q, r, s)
 
         # Считаем коэффициенты разложения в данной точке (по строкам: при M1-M8, M11-M18, M22-M28, M33-M38, ..., M88)
@@ -79,24 +80,38 @@ def getCoefData(pqrsData, norm_mlLams, mlLams):
                     1/2*hrr*b_a**2, 1/2*hrr*2*b_a*d_a,
                     1/2*hrr*d_a**2]
 
+        indexes.append(i)
         coefTable.append(calcCoefs)
     
-    indexes = [-2, -1]
-    indexes.extend(pqrsData.index)
     coefData = pd.DataFrame(coefTable, columns=lamCol, index=indexes)
     return coefData
 
 def getCosinesCoef(coefData):
     "Косинусы между векторами вычисленных и вектором машинных коэффициентов"
     cosines = cosine_similarity(coefData)[1]
-    print("\nвсе косинусы:\n", cosines, "\n")
-    print("\nнеобходимые косинусы:\n\n", cosines[2:], "\n")
+    #print("\nвсе косинусы:\n\n", cosines, "\n")
+    #print("\nкосинусы между машинными и вычисленными:\n\n", cosines[2:], "\n")
 
     cosines = pd.Series(cosines[2:])
     cosines.index = coefData.index[2:]
     return cosines
 
-def checkCoef(coefData, fitData, mpData, pqrsData, maxFitPntId, nearPntId):
+
+def compareCoefs(coefData, nearPntId, maxFitId):
+    """Сравниваем коэффициенты, нормируя по lam1"""
+    mlLams = coefData.loc[-1].copy()
+    calcCoefs_nearPnt = coefData.loc[nearPntId].copy()
+    calcCoefs_maxFitPnt = coefData.loc[maxFitId].copy()
+
+    mlLams/=(np.abs(mlLams.loc['lam1']))
+    calcCoefs_nearPnt/=(np.abs(calcCoefs_nearPnt.loc['lam1']))
+    calcCoefs_maxFitPnt/=(np.abs(calcCoefs_maxFitPnt.loc['lam1']))   
+
+    compareCoefData = pd.DataFrame({'machine': mlLams, 'nearPnt': calcCoefs_nearPnt, 'maxFitPnt': calcCoefs_maxFitPnt}, index=coefData.columns)
+    cosines = cosine_similarity(compareCoefData.transpose())[0]
+    return compareCoefData, cosines
+
+def compareFits(coefData, fitData, mpData, pqrsData, maxFitPntId, nearPntId):
     """Сравнение способов восстановления функции фитнеса"""
     def taylor(pntId):
         p0, q0, r0, s0 = pqrsData.loc[pntId]
@@ -104,15 +119,15 @@ def checkCoef(coefData, fitData, mpData, pqrsData, maxFitPntId, nearPntId):
         fit0 = fitData.loc[pntId, 'fit']
 
         taylorFit = []
-        for i in pqrsData.index:
+        for i in coefData.loc[0:].index:
             p, q, r, s = pqrsData.loc[i]
             taylorFit.append(fit0 + hp*(p-p0) + hq*(q-q0) + hr*(r-r0) + hs*(s-s0) + 1/2*(hpp*(p-p0)**2 + hqq*(q-q0)**2 + hrr*(r-r0)**2 + hss*(s-s0)**2 + hpq*(p-p0)*(q-q0) + hpr*(p-p0)*(r-r0) + hps*(p-p0)*(s-s0) + hqr*(q-q0)*(r-r0) + hqs*(q-q0)*(s-s0) + hrs*(r-r0)*(s-s0)))
         return taylorFit
 
     def restoreFits(pntId):
         fits = []
-        lams = coefData.loc[pntId].to_list()
-        for i in stratFitData.index:
+        lams = coefData.loc[pntId, 'lam1':'lam88'].to_list()
+        for i in fitData.index:
             Mp = mpData.loc[i, 'M1':'M8M8'].to_list()
             fit = 0
             for j in range(44):
@@ -121,36 +136,15 @@ def checkCoef(coefData, fitData, mpData, pqrsData, maxFitPntId, nearPntId):
         return fits
     
     trueFits = fitData['fit']
-    T_maxFitPnt = taylor(maxFitPntId)
-    # rF_maxFitPnt = restoreFits(maxFitPntId)
-    T_nearPnt = taylor(nearPntId)
-    # rF_nearPnt = restoreFits(nearPntId)
-    restoredFits_norm = restoreFits(-2)
-    restoredFits = restoreFits(-1)
+    maxFitPnt_T = taylor(maxFitPntId)
+    nearPnt_T = taylor(nearPntId)
+    machine_lam_norm = restoreFits(-2)
+    machine_lam = restoreFits(-1)
+    maxFitPnt_lam = restoreFits(maxFitPntId)
+    nearPnt_lam = restoreFits(nearPntId)
 
-    # checkCoefData = pd.DataFrame({'trueFit': trueFits, 'T_maxFitPnt': T_maxFitPnt, 'rF_maxFitPnt': rF_maxFitPnt,
-    #                               'T_nearPnt': T_nearPnt, 'rF_nearPnt': rF_nearPnt, "restoredFit_norm": restoredFits_norm, "restoredFit": restoredFits}, index=trueFits.index)
-    checkCoefData = pd.DataFrame({'trueFit': trueFits, 'T_maxFitPnt': T_maxFitPnt, 'T_nearPnt': T_nearPnt, "lam_norm": restoredFits_norm, "lam": restoredFits}, index=trueFits.index)    
-    return checkCoefData
-
-def getFitCosines(checkCoefData):
-    cosines = cosine_similarity(checkCoefData.transpose())[0]
-    return cosines
-
-def compareCoefs(coefData, nearPntId, maxFitId):
-    """Сравниваем коэффициенты, нормируя по первому столбцу"""
-    mlLams = coefData.loc[-1].copy()
-    calcCoefs_nearPnt = coefData.loc[nearPntId].copy()
-    calcCoefs_maxFitPnt = coefData.loc[maxFitId].copy()
-    
-    # mlLams/=(np.max(np.abs(mlLams)))
-    # calcCoefs_nearPnt/=(np.max(np.abs(calcCoefs_nearPnt)))
-    # calcCoefs_maxFitPnt/=(np.max(np.abs(calcCoefs_maxFitPnt)))
-
-    mlLams/=(np.abs(mlLams[0]))
-    calcCoefs_nearPnt/=(np.abs(calcCoefs_nearPnt[0]))
-    calcCoefs_maxFitPnt/=(np.abs(calcCoefs_maxFitPnt[0]))   
-
-    compareCoefData = pd.DataFrame({'machine': mlLams, 'nearPnt': calcCoefs_nearPnt, 'maxFitPnt': calcCoefs_maxFitPnt}, index=coefData.columns)
-    return compareCoefData
-
+    # compareFitData = pd.DataFrame({'trueFit': trueFits, 'maxFitPnt_T': maxFitPnt_T, 'nearPnt_T': nearPnt_T, "lam_norm": machine_lam_norm, "lam": machine_lam}, index=trueFits.index)
+    compareFitData = pd.DataFrame({'trueFit': trueFits, 'maxFitPnt_T': maxFitPnt_T, 'nearPnt_T': nearPnt_T,
+                                  'maxFitPnt_lam': maxFitPnt_lam, 'nearPnt_lam': nearPnt_lam, "machine_lam_norm": machine_lam_norm, "machine_lam": machine_lam}, index=trueFits.index)    
+    cosines = cosine_similarity(compareFitData.transpose())[0]
+    return compareFitData, cosines

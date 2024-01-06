@@ -110,8 +110,7 @@ def calcFitness(stratData, pqrsData):
     stratFitData = pd.concat([stratData.loc[fitData.index], fitData], axis=1)
     return stratFitData
 
-def calcPopDynamics(pqrsData):
-    start = time.time()
+def calcPopDynamics(pqrsData, tMax=1000, tParts=10000):
     n = len(pqrsData.index)
     p = pqrsData['p'].values
     q = pqrsData['q'].values
@@ -138,8 +137,8 @@ def calcPopDynamics(pqrsData):
     z_0 = np.full(2*n, 0.0001)
     z_0 = np.append(z_0, 0.0001)
 
-    pop = integrate.solve_ivp(func, t_span=[0, 500], y0=z_0, method='Radau', dense_output=True)
-    t = np.linspace(0, 500, 10000)
+    pop = integrate.solve_ivp(func, t_span=[0, tMax], y0=z_0, method='Radau', dense_output=True)
+    t = np.linspace(0, tMax, tParts)
     # dense_output=True need only for .sol(t)
     # .sol(t) is better than .y & .t !!!
     # max_step doesn't change .sol(t), it calculates in parallel when dense_output=True !!!
@@ -151,53 +150,42 @@ def calcPopDynamics(pqrsData):
         indxs.append('z2_v'+str(pqrsData.index[i]))
     indxs.append('F')
     popData = pd.DataFrame(pop.sol(t), columns=t, index=indxs)
-    end = time.time()
-    print ("calcPopDynamics: ", end - start)
     return popData
     
-def analyzePopDynamics(stratData, rawPopData):
+def analyzePopDynamics(stratData, rawPopData, eps):
     n = len(stratData.index)
     t = len(rawPopData.columns)
 
+    timeTicks = []
+    indexes = []
     strats = []
     for i in range(n):
         strat = []
         for j in range(t):
             if (rawPopData.iloc[i,j] < 0 and rawPopData.iloc[i+n,j] < 0):
-                strat.append(rawPopData.columns[j])
-                strat.append(rawPopData.iloc[i,j])
-                strat.append(rawPopData.iloc[i+n,j])
+                if (np.isin(j, timeTicks)):
+                    indexes.append(stratData.index[i])
+                    strat.append(-1)
+                else:
+                    strat.append(rawPopData.columns[j])
+                    strat.append(rawPopData.iloc[i,j])
+                    strat.append(rawPopData.iloc[i+n,j])
+                    strats.append(strat)
+                    timeTicks.append(j)
                 break
         if not strat:
-            strat.append(rawPopData.columns[t-1])
-            strat.append(rawPopData.iloc[i,t-1])
-            strat.append(rawPopData.iloc[i+n,t-1])
-        strats.append(strat)
+            if (rawPopData.iloc[i,t-1] >= eps and rawPopData.iloc[i+n,t-1] >= eps):
+                strat.append(rawPopData.columns[t-1])
+                strat.append(rawPopData.iloc[i,t-1])
+                strat.append(rawPopData.iloc[i+n,t-1])
+                strats.append(strat)
+            else:
+                indexes.append(stratData.index[i])
     
-    popData = pd.DataFrame(strats, columns=['t', 'z1', 'z2'], index=stratData.index)
-    stratPopData = pd.concat([stratData, popData], axis=1)
+    tmpStratData = stratData.drop(indexes)
+    popData = pd.DataFrame(strats, columns=['t', 'z1', 'z2'], index=tmpStratData.index)
+    stratPopData = pd.concat([tmpStratData, popData], axis=1)
     return stratPopData
-
-def сlearSelection(stratData, eps, rest=2):
-    Bj = stratData['Bj']
-    Ba = stratData['Ba']
-
-    toDelList = []
-    toDel_j = 1
-    toDel_a = 1
-    for i in stratData.index:
-        if abs(Bj[i]) < eps:
-            if toDel_j < rest: 
-                toDelList.append(i)
-                toDel_j += 1
-            else: toDel_j = 1
-        if abs(Ba[i]) < eps:
-            if toDel_a < rest: 
-                toDelList.append(i)
-                toDel_a += 1
-            else: toDel_a = 1
-    stratData = stratData.drop(toDelList)
-    return stratData
 
 def calcSelection(keyData, mpData):
     n = len(mpData.index)
@@ -240,10 +228,3 @@ def calcSelection(keyData, mpData):
 
     selData = pd.DataFrame(sel, columns=['class']+mpData.columns.to_list())
     return selData
-
-def normSelection(selData):
-    maxs = selData.loc[:,'M1':'M8M8'].abs().max()
-    selData.loc[:,'M1':'M8M8'] = selData.loc[:,'M1':'M8M8'] / maxs
-    selData.loc[-1] = [0]+maxs.to_list()
-    selData.sort_index(inplace=True) 
-
