@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-from matplotlib.colors import ListedColormap
 import numpy as np
 from scipy import stats
 import time
@@ -7,6 +6,9 @@ import time
 import libs.utility as ut
 import libs.param as param
 
+
+from matplotlib.colors import ListedColormap
+cMap = ListedColormap(["xkcd:tomato", "deepskyblue"])
 
 def stratSins(Aj, Bj, Aa, Ba):
     fig, ax = plt.subplots()
@@ -145,7 +147,7 @@ def clf2dPlane(selData, lams, M1, M2):
     ax.set_xlabel(M1)
     ax.set_ylabel(M2)
     ax.set(xlim=(-1, 1), ylim=(-1, 1))
-    s = ax.scatter(x_x, x_y, c=y, cmap=ListedColormap(["xkcd:tomato", "deepskyblue"]), s=5, alpha=0.03)
+    s = ax.scatter(x_x, x_y, c=y, cmap=cMap, s=5, alpha=0.03)
 
     x_visual = np.linspace(-1,1)
     y_visual = -(lam1/lam2)*x_visual - lam0/lam2
@@ -172,7 +174,7 @@ def clf3dPlane(selData, lams, M1, M2, M3, elevation=30, azimuth=-60):
     ax.set_xlabel(M1)
     ax.set_ylabel(M2)
     ax.set_zlabel(M3)
-    s = ax.scatter(x_x, x_y, x_z, c=y, cmap=ListedColormap(["xkcd:tomato", "deepskyblue"]), alpha=0.02)
+    s = ax.scatter(x_x, x_y, x_z, c=y, cmap=cMap, alpha=0.02)
 
     tmp = np.linspace(-1,1)
     x_visual, y_visual = np.meshgrid(tmp,tmp)
@@ -203,7 +205,7 @@ def clfPlanes(selData, lams):
                 ax[i][j].set_yticks([])
                 ax[i][j].set_yticks([], minor=True)
             if i!=j:
-                ax[i][j].scatter(X[:, j], X[:, i], c=y, cmap=ListedColormap(["xkcd:tomato", "deepskyblue"]), s=5, alpha=0.03)
+                ax[i][j].scatter(X[:, j], X[:, i], c=y, cmap=cMap, s=5, alpha=0.03)
 
                 x_visual = np.linspace(-1, 1)
                 y_visual = -(lams[j+1]/lams[i+1])*x_visual - lams[0]/lams[i+1]

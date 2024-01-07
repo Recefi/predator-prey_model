@@ -23,9 +23,9 @@ def runClfSVM(selData):
                                                         train_size=4*(len(y)//5), shuffle=False)
 
     # Нормирование
-    maxs = X_train.loc[:,'M1':'M8M8'].abs().max()
-    X_train.loc[:,'M1':'M8M8'] = X_train.loc[:,'M1':'M8M8'] / maxs
-    X_test.loc[:,'M1':'M8M8'] = X_test.loc[:,'M1':'M8M8'] / maxs
+    mpMaxsSeries = X_train.loc[:,'M1':'M8M8'].abs().max()
+    X_train.loc[:,'M1':'M8M8'] = X_train.loc[:,'M1':'M8M8'] / mpMaxsSeries
+    X_test.loc[:,'M1':'M8M8'] = X_test.loc[:,'M1':'M8M8'] / mpMaxsSeries
 
     # выборка должна быть центрированной как по значениям фетчей, так и по меткам класса, чтобы использовать fit_intercept=False
     print("sel size: ", len(y))
@@ -49,6 +49,6 @@ def runClfSVM(selData):
     print("lam0 =",lams[0])
     print(lams)
 
-    end = time.time()
-    print ("ml time: ", end - start)
-    return lams, maxs.values
+    mpMaxsData = pd.DataFrame(mpMaxsSeries).T
+    print ("ml time: ", time.time() - start)
+    return lams, mpMaxsData

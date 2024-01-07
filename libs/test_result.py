@@ -50,7 +50,7 @@ def getDerivatives(p, q, r, s):
 
     return hp, hq, hr, hs, hpp, hpq, hpr, hps, hqq, hqr, hqs, hrr, hrs, hss
 
-def getCoefData(pqrsData, norm_mlLams, mlLams):
+def getCoefData(pqrsData, norm_mlLams, mlLams, F=1):
     """Считаем коэф-ты для всех точек (p,q,r,s)"""
     lamCol = []
     for i in range(1,9):
@@ -70,13 +70,13 @@ def getCoefData(pqrsData, norm_mlLams, mlLams):
         hp, hq, hr, hs, hpp, hpq, hpr, hps, hqq, hqr, hqs, hrr, hrs, hss = getDerivatives(p, q, r, s)
 
         # Считаем коэффициенты разложения в данной точке (по строкам: при M1-M8, M11-M18, M22-M28, M33-M38, ..., M88)
-        calcCoefs = [hp*a_j, hq*(-g_j), hp*b_j, hp*d_j, hr*a_a, hs*(-g_a), hr*b_a, hr*d_a,
-                    1/2*hpp*a_j**2, 1/2*hpq*a_j*(-g_j), 1/2*hpp*2*a_j*b_j, 1/2*hpp*2*a_j*d_j, 1/2*hpr*a_j*a_a, 1/2*hps*a_j*(-g_a), 1/2*hpr*a_j*b_a, 1/2*hpr*a_j*d_a,
-                    1/2*hqq*(-g_j)**2, 1/2*hpq*b_j*(-g_j), 1/2*hpq*d_j*(-g_j), 1/2*hqr*(-g_j)*a_a, 1/2*hqs*(-g_j)*(-g_a), 1/2*hqr*(-g_j)*b_a, 1/2*hqr*(-g_j)*d_a,
-                    1/2*hpp*b_j**2, 1/2*hpp*2*b_j*d_j, 1/2*hpr*b_j*a_a, 1/2*hps*b_j*(-g_a), 1/2*hpr*b_j*b_a, 1/2*hpr*b_j*d_a,
-                    1/2*hpp*d_j**2, 1/2*hpr*d_j*a_a, 1/2*hps*d_j*(-g_a), 1/2*hpr*d_j*b_a, 1/2*hpr*d_j*d_a,
-                    1/2*hrr*a_a**2, 1/2*hrs*a_a*(-g_a), 1/2*hrr*2*a_a*b_a, 1/2*hrr*2*a_a*d_a,
-                    1/2*hss*(-g_a)**2, 1/2*hrs*b_a*(-g_a), 1/2*hrs*d_a*(-g_a),
+        calcCoefs = [hp*a_j, F*hq*(-g_j), hp*b_j, hp*d_j, hr*a_a, F*hs*(-g_a), hr*b_a, hr*d_a,
+                    1/2*hpp*a_j**2, 1/2*hpq*a_j*(-g_j), 1/2*hpp*2*a_j*b_j, 1/2*hpp*2*a_j*d_j, 1/2*hpr*a_j*a_a, 1/2*F*hps*a_j*(-g_a), 1/2*hpr*a_j*b_a, 1/2*hpr*a_j*d_a,
+                    1/2*F*F*hqq*(-g_j)**2, 1/2*hpq*b_j*(-g_j), 1/2*hpq*d_j*(-g_j), 1/2*F*hqr*(-g_j)*a_a, 1/2*F*F*hqs*(-g_j)*(-g_a), 1/2*F*hqr*(-g_j)*b_a, 1/2*F*hqr*(-g_j)*d_a,
+                    1/2*hpp*b_j**2, 1/2*hpp*2*b_j*d_j, 1/2*hpr*b_j*a_a, 1/2*F*hps*b_j*(-g_a), 1/2*hpr*b_j*b_a, 1/2*hpr*b_j*d_a,
+                    1/2*hpp*d_j**2, 1/2*hpr*d_j*a_a, 1/2*F*hps*d_j*(-g_a), 1/2*hpr*d_j*b_a, 1/2*hpr*d_j*d_a,
+                    1/2*hrr*a_a**2, 1/2*F*hrs*a_a*(-g_a), 1/2*hrr*2*a_a*b_a, 1/2*hrr*2*a_a*d_a,
+                    1/2*F*F*hss*(-g_a)**2, 1/2*F*hrs*b_a*(-g_a), 1/2*F*hrs*d_a*(-g_a),
                     1/2*hrr*b_a**2, 1/2*hrr*2*b_a*d_a,
                     1/2*hrr*d_a**2]
 
@@ -97,22 +97,40 @@ def getCosinesCoef(coefData):
     return cosines
 
 
-def compareCoefs(coefData, nearPntId, maxFitId):
+def compareCoefs_static(coefData, nearPntId, maxFitId):
     """Сравниваем коэффициенты, нормируя по lam1"""
+    norm_mlLams = coefData.loc[-2].copy()
     mlLams = coefData.loc[-1].copy()
-    calcCoefs_nearPnt = coefData.loc[nearPntId].copy()
-    calcCoefs_maxFitPnt = coefData.loc[maxFitId].copy()
+    calcLams_nearPnt = coefData.loc[nearPntId].copy()
+    calcLams_maxFitPnt = coefData.loc[maxFitId].copy()
 
+    norm_mlLams/=(np.abs(norm_mlLams.loc['lam1']))
     mlLams/=(np.abs(mlLams.loc['lam1']))
-    calcCoefs_nearPnt/=(np.abs(calcCoefs_nearPnt.loc['lam1']))
-    calcCoefs_maxFitPnt/=(np.abs(calcCoefs_maxFitPnt.loc['lam1']))   
+    calcLams_nearPnt/=(np.abs(calcLams_nearPnt.loc['lam1']))
+    calcLams_maxFitPnt/=(np.abs(calcLams_maxFitPnt.loc['lam1']))   
 
-    compareCoefData = pd.DataFrame({'machine': mlLams, 'nearPnt': calcCoefs_nearPnt, 'maxFitPnt': calcCoefs_maxFitPnt}, index=coefData.columns)
-    cosines = cosine_similarity(compareCoefData.transpose())[0]
-    return compareCoefData, cosines
+    compareCoefData = pd.DataFrame({'norm_machine': norm_mlLams, 'machine': mlLams, 'nearPnt': calcLams_nearPnt, 'maxFitPnt': calcLams_maxFitPnt}, index=coefData.columns)
+    compareCoefData.loc['cosines'] = cosine_similarity(compareCoefData.transpose())[1]
+    return compareCoefData
 
-def compareFits(coefData, fitData, mpData, pqrsData, maxFitPntId, nearPntId):
+def compareCoefs_dynamic(coefData, nearPntId):
+    """Сравниваем коэффициенты, нормируя по lam1"""
+    norm_mlLams = coefData.loc[-2].copy()
+    mlLams = coefData.loc[-1].copy()
+    calcLams_nearPnt = coefData.loc[nearPntId].copy()
+
+    norm_mlLams/=(np.abs(norm_mlLams.loc['lam1']))
+    mlLams/=(np.abs(mlLams.loc['lam1']))
+    calcLams_nearPnt/=(np.abs(calcLams_nearPnt.loc['lam1']))
+
+    compareCoefData = pd.DataFrame({'norm_machine': norm_mlLams, 'machine': mlLams, 'nearPnt': calcLams_nearPnt}, index=coefData.columns)
+    compareCoefData.loc['cosines'] = cosine_similarity(compareCoefData.transpose())[1]
+    return compareCoefData
+
+
+def compareFits_static(coefData, fitData, mpData, pqrsData, maxFitPntId, nearPntId):
     """Сравнение способов восстановления функции фитнеса"""
+    F=1
     def taylor(pntId):
         p0, q0, r0, s0 = pqrsData.loc[pntId]
         hp, hq, hr, hs, hpp, hpq, hpr, hps, hqq, hqr, hqs, hrr, hrs, hss = getDerivatives(p0, q0, r0, s0)
@@ -121,7 +139,7 @@ def compareFits(coefData, fitData, mpData, pqrsData, maxFitPntId, nearPntId):
         taylorFit = []
         for i in coefData.loc[0:].index:
             p, q, r, s = pqrsData.loc[i]
-            taylorFit.append(fit0 + hp*(p-p0) + hq*(q-q0) + hr*(r-r0) + hs*(s-s0) + 1/2*(hpp*(p-p0)**2 + hqq*(q-q0)**2 + hrr*(r-r0)**2 + hss*(s-s0)**2 + hpq*(p-p0)*(q-q0) + hpr*(p-p0)*(r-r0) + hps*(p-p0)*(s-s0) + hqr*(q-q0)*(r-r0) + hqs*(q-q0)*(s-s0) + hrs*(r-r0)*(s-s0)))
+            taylorFit.append(fit0 + hp*(p-p0) + F*hq*(q-q0) + hr*(r-r0) + F*hs*(s-s0) + 1/2*(hpp*(p-p0)**2 + F*F*hqq*(q-q0)**2 + hrr*(r-r0)**2 + F*F*hss*(s-s0)**2 + hpq*(p-p0)*(q-q0) + hpr*(p-p0)*(r-r0) + F*hps*(p-p0)*(s-s0) + F*hqr*(q-q0)*(r-r0) + F*F*hqs*(q-q0)*(s-s0) + F*hrs*(r-r0)*(s-s0)))
         return taylorFit
 
     def restoreFits(pntId):
@@ -138,13 +156,13 @@ def compareFits(coefData, fitData, mpData, pqrsData, maxFitPntId, nearPntId):
     trueFits = fitData['fit']
     maxFitPnt_T = taylor(maxFitPntId)
     nearPnt_T = taylor(nearPntId)
-    machine_lam_norm = restoreFits(-2)
-    machine_lam = restoreFits(-1)
     maxFitPnt_lam = restoreFits(maxFitPntId)
     nearPnt_lam = restoreFits(nearPntId)
+    ml_lam_norm = restoreFits(-2)
+    ml_lam = restoreFits(-1)
 
-    # compareFitData = pd.DataFrame({'trueFit': trueFits, 'maxFitPnt_T': maxFitPnt_T, 'nearPnt_T': nearPnt_T, "lam_norm": machine_lam_norm, "lam": machine_lam}, index=trueFits.index)
+    # compareFitData = pd.DataFrame({'trueFit': trueFits, 'maxFitPnt_T': maxFitPnt_T, 'nearPnt_T': nearPnt_T, "lam_norm": ml_lam_norm, "lam": ml_lam}, index=trueFits.index)
     compareFitData = pd.DataFrame({'trueFit': trueFits, 'maxFitPnt_T': maxFitPnt_T, 'nearPnt_T': nearPnt_T,
-                                  'maxFitPnt_lam': maxFitPnt_lam, 'nearPnt_lam': nearPnt_lam, "machine_lam_norm": machine_lam_norm, "machine_lam": machine_lam}, index=trueFits.index)    
+                                  'maxFitPnt_lam': maxFitPnt_lam, 'nearPnt_lam': nearPnt_lam, "ml_lam_norm": ml_lam_norm, "ml_lam": ml_lam}, index=trueFits.index)    
     cosines = cosine_similarity(compareFitData.transpose())[0]
     return compareFitData, cosines
