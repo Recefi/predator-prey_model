@@ -28,7 +28,6 @@ ut.writeData(stratFitData, "strat_fit_data")
 mpData = mpData.loc[stratFitData.index]
 print("strats: ", len(stratFitData.index))
 
-# gui.allStratSins(stratData)
 # gui.allStratSins(stratFitData)
 # gui.optStratSin(stratFitData)
 gui.mostOptStratSins(stratFitData, 3, 4)
@@ -57,6 +56,9 @@ norm_selData.loc[:,'M1':'M8M8'] = norm_selData.loc[:,'M1':'M8M8'] / mpMaxs
 coefData = tr.getCoefData(pqrsData, norm_mlLams[1:], mlLams[1:])
 ut.writeData(coefData, "coef_data")
 
+subprocess.Popen("python clfPlanes.py static_pred --lam0="+str(norm_mlLams[0])+" --show", shell=True)
+
+
 cosines = tr.getCosinesCoef(coefData)
 print(cosines)
 nearPntId = cosines.idxmax()
@@ -69,13 +71,15 @@ with pd.option_context('display.max_rows', 10):
     print(compareCoefData)
 
 
-subprocess.Popen("python clfPlanes.py static_pred --lam0="+str(norm_mlLams[0])+" --show", shell=True)
-
 gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M3', 'M4', 25, -130)
 gui.clf3dPlane(norm_selData, norm_mlLams, 'M5', 'M7', 'M8', 25, -130)
 
 gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M2', 'M4', 25, -130)
 gui.clf3dPlane(norm_selData, norm_mlLams, 'M5', 'M6', 'M8', 25, -130)
+
+gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M5', 'M4', 25, -130)
+gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M5', 'M4M8')
+gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M5', 'M2M6', 25, -130)
 
 #gui.clf2dPlane(norm_selData, norm_mlLams, 'M2', 'M4M8')
 

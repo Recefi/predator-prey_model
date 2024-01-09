@@ -110,7 +110,7 @@ def calcFitness(stratData, pqrsData):
     stratFitData = pd.concat([stratData.loc[fitData.index], fitData], axis=1)
     return stratFitData
 
-def calcPopDynamics(pqrsData, tMax=1000, tParts=10000):
+def calcPopDynamics(pqrsData, tMax=1000, tParts=10000, z0=0.01, F0=0.1):
     n = len(pqrsData.index)
     p = pqrsData['p'].values
     q = pqrsData['q'].values
@@ -134,8 +134,8 @@ def calcPopDynamics(pqrsData, tMax=1000, tParts=10000):
 
         return result
     
-    z_0 = np.full(2*n, 0.0001)
-    z_0 = np.append(z_0, 0.0001)
+    z_0 = np.full(2*n, z0)
+    z_0 = np.append(z_0, F0)
 
     pop = integrate.solve_ivp(func, t_span=[0, tMax], y0=z_0, method='Radau', dense_output=True)
     t = np.linspace(0, tMax, tParts)
@@ -185,7 +185,13 @@ def analyzePopDynamics(stratData, rawPopData, eps):
     tmpStratData = stratData.drop(indexes)
     popData = pd.DataFrame(strats, columns=['t', 'z1', 'z2'], index=tmpStratData.index)
     stratPopData = pd.concat([tmpStratData, popData], axis=1)
-    return stratPopData
+
+    predatorPlateau = rawPopData.iloc[2*n].tail(10).round(4).to_list()
+    print(predatorPlateau)
+    F = predatorPlateau[0]
+    if predatorPlateau.count(F) != len(predatorPlateau):
+        print("WARNING: the predator haven't reached a plateau!!!", predatorPlateau.count(F))
+    return stratPopData, F
 
 def calcSelection(keyData, mpData):
     n = len(mpData.index)
