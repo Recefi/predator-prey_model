@@ -62,31 +62,11 @@ def allSins(stratData):
 
     fig, ax = plt.subplots()
     for i in Aj.index:
-        xj = np.linspace(0, 1)
-        yj = Aj[i] + Bj[i] * np.cos(2 * np.pi * xj)
-        ax.plot(xj, yj, c="blue")
-
-        xa = np.linspace(0, 1)
-        ya = Aa[i] + Ba[i] * np.cos(2 * np.pi * xa)
-        ax.plot(xa, ya, c="red")
-
-def comparisonSins(stratData, maxTrueFitId, maxRestrFitId):
-    fig, ax = plt.subplots()
-    trueOptStrat = stratData.loc[maxTrueFitId]
-    restrOptStrat = stratData.loc[maxRestrFitId]
-
-    x = np.linspace(0, 1)
-    yj = trueOptStrat['Aj'] + trueOptStrat['Bj'] * np.cos(2 * np.pi * x)
-    ax.plot(x, yj, c="blue", label="Молодые (по исх. функции)")
-    ya = trueOptStrat['Aa'] + trueOptStrat['Ba'] * np.cos(2 * np.pi * x)
-    ax.plot(x, ya, c="red", label="Взрослые (по исх. функции)")
-
-    yj = restrOptStrat['Aj'] + restrOptStrat['Bj'] * np.cos(2 * np.pi * x)
-    ax.plot(x, yj, c="green", label="Молодые (по восст. функции)")
-    ya = restrOptStrat['Aa'] + restrOptStrat['Ba'] * np.cos(2 * np.pi * x)
-    ax.plot(x, ya, c="orange", label="Взрослые (по восст. функции)")
-
-    ax.legend()
+        x = np.linspace(0, 1)
+        yj = Aj[i] + Bj[i] * np.cos(2 * np.pi * x)
+        ax.plot(x, yj, c="blue")
+        ya = Aa[i] + Ba[i] * np.cos(2 * np.pi * x)
+        ax.plot(x, ya, c="red")
 
 def popDynamics(rawData):
     n = int(len(rawData.index)/2)
@@ -113,12 +93,11 @@ def popDynamics(rawData):
     ax3.set_ylim([0, F_data.max()*1.1])
 
 def histStrats(stratData):
-    stratData[['Aj','Bj','Aa','Ba']].hist(layout=(2, 2), figsize=(12, 6), bins=200)
-    plt.tight_layout()
+    ax = stratData[['Aj','Bj','Aa','Ba']].hist(layout=(2, 2), figsize=(12, 6), bins=200)
+    ax[0][0].figure.tight_layout()
 
 def histMps(mpData):
-    mpData.loc[:,'M1':'M8'].hist(layout=(2, 4), figsize=(12, 6), bins=200)
-    plt.tight_layout()
+    mpData.loc[:,'M1':'M8'].hist(layout=(2, 4), figsize=(12, 6), bins=200)[0][0].figure.tight_layout()
 
 def corrMps(mpData):
     corrMatr=np.round(np.corrcoef(mpData.loc[:,'M1':'M8'].T.values),2)
