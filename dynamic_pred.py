@@ -58,7 +58,7 @@ norm_selData.loc[:,'M1':'M8M8'] = norm_selData.loc[:,'M1':'M8M8'] / mpMaxs
 coefData = tr.getCoefData(pqrsData, norm_mlLams[1:], mlLams[1:], F)
 ut.writeData(coefData, "coef_data")
 
-subprocess.Popen("python clfPlanes.py static_pred --lam0="+str(norm_mlLams[0])+" --show", shell=True)
+subprocess.Popen("python clfPlanes.py dynamic_pred --lam0="+str(norm_mlLams[0])+" --show", shell=True)
 
 
 cosines = tr.getCosinesCoef(coefData)
