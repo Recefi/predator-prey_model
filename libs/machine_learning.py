@@ -12,8 +12,9 @@ def runClfSVM(selData):
     """
     "For the linear case, the algorithm used in LinearSVC by the liblinear implementation is much more efficient
         than its libsvm-based SVC counterpart and can scale almost linearly to millions of samples and/or features."
-    "LinearSVC is less sensitive to C when it becomes large, and prediction results stop improving after a certain threshold. 
-        Meanwhile, larger C values will take more time to train, sometimes up to 10 times longer."
+    "LinearSVC is less sensitive to C when it becomes large,
+        and prediction results stop improving after a certain threshold. 
+            Meanwhile, larger C values will take more time to train, sometimes up to 10 times longer."
     """
     start = time.time()
     X = selData.loc[:,'M1':'M8M8']
@@ -27,11 +28,13 @@ def runClfSVM(selData):
     X_train.loc[:,'M1':'M8M8'] = X_train.loc[:,'M1':'M8M8'] / mpMaxsSeries
     X_test.loc[:,'M1':'M8M8'] = X_test.loc[:,'M1':'M8M8'] / mpMaxsSeries
 
-    # выборка должна быть центрированной как по значениям фетчей, так и по меткам класса, чтобы использовать fit_intercept=False
+    # проверка, что выборка действительно центрирована как по значениям фетчей,
+    #                                                   так и по меткам класса, чтобы использовать fit_intercept=False
     print("sel size: ", len(y))
     print("train sel size: ", len(y_train))
     print("sel mean:")
-    print(pd.DataFrame({"orig_X": selData.loc[:,'M1':'M8M8'].mean(), "orig_y": y.mean(), "train_X": X_train.mean(axis=0), "train_y": y_train.mean()}))
+    print(pd.DataFrame({"orig_X": selData.loc[:,'M1':'M8M8'].mean(), "orig_y": y.mean(),
+                                                        "train_X": X_train.mean(axis=0), "train_y": y_train.mean()}))
 
     # Train
     clf = svm.LinearSVC(fit_intercept=False, dual=False, random_state=55)

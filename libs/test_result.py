@@ -109,7 +109,8 @@ def compareCoefs_static(coefData, nearPntId, maxFitId):
     calcLams_nearPnt/=(np.abs(calcLams_nearPnt.loc['lam1']))
     calcLams_maxFitPnt/=(np.abs(calcLams_maxFitPnt.loc['lam1']))   
 
-    compareCoefData = pd.DataFrame({'norm_machine': norm_mlLams, 'machine': mlLams, 'nearPnt': calcLams_nearPnt, 'maxFitPnt': calcLams_maxFitPnt}, index=coefData.columns)
+    compareCoefData = pd.DataFrame({'norm_machine': norm_mlLams, 'machine': mlLams,
+                                'nearPnt': calcLams_nearPnt, 'maxFitPnt': calcLams_maxFitPnt}, index=coefData.columns)
     compareCoefData.loc['cosines'] = cosine_similarity(compareCoefData.transpose())[1]
     return compareCoefData
 
@@ -123,7 +124,8 @@ def compareCoefs_dynamic(coefData, nearPntId):
     mlLams/=(np.abs(mlLams.loc['lam1']))
     calcLams_nearPnt/=(np.abs(calcLams_nearPnt.loc['lam1']))
 
-    compareCoefData = pd.DataFrame({'norm_machine': norm_mlLams, 'machine': mlLams, 'nearPnt': calcLams_nearPnt}, index=coefData.columns)
+    compareCoefData = pd.DataFrame({'norm_machine': norm_mlLams, 'machine': mlLams,
+                                'nearPnt': calcLams_nearPnt}, index=coefData.columns)
     compareCoefData.loc['cosines'] = cosine_similarity(compareCoefData.transpose())[1]
     return compareCoefData
 
@@ -139,7 +141,10 @@ def compareFits_static(coefData, fitData, mpData, pqrsData, maxFitPntId, nearPnt
         taylorFit = []
         for i in coefData.loc[0:].index:
             p, q, r, s = pqrsData.loc[i]
-            taylorFit.append(fit0 + hp*(p-p0) + F*hq*(q-q0) + hr*(r-r0) + F*hs*(s-s0) + 1/2*(hpp*(p-p0)**2 + F*F*hqq*(q-q0)**2 + hrr*(r-r0)**2 + F*F*hss*(s-s0)**2 + hpq*(p-p0)*(q-q0) + hpr*(p-p0)*(r-r0) + F*hps*(p-p0)*(s-s0) + F*hqr*(q-q0)*(r-r0) + F*F*hqs*(q-q0)*(s-s0) + F*hrs*(r-r0)*(s-s0)))
+            taylorFit.append(fit0 + hp*(p-p0) + F*hq*(q-q0) + hr*(r-r0) + F*hs*(s-s0)
+                                + 1/2*(hpp*(p-p0)**2 + F*F*hqq*(q-q0)**2 + hrr*(r-r0)**2 + F*F*hss*(s-s0)**2
+                                            + hpq*(p-p0)*(q-q0) + hpr*(p-p0)*(r-r0) + F*hps*(p-p0)*(s-s0)
+                                                + F*hqr*(q-q0)*(r-r0) + F*F*hqs*(q-q0)*(s-s0) + F*hrs*(r-r0)*(s-s0)))
         return taylorFit
 
     def restoreFits(pntId):
@@ -161,8 +166,10 @@ def compareFits_static(coefData, fitData, mpData, pqrsData, maxFitPntId, nearPnt
     ml_lam_norm = restoreFits(-2)
     ml_lam = restoreFits(-1)
 
-    # compareFitData = pd.DataFrame({'trueFit': trueFits, 'maxFitPnt_T': maxFitPnt_T, 'nearPnt_T': nearPnt_T, "lam_norm": ml_lam_norm, "lam": ml_lam}, index=trueFits.index)
+    # compareFitData = pd.DataFrame({'trueFit': trueFits, 'maxFitPnt_T': maxFitPnt_T, 'nearPnt_T': nearPnt_T,
+    #                                                   "lam_norm": ml_lam_norm, "lam": ml_lam}, index=trueFits.index)
     compareFitData = pd.DataFrame({'trueFit': trueFits, 'maxFitPnt_T': maxFitPnt_T, 'nearPnt_T': nearPnt_T,
-                                  'maxFitPnt_lam': maxFitPnt_lam, 'nearPnt_lam': nearPnt_lam, "ml_lam_norm": ml_lam_norm, "ml_lam": ml_lam}, index=trueFits.index)    
+                                                'maxFitPnt_lam': maxFitPnt_lam, 'nearPnt_lam': nearPnt_lam,
+                                                    "ml_lam_norm": ml_lam_norm, "ml_lam": ml_lam}, index=trueFits.index)    
     cosines = cosine_similarity(compareFitData.transpose())[0]
     return compareFitData, cosines

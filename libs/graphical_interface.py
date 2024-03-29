@@ -43,10 +43,10 @@ def mostOptStratSins(stratFitData, rows, cols):
     for i in range(rows):
         for j in range(cols):
             yj = Aj[i*4+j] + Bj[i*4+j] * np.cos(2 * np.pi * x)
-            ax[i][j].plot(x, yj, c="blue", label="Aj: "+str(np.round(Aj[i*4+j], 2))+"\nBj: "+str(np.round(Bj[i*4+j], 2)))
+            ax[i][j].plot(x,yj, c="blue", label="Aj: "+str(np.round(Aj[i*4+j], 2))+"\nBj: "+str(np.round(Bj[i*4+j], 2)))
             # ax[i][j].plot(x, yj, c="blue")
             ya = Aa[i*4+j] + Ba[i*4+j] * np.cos(2 * np.pi * x)
-            ax[i][j].plot(x, ya, c="red", label="Aa: "+str(np.round(Aa[i*4+j], 2))+"\nBa: "+str(np.round(Ba[i*4+j], 2)))
+            ax[i][j].plot(x,ya, c="red", label="Aa: "+str(np.round(Aa[i*4+j], 2))+"\nBa: "+str(np.round(Ba[i*4+j], 2)))
             # ax[i][j].plot(x, ya, c="red")
             ax[i][j].set_title("strat: " + str(indxs[i*4+j]) + "\n" + "fit: " + str(fit[i*4+j]))
             ax[i][j].set_ylim(-param.D - 0.5, 0.5)
@@ -190,16 +190,18 @@ def clfPlanes(selData, lams):
                 y_visual = -(lams[j+1]/lams[i+1])*x_visual - lams[0]/lams[i+1]
                 ax[i][j].plot(x_visual, y_visual, color="navy")
 
-                # в отличии от исх.свертки макропар-ов ур-е восст.гиперплоскости скорее всего содержит lam0!=0, если точность класс-ра не 100% и ему не сообщили считать lam0=0:
-                    # lam0 + lam1*M1 + lam2*M2 + lam3*M3 + ... + lam44*M8M8 = 0  ||  lam1*M1 + lam2*M2 + lam3*M3 + ... + lam44*M8M8 = b
-                # lam0 следует использовать в совокупности с нормированными разностями при демонстрации рез-та обучения на проекциях, но не в дальнейшем!
+# в отличии от исх.свертки макропар-ов ур-е восст.гиперплоскости скорее всего содержит lam0!=0,
+# если точность класс-ра не 100% и ему не сообщили считать lam0=0:
+#   lam0 + lam1*M1 + lam2*M2 + lam3*M3 + ... + lam44*M8M8 = 0  ||  lam1*M1 + lam2*M2 + lam3*M3 + ... + lam44*M8M8 = b
+# lam0 следует исп-ть в совокуп-ти с норм.разностями при демонстрации рез-та обучения на проекциях, но не в дальнейшем!
 
-                # в данном случае:
-                    # w := (lam1,lam2,...,lam44)^T, x := (M1,M2,...,M8M8), b := -lam0
-                # тогда для двухмерной проекции:
-                    # <w,x> - b = 0 ---> w^T * x - b = 0 ---> (lam1,lam2) * (M1, M2)^T - b = 0 ---> lam1*M1 + lam2*M2 + lam0 = 0 ---> M2 = -(lam1/lam2)*M1 - lam0/lam2
-                # для трехмерной проекции итд:
-                    # lam1*M1 + lam2*M2 + lam3*M3 + ... + lam0 = 0 ---> ...
+# пусть:
+#   w := (lam1,lam2,...,lam44)^T, x := (M1,M2,...,M8M8), b := -lam0
+# тогда для двухмерной проекции:
+#   <w,x> - b = 0 ---> w^T * x - b = 0 ---> (lam1,lam2) * (M1, M2)^T - b = 0
+                                            # ---> lam1*M1 + lam2*M2 + lam0 = 0 ---> M2 = -(lam1/lam2)*M1 - lam0/lam2
+# для трехмерной проекции итд:
+#   lam1*M1 + lam2*M2 + lam3*M3 + ... + lam0 = 0 ---> ...
     
     fig.tight_layout()
     return fig
