@@ -30,8 +30,8 @@ print("strats: ", len(stratFitData.index))
 
 # gui.allStratSins(stratFitData)
 # gui.optStratSin(stratFitData)
-gui.mostOptStratSins(stratFitData, 3, 4)
-gui.corrMps(mpData)
+#gui.mostOptStratSins(stratFitData, 3, 4)
+#gui.corrMps(mpData)
 #plt.show()
 
 start = time.time()
@@ -42,7 +42,7 @@ ut.writeData(selData, "sel_data")
 print ("write sel time: ", time.time() - start)
 
 #gui.histMps(selData)
-plt.show()
+#plt.show()
 
 
 norm_mlLams, mpMaxsData = ml.runClfSVM(selData)
@@ -71,15 +71,15 @@ with pd.option_context('display.max_rows', 10):
     print(compareCoefData)
 
 
-gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M3', 'M4', 25, -130)
-gui.clf3dPlane(norm_selData, norm_mlLams, 'M5', 'M7', 'M8', 25, -130)
+# gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M3', 'M4', 25, -130)
+# gui.clf3dPlane(norm_selData, norm_mlLams, 'M5', 'M7', 'M8', 25, -130)
 
-gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M2', 'M4', 25, -130)
-gui.clf3dPlane(norm_selData, norm_mlLams, 'M5', 'M6', 'M8', 25, -130)
+# gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M2', 'M4', 25, -130)
+# gui.clf3dPlane(norm_selData, norm_mlLams, 'M5', 'M6', 'M8', 25, -130)
 
-gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M5', 'M4', 25, -130)
-gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M5', 'M4M8')
-gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M5', 'M2M6', 25, -130)
+# gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M5', 'M4', 25, -130)
+# gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M5', 'M4M8')
+# gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M5', 'M2M6', 25, -130)
 
 #gui.clf2dPlane(norm_selData, norm_mlLams, 'M2', 'M4M8')
 

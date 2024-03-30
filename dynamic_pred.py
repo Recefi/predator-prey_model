@@ -30,7 +30,7 @@ gui.corrMps(mpData)
 #plt.show()
 
 start = time.time()
-stratPopData, F = gs.analyzePopDynamics(stratData, rawPopData, 0.01)
+stratPopData, FLim = gs.analyzePopDynamics(stratData, rawPopData, 0.01)
 print ("analyze pop dynamics: ", time.time() - start)
 ut.writeData(stratPopData, "strat_pop_data")
 mpData = mpData.loc[stratPopData.index]
@@ -55,10 +55,10 @@ mlLams = tr.denormMlLams(norm_mlLams, mpMaxs)
 norm_selData = selData.copy()
 norm_selData.loc[:,'M1':'M8M8'] = norm_selData.loc[:,'M1':'M8M8'] / mpMaxs
 
-coefData = tr.getCoefData(pqrsData, norm_mlLams[1:], mlLams[1:], F)
+coefData = tr.getCoefData(pqrsData, norm_mlLams[1:], mlLams[1:], FLim)
 ut.writeData(coefData, "coef_data")
 
-subprocess.Popen("python clfPlanes.py dynamic_pred --lam0="+str(norm_mlLams[0])+" --show", shell=True)
+#subprocess.Popen("python clfPlanes.py dynamic_pred --lam0="+str(norm_mlLams[0])+" --show", shell=True)
 
 
 cosines = tr.getCosinesCoef(coefData)
@@ -66,21 +66,93 @@ print(cosines)
 nearPntId = cosines.idxmax()
 print(nearPntId)
 print("nearPnt cosine:", cosines[nearPntId])
-maxFitPntId = stratPopData[['z1','z2']].sum(axis="columns").idxmax()
-print(maxFitPntId)
-print("maxFitPnt cosine:", cosines[maxFitPntId], "\n")
+optPntId = stratPopData[['z1','z2']].sum(axis="columns").idxmax()
+print(optPntId)
+print("optPnt cosine:", cosines[optPntId], "\n")
 
-compareCoefData = tr.compareCoefs_static(coefData, nearPntId, maxFitPntId)
+compareCoefData = tr.compareCoefs_static(coefData, nearPntId, optPntId)
 with pd.option_context('display.max_rows', 10):
     print(compareCoefData)
 
 
-gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M3', 'M4', 25, -130)
-gui.clf3dPlane(norm_selData, norm_mlLams, 'M5', 'M7', 'M8', 25, -130)
+# gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M3', 'M4', 25, -130)
+# gui.clf3dPlane(norm_selData, norm_mlLams, 'M5', 'M7', 'M8', 25, -130)
 
-gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M2', 'M4', 25, -130)
-gui.clf3dPlane(norm_selData, norm_mlLams, 'M5', 'M6', 'M8', 25, -130)
+# gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M2', 'M4', 25, -130)
+# gui.clf3dPlane(norm_selData, norm_mlLams, 'M5', 'M6', 'M8', 25, -130)
 
 #gui.clf2dPlane(norm_selData, norm_mlLams, 'M2', 'M4M8')
+
+
+def restorePQRS(FLim, stratPopData, coefData, mpData, optPntId):
+    z1Lim = stratPopData.loc[optPntId, 'z1']
+    z2Lim = stratPopData.loc[optPntId, 'z2']
+    mp2 = mpData.loc[optPntId, "M2"]
+    mp6 = mpData.loc[optPntId, "M6"]
+    lam26 = coefData.loc[-1, "lam26"]
+    lam66 = coefData.loc[-1, "lam66"]
+    
+
+    r = (FLim + (z1Lim+z2Lim)**2)/z2Lim
+    q = (r*z2Lim - (z1Lim + z2Lim)**2)/(FLim*(z1Lim-(lam66*mp6*z2Lim)/(lam26*mp2)))
+    s = -(lam66*mp6*q)/(lam26*mp2)
+    p = (-q*FLim*z1Lim + r*z2Lim - z1Lim*(z1Lim + z2Lim))/z1Lim
+
+    return p, q, r, s
+
+p, q, r, s = restorePQRS(FLim, stratPopData, coefData, mpData, optPntId)
+print("p: ", p)
+print("q: ", q)
+print("r: ", r)
+print("s: ", s)
+
+def restoreParam(p, q, r, s, coefData, mpData, optPntId):
+    mp1 = mpData.loc[optPntId, "M1"]
+    mp2 = mpData.loc[optPntId, "M2"]
+    mp3 = mpData.loc[optPntId, "M3"]
+    mp4 = mpData.loc[optPntId, "M4"]
+    mp5 = mpData.loc[optPntId, "M5"]
+    mp6 = mpData.loc[optPntId, "M6"]
+    mp7 = mpData.loc[optPntId, "M7"]
+    mp8 = mpData.loc[optPntId, "M8"]
+    lam1 = coefData.loc[-1, "lam1"]
+    lam2 = coefData.loc[-1, "lam2"]
+    lam3 = coefData.loc[-1, "lam3"]
+    lam4 = coefData.loc[-1, "lam4"]
+    lam5 = coefData.loc[-1, "lam5"]
+    lam6 = coefData.loc[-1, "lam6"]
+    lam7 = coefData.loc[-1, "lam7"]
+    lam8 = coefData.loc[-1, "lam8"]
+    lam26 = coefData.loc[-1, "lam26"]
+    lam66 = coefData.loc[-1, "lam66"]
+
+    g_j = -q/mp2
+    g_a = -s/mp6
+
+    # h2 = -2*FLim/(1-lam6*lam26/(lam2*lam66))
+    # k = lam2*Mp2/(h2*FLim*q)
+    # h1 = (lam1*mp1+lam3*mp3+lam4*mp4)/(k*p)
+    # h3 = (lam5*mp5+lam7*mp7+lam8*mp8)/(k*r)
+
+    a_j = lam1*p/(lam1*mp1+lam3*mp3+lam4*mp4)
+    b_j = lam3*p/(lam1*mp1+lam3*mp3+lam4*mp4)
+    d_j = lam4*p/(lam1*mp1+lam3*mp3+lam4*mp4)
+
+    a_a = lam5*r/(lam5*mp5+lam7*mp7+lam8*mp8)
+    b_a = lam7*r/(lam5*mp5+lam7*mp7+lam8*mp8)
+    d_a = lam8*r/(lam5*mp5+lam7*mp7+lam8*mp8)
+
+    return a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a
+
+a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = restoreParam(p, q, r, s, coefData, mpData, optPntId)
+
+print("a_j: ", a_j)
+print("a_a: ", a_a)
+print("b_j: ", b_j)
+print("b_a: ", b_a)
+print("g_j: ", g_j)
+print("g_a: ", g_a)
+print("d_j: ", d_j)
+print("d_a: ", d_a)
 
 plt.show()

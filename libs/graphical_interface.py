@@ -23,11 +23,11 @@ def stratSins(Aj, Bj, Aa, Ba):
 
 def optStratSins(stratFitData):
     maxFitId = stratFitData['fit'].idxmax()
-    Aj = stratFitData['Aj'].loc[maxFitId]
-    Bj = stratFitData['Bj'].loc[maxFitId]
-    Aa = stratFitData['Aa'].loc[maxFitId]
-    Ba = stratFitData['Ba'].loc[maxFitId]
-    stratSin(Aj, Bj, Aa, Ba)
+    Aj = stratFitData.loc[maxFitId, 'Aj']
+    Bj = stratFitData.loc[maxFitId, 'Bj']
+    Aa = stratFitData.loc[maxFitId, 'Aa']
+    Ba = stratFitData.loc[maxFitId, 'Ba']
+    stratSins(Aj, Bj, Aa, Ba)
 
 def mostOptStratSins(stratFitData, rows, cols):
     optStratData = stratFitData.sort_values(by=['fit'], ascending=False).head(12)

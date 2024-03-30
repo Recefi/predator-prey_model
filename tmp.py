@@ -6,7 +6,7 @@ gui.stratSins(-35, 3.93, -83, 49.2)
 #plt.show()
 
 
-stratData = gs.genStrats(1000000, "beta", by4=True)
+stratData = gs.genStrats(100000, "beta", by4=True)
 
 mpData, pqrsData = gs.calcMps(stratData)
 

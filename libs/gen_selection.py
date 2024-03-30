@@ -187,12 +187,13 @@ def analyzePopDynamics(stratData, rawPopData, eps):
     popData = pd.DataFrame(strats, columns=['t', 'z1', 'z2'], index=tmpStratData.index)
     stratPopData = pd.concat([tmpStratData, popData], axis=1)
 
-    predatorPlateau = rawPopData.iloc[2*n].tail(10).round(4).to_list()
-    print(predatorPlateau)
-    F = predatorPlateau[0]
-    if predatorPlateau.count(F) != len(predatorPlateau):
-        print("WARNING: the predator haven't reached a plateau!!!", predatorPlateau.count(F))
-    return stratPopData, F
+    arrF = rawPopData.iloc[2*n].tail(10).round(4).values
+    with np.printoptions(precision=4):
+        print("F*: ", arrF)
+    FLim = arrF[0]
+    if (arrF == FLim).sum() != arrF.size:
+        print("WARNING: F* haven't reached!!!")
+    return stratPopData, FLim
 
 def calcSelection(keyData, mpData):
     n = len(mpData.index)
