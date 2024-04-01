@@ -29,8 +29,8 @@ mpData = mpData.loc[stratFitData.index]
 print("strats: ", len(stratFitData.index))
 
 # gui.allStratSins(stratFitData)
-# gui.optStratSin(stratFitData)
-#gui.mostOptStratSins(stratFitData, 3, 4)
+# gui.optStratSins_static(stratFitData)
+#gui.mostOptStratSins_static(stratFitData, 3, 4)
 #gui.corrMps(mpData)
 #plt.show()
 

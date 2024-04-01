@@ -9,6 +9,7 @@ import libs.graphical_interface as gui
 import libs.utility as ut
 import libs.machine_learning as ml
 import libs.test_result as tr
+import libs.param as param
 
 stratData = gs.genStrats(800, "beta")
 ut.writeData(stratData, "strat_data")
@@ -83,14 +84,15 @@ with pd.option_context('display.max_rows', 10):
 
 #gui.clf2dPlane(norm_selData, norm_mlLams, 'M2', 'M4M8')
 
+#plt.show()
 
 def restorePQRS(FLim, stratPopData, coefData, mpData, optPntId):
     z1Lim = stratPopData.loc[optPntId, 'z1']
     z2Lim = stratPopData.loc[optPntId, 'z2']
-    mp2 = mpData.loc[optPntId, "M2"]
-    mp6 = mpData.loc[optPntId, "M6"]
-    lam26 = coefData.loc[-1, "lam26"]
-    lam66 = coefData.loc[-1, "lam66"]
+    mp2 = mpData.loc[optPntId, 'M2']
+    mp6 = mpData.loc[optPntId, 'M6']
+    lam26 = coefData.loc[-1, 'lam26']
+    lam66 = coefData.loc[-1, 'lam66']
     
 
     r = (FLim + (z1Lim+z2Lim)**2)/z2Lim
@@ -101,30 +103,16 @@ def restorePQRS(FLim, stratPopData, coefData, mpData, optPntId):
     return p, q, r, s
 
 p, q, r, s = restorePQRS(FLim, stratPopData, coefData, mpData, optPntId)
-print("p: ", p)
-print("q: ", q)
-print("r: ", r)
-print("s: ", s)
+
+comparePqrsData = pd.DataFrame(columns=['p','q','r','s'])
+comparePqrsData.loc['true'] = pqrsData.loc[optPntId, ['p','q','r','s']]
+comparePqrsData.loc['restore'] = [p, q, r, s]
+print(comparePqrsData)
 
 def restoreParam(p, q, r, s, coefData, mpData, optPntId):
-    mp1 = mpData.loc[optPntId, "M1"]
-    mp2 = mpData.loc[optPntId, "M2"]
-    mp3 = mpData.loc[optPntId, "M3"]
-    mp4 = mpData.loc[optPntId, "M4"]
-    mp5 = mpData.loc[optPntId, "M5"]
-    mp6 = mpData.loc[optPntId, "M6"]
-    mp7 = mpData.loc[optPntId, "M7"]
-    mp8 = mpData.loc[optPntId, "M8"]
-    lam1 = coefData.loc[-1, "lam1"]
-    lam2 = coefData.loc[-1, "lam2"]
-    lam3 = coefData.loc[-1, "lam3"]
-    lam4 = coefData.loc[-1, "lam4"]
-    lam5 = coefData.loc[-1, "lam5"]
-    lam6 = coefData.loc[-1, "lam6"]
-    lam7 = coefData.loc[-1, "lam7"]
-    lam8 = coefData.loc[-1, "lam8"]
-    lam26 = coefData.loc[-1, "lam26"]
-    lam66 = coefData.loc[-1, "lam66"]
+    mp1, mp2, mp3, mp4, mp5, mp6, mp7, mp8 = mpData.loc[optPntId, 'M1':'M8']
+    lam1, lam2, lam3, lam4, lam5, lam6, lam7, lam8 = coefData.loc[-1, 'lam1':'lam8']
+    lam26, lam66 = coefData.loc[-1, ['lam26', 'lam66']]
 
     g_j = -q/mp2
     g_a = -s/mp6
@@ -146,13 +134,11 @@ def restoreParam(p, q, r, s, coefData, mpData, optPntId):
 
 a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = restoreParam(p, q, r, s, coefData, mpData, optPntId)
 
-print("a_j: ", a_j)
-print("a_a: ", a_a)
-print("b_j: ", b_j)
-print("b_a: ", b_a)
-print("g_j: ", g_j)
-print("g_a: ", g_a)
-print("d_j: ", d_j)
-print("d_a: ", d_a)
+compareParamData = pd.DataFrame(columns=['a_j','b_j','g_j','d_j','a_a','b_a','g_a','d_a'])
+compareParamData.loc['true'] = [param.alpha_j, param.beta_j, param.gamma_j, param.delta_j,
+                                    param.alpha_a, param.beta_a, param.gamma_a, param.delta_a]
+compareParamData.loc['restore'] = [a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a]
+print(compareParamData)
 
+gui.stratSinsById(stratData, optPntId)
 plt.show()
