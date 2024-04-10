@@ -135,7 +135,7 @@ def compareFits_static(coefData, fitData, mpData, pqrsData, maxFitPntId, nearPnt
     F=1
     def taylor(pntId):
         p0, q0, r0, s0 = pqrsData.loc[pntId]
-        hp, hq, hr, hs, hpp, hpq, hpr, hps, hqq, hqr, hqs, hrr, hrs, hss = getDerivatives(p0, q0, r0, s0)
+        hp, hq, hr, hs, hpp, hpq, hpr, hps, hqq, hqr, hqs, hrr, hrs, hss = getDerivatives(p0, q0, r0, s0, F)
         fit0 = fitData.loc[pntId, 'fit']
 
         taylorFit = []
@@ -143,7 +143,7 @@ def compareFits_static(coefData, fitData, mpData, pqrsData, maxFitPntId, nearPnt
             p, q, r, s = pqrsData.loc[i]
             taylorFit.append(fit0 + hp*(p-p0) + F*hq*(q-q0) + hr*(r-r0) + F*hs*(s-s0)
                                 + 1/2*(hpp*(p-p0)**2 + F*F*hqq*(q-q0)**2 + hrr*(r-r0)**2 + F*F*hss*(s-s0)**2
-                                            + hpq*(p-p0)*(q-q0) + hpr*(p-p0)*(r-r0) + F*hps*(p-p0)*(s-s0)
+                                            + F*hpq*(p-p0)*(q-q0) + hpr*(p-p0)*(r-r0) + F*hps*(p-p0)*(s-s0)
                                                 + F*hqr*(q-q0)*(r-r0) + F*F*hqs*(q-q0)*(s-s0) + F*hrs*(r-r0)*(s-s0)))
         return taylorFit
 
