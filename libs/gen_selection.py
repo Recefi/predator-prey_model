@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import scipy.integrate as integrate
 import time
+from scipy.optimize import fsolve
 
 import libs.param as param
 import libs.utility as ut
@@ -94,7 +95,7 @@ def calcMps(stratData):
     pqrsData = pd.DataFrame(pqrs, columns=["p", "q", "r", "s"], index=stratData.index)
     return mpData, pqrsData
 
-def calcFitness(stratData, pqrsData):
+def calcFitness(stratData, pqrsData, F=1):
     p = pqrsData['p']
     q = pqrsData['q']
     r = pqrsData['r']
@@ -103,8 +104,8 @@ def calcFitness(stratData, pqrsData):
     fitness = []
     indxs = []
     for i in pqrsData.index:
-        if(4*r[i]*p[i]+(p[i]+q[i]-s[i])**2 >= 0):
-            fit = -s[i]-p[i]-q[i]+(np.sqrt((4*r[i]*p[i]+(p[i]+q[i]-s[i])**2)))
+        if(4*r[i]*p[i]+(p[i]+q[i]*F-s[i]*F)**2 >= 0):
+            fit = -s[i]*F-p[i]-q[i]*F+(np.sqrt((4*r[i]*p[i]+(p[i]+q[i]*F-s[i]*F)**2)))
             fitness.append(fit)
             indxs.append(i)
     fitData = pd.DataFrame(fitness, columns=['fit'], index=indxs)
@@ -122,8 +123,16 @@ def calcPopDynamics(pqrsData, tMax=1000, tParts=10000, z0=0.01, F0=0.1):
         sumComp = 0
         sumDeath = 0
         for i in range(n):
-            sumComp += (z[i] + z[i+n])
-            sumDeath += (q[i]*z[i] + s[i]*z[i+n])
+            if ((z[i] >= 0) & (z[i+n] >= 0)).all():
+                sumComp += (z[i] + z[i+n])
+                sumDeath += (q[i]*z[i] + s[i]*z[i+n])
+            else:
+                if (z[i] >= 0).all():
+                    sumComp += z[i]
+                    sumDeath += (q[i]*z[i])
+                if (z[i+n] >= 0).all():
+                    sumComp += z[i+n]
+                    sumDeath += (s[i]*z[i+n])
 
         F = z[2*n]
         result = []
@@ -237,3 +246,18 @@ def calcSelection(keyData, mpData):
 
     selData = pd.DataFrame(sel, columns=['class']+mpData.columns.to_list())
     return selData
+
+
+# def calcFLim(p, q, r, s):
+#     def func(F):
+#         return r*p / (q*(s*F + (-(p+q*F+s*F) + np.sqrt((p+q*F+s*F)**2 - 4*p*r)) / 2) + p*s) - ((-(p+q*F+s*F) + np.sqrt((p+q*F+s*F)**2 - 4*p*r)) / 2)**2 - F
+#     root = fsolve(func, 1)
+#     print("err:", func(root))
+#     return root
+
+def calcFLim_2(p, q, r, s):
+    def func(F):
+        return 2*r*p / (2*p*s + q*s*F - q*(p + q*F) + q*np.sqrt((p+q*F-s*F)**2 + 4*p*r)) - ((-(p+q*F+s*F) + np.sqrt((p+q*F-s*F)**2 + 4*p*r)) / 2)**2 - F
+    root = fsolve(func, 1)
+    print("err:", func(root))
+    return root

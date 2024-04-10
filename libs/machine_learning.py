@@ -38,7 +38,7 @@ def runClfSVM(selData):
 
     # Train
     clf = svm.LinearSVC(fit_intercept=False, dual=False, random_state=55)
-    clf.fit(X_train, y_train)   
+    clf.fit(X_train, y_train)
 
     # Test
     print(confusion_matrix(y_test, clf.predict(X_test)))

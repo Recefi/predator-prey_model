@@ -31,22 +31,22 @@ def normCalcLams(calcLams, maxs):
         norm_calcLams.append(calcLams[i] * maxs[i])
     return norm_calcLams
 
-def getDerivatives(p, q, r, s):
+def getDerivatives(p, q, r, s, F=1):
     """Считаем частные производные в конкретной точке (p,q,r,s)"""
-    hp = -1 + (4*r + 2*(p + q - s))/(2*sqrt(4*p*r + (p + q - s)**2))
-    hq = -1 + (p + q - s)/sqrt(4*p*r + (p + q - s)**2)
-    hr = (2*p)/sqrt(4*p*r + (p + q - s)**2)
-    hs = -1 - (p + q - s)/sqrt(4*p*r + (p + q - s)**2)
-    hpp = -(4*r*(q + r - s))/(4*p*r + (p + q - s)**2)**(3/2)
-    hpq = (2*r*(p - q + s))/(4*p*r + (p + q - s)**2)**(3/2)
-    hpr = (2*((q - s)**2 + p*(q + 2*r - s)))/(4*p*r + (p + q - s)**2)**(3/2)
-    hps = -(2*r*(p - q + s))/(4*p*r + (p + q - s)**2)**(3/2)
-    hqq = (4*p*r)/(4*p*r + (p + q - s)**2)**(3/2)
-    hqr = -(2*p*(p + q - s))/(4*p*r + (p + q - s)**2)**(3/2)
-    hqs = -(4*p*r)/(4*p*r + (p + q - s)**2)**(3/2)
-    hrr = -(4*p**2)/(4*p*r + (p + q - s)**2)**(3/2)
-    hrs = (2*p*(p + q - s))/(4*p*r + (p + q - s)**2)**(3/2)
-    hss = (4*p*r)/(4*p*r + (p + q - s)**2)**(3/2)
+    hp = -1 + (4*r + 2*(p + q*F - s*F))/(2*sqrt(4*p*r + (p + q*F - s*F)**2))
+    hq = -F + F*(p + q*F - s*F)/sqrt(4*p*r + (p + q*F - s*F)**2)
+    hr = (2*p)/sqrt(4*p*r + (p + q*F - s*F)**2)
+    hs = -F - F*(p + q*F - s*F)/sqrt(4*p*r + (p + q*F - s*F)**2)
+    hpp = -(4*r*(q*F + r - s*F))/(4*p*r + (p + q*F - s*F)**2)**(3/2)
+    hpq = (2*F*r*(p - q*F + s*F))/(4*p*r + (p + q*F - s*F)**2)**(3/2)
+    hpr = (2*(F**2 * (q - s)**2 + p*(q*F + 2*r - s*F)))/(4*p*r + (p + q*F - s*F)**2)**(3/2)
+    hps = -(2*F*r*(p - q*F + s*F))/(4*p*r + (p + q*F - s*F)**2)**(3/2)
+    hqq = (4*F*F*p*r)/(4*p*r + (p + q*F - s*F)**2)**(3/2)
+    hqr = -(2*F*p*(p + q*F - s*F))/(4*p*r + (p + q*F - s*F)**2)**(3/2)
+    hqs = -(4*F*F*p*r)/(4*p*r + (p + q*F - s*F)**2)**(3/2)
+    hrr = -(4*p**2)/(4*p*r + (p + q*F - s*F)**2)**(3/2)
+    hrs = (2*F*p*(p + q*F - s*F))/(4*p*r + (p + q*F - s*F)**2)**(3/2)
+    hss = (4*F*F*p*r)/(4*p*r + (p + q*F - s*F)**2)**(3/2)
 
     return hp, hq, hr, hs, hpp, hpq, hpr, hps, hqq, hqr, hqs, hrr, hrs, hss
 
@@ -65,14 +65,14 @@ def getCoefData(pqrsData, norm_mlLams, mlLams, F=1):
     coefTable.append(mlLams)
     for i in pqrsData.index:
         p, q, r, s = pqrsData.loc[i]
-        if (4*p*r + (p + q - s)**2 < 0):
+        if (4*p*r + (p + q*F - s*F)**2 < 0):
             continue
-        hp, hq, hr, hs, hpp, hpq, hpr, hps, hqq, hqr, hqs, hrr, hrs, hss = getDerivatives(p, q, r, s)
+        hp, hq, hr, hs, hpp, hpq, hpr, hps, hqq, hqr, hqs, hrr, hrs, hss = getDerivatives(p, q, r, s, F)
 
         # Считаем коэффициенты разложения в данной точке (по строкам: при M1-M8, M11-M18, M22-M28, M33-M38, ..., M88)
         calcCoefs = [hp*a_j, F*hq*(-g_j), hp*b_j, hp*d_j, hr*a_a, F*hs*(-g_a), hr*b_a, hr*d_a,
-                    1/2*hpp*a_j**2, 1/2*hpq*a_j*(-g_j), 1/2*hpp*2*a_j*b_j, 1/2*hpp*2*a_j*d_j, 1/2*hpr*a_j*a_a, 1/2*F*hps*a_j*(-g_a), 1/2*hpr*a_j*b_a, 1/2*hpr*a_j*d_a,
-                    1/2*F*F*hqq*(-g_j)**2, 1/2*hpq*b_j*(-g_j), 1/2*hpq*d_j*(-g_j), 1/2*F*hqr*(-g_j)*a_a, 1/2*F*F*hqs*(-g_j)*(-g_a), 1/2*F*hqr*(-g_j)*b_a, 1/2*F*hqr*(-g_j)*d_a,
+                    1/2*hpp*a_j**2, 1/2*F*hpq*a_j*(-g_j), 1/2*hpp*2*a_j*b_j, 1/2*hpp*2*a_j*d_j, 1/2*hpr*a_j*a_a, 1/2*F*hps*a_j*(-g_a), 1/2*hpr*a_j*b_a, 1/2*hpr*a_j*d_a,
+                    1/2*F*F*hqq*(-g_j)**2, 1/2*F*hpq*b_j*(-g_j), 1/2*F*hpq*d_j*(-g_j), 1/2*F*hqr*(-g_j)*a_a, 1/2*F*F*hqs*(-g_j)*(-g_a), 1/2*F*hqr*(-g_j)*b_a, 1/2*F*hqr*(-g_j)*d_a,
                     1/2*hpp*b_j**2, 1/2*hpp*2*b_j*d_j, 1/2*hpr*b_j*a_a, 1/2*F*hps*b_j*(-g_a), 1/2*hpr*b_j*b_a, 1/2*hpr*b_j*d_a,
                     1/2*hpp*d_j**2, 1/2*hpr*d_j*a_a, 1/2*F*hps*d_j*(-g_a), 1/2*hpr*d_j*b_a, 1/2*hpr*d_j*d_a,
                     1/2*hrr*a_a**2, 1/2*F*hrs*a_a*(-g_a), 1/2*hrr*2*a_a*b_a, 1/2*hrr*2*a_a*d_a,
