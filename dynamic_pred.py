@@ -11,16 +11,18 @@ import libs.machine_learning as ml
 import libs.test_result as tr
 import libs.param as param
 
-stratData = gs.genStrats(800, "beta")
-ut.writeData(stratData, "strat_data")
-# stratData = ut.readData("strat_data")
+
+# stratData = gs.genStrats(500, "beta")
+# stratData.loc[len(stratData.index)] = [-35, -3.93, -83, -49.2]
+# ut.writeData(stratData, "strat_data")
+stratData = ut.readData("strat_data")
 
 mpData, pqrsData = gs.calcMps(stratData)
 ut.writeData(mpData, "mp_data")
 ut.writeData(pqrsData, "pqrs_data")
 
 start = time.time()
-rawPopData = gs.calcPopDynamics(pqrsData, tMax=600, tParts=20000, z0=0.01, F0=0.1)
+rawPopData = gs.calcPopDynamics(pqrsData, tMax=1000, tParts=20000, z0=0.01, F0=0.1)
 print ("calc pop dynamics: ", time.time() - start)
 # start = time.time()
 # ut.writeData(rawPopData, "raw_pop_data")
@@ -139,6 +141,10 @@ compareParamData.loc['true'] = [param.alpha_j, param.beta_j, param.gamma_j, para
                                     param.alpha_a, param.beta_a, param.gamma_a, param.delta_a]
 compareParamData.loc['restore'] = [a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a]
 print(compareParamData)
+
+_p, _q, _r, _s = pqrsData.loc[optPntId, ['p','q','r','s']]
+_FLim = gs.calcFLim(_p, _q, _r, _s, F0=0.1)
+print(_FLim)
 
 gui.stratSinsById(stratData, optPntId)
 plt.show()

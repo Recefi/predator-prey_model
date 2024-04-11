@@ -247,17 +247,9 @@ def calcSelection(keyData, mpData):
     selData = pd.DataFrame(sel, columns=['class']+mpData.columns.to_list())
     return selData
 
-
-# def calcFLim(p, q, r, s):
-#     def func(F):
-#         return r*p / (q*(s*F + (-(p+q*F+s*F) + np.sqrt((p+q*F+s*F)**2 - 4*p*r)) / 2) + p*s) - ((-(p+q*F+s*F) + np.sqrt((p+q*F+s*F)**2 - 4*p*r)) / 2)**2 - F
-#     root = fsolve(func, 1)
-#     print("err:", func(root))
-#     return root
-
-def calcFLim_2(p, q, r, s):
+def calcFLim(p, q, r, s, F0=0.1):  # в качестве стартовой оценки решения можно исп-ть нач.условие из задачи Коши
     def func(F):
-        return 2*r*p / (2*p*s + q*s*F - q*(p + q*F) + q*np.sqrt((p+q*F-s*F)**2 + 4*p*r)) - ((-(p+q*F+s*F) + np.sqrt((p+q*F-s*F)**2 + 4*p*r)) / 2)**2 - F
-    root = fsolve(func, 1)
+        return 2*r*p / (2*p*s + q*(-(p+q*F-s*F) + np.sqrt((p+q*F-s*F)**2 + 4*p*r))) - ((-(p+q*F+s*F) + np.sqrt((p+q*F-s*F)**2 + 4*p*r)) / 2)**2 - F
+    root = fsolve(func, F0)
     print("err:", func(root))
     return root
