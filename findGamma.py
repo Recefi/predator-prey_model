@@ -31,8 +31,6 @@ while(abs(FLim - _FLim) > 0.001):
     print("gamma_j:", gamma_j)
     print("gamma_a:", gamma_a)
 
-    p = param.alpha_j*M1 + param.beta_j*M3 + param.delta_j*M4
-    r = param.alpha_a*M5 + param.beta_a*M7 + param.delta_a*M8
     q = -gamma_j*M2
     s = -gamma_a*M6
 
