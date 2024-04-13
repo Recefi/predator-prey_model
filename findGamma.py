@@ -25,7 +25,7 @@ FLim = 1
 _FLim = gs.calcFLim(p, q, r, s, F0=0.1)
 print("FLim:", _FLim)
 
-while(abs(FLim - _FLim) > 0.001):
+while(abs(FLim - _FLim) > 0.00001):
     gamma_j = param.gamma_j / _FLim
     gamma_a = param.gamma_a / _FLim
     print("gamma_j:", gamma_j)
@@ -36,4 +36,4 @@ while(abs(FLim - _FLim) > 0.001):
 
     FLim = _FLim
     _FLim = gs.calcFLim(p, q, r, s, F0=0.1)
-    print("FLim:", _FLim)
+    print("_FLim:", _FLim)

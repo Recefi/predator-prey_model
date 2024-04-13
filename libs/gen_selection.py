@@ -147,7 +147,7 @@ def calcPopDynamics(pqrsData, tMax=1000, tParts=10000, z0=0.01, F0=0.1):
     z_0 = np.full(2*n, z0)
     z_0 = np.append(z_0, F0)
 
-    pop = integrate.solve_ivp(func, t_span=[0, tMax], y0=z_0, method='Radau', dense_output=True)
+    pop = integrate.solve_ivp(func, t_span=[0, tMax], y0=z_0, method='Radau', dense_output=True, vectorized=True)
     t = np.linspace(0, tMax, tParts)
     # dense_output=True need only for .sol(t)
     # .sol(t) is better than .y & .t !!!
@@ -185,11 +185,13 @@ def analyzePopDynamics(stratData, rawPopData, eps):
                 break
         if not strat:
             if (rawPopData.iloc[i,t-1] >= eps and rawPopData.iloc[i+n,t-1] >= eps):
+                print(stratData.index[i], "not nullified")
                 strat.append(rawPopData.columns[t-1])
                 strat.append(rawPopData.iloc[i,t-1])
                 strat.append(rawPopData.iloc[i+n,t-1])
                 strats.append(strat)
             else:
+                print(stratData.index[i], "not nullified, dropped")
                 indexes.append(stratData.index[i])
     
     tmpStratData = stratData.drop(indexes)

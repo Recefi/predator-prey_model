@@ -12,17 +12,17 @@ import libs.test_result as tr
 import libs.param as param
 
 
-# stratData = gs.genStrats(500, "beta")
-# stratData.loc[len(stratData.index)] = [-35, -3.93, -83, -49.2]
-# ut.writeData(stratData, "strat_data")
-stratData = ut.readData("strat_data")
+stratData = gs.genStrats(1000, "beta")
+stratData.loc[len(stratData.index)] = [-35, -3.93, -83, -49.2]
+ut.writeData(stratData, "strat_data")
+# stratData = ut.readData("strat_data")
 
 mpData, pqrsData = gs.calcMps(stratData)
 ut.writeData(mpData, "mp_data")
 ut.writeData(pqrsData, "pqrs_data")
 
 start = time.time()
-rawPopData = gs.calcPopDynamics(pqrsData, tMax=1000, tParts=20000, z0=0.01, F0=0.1)
+rawPopData = gs.calcPopDynamics(pqrsData, tMax=2000, tParts=20000, z0=0.001, F0=0.1)
 print ("calc pop dynamics: ", time.time() - start)
 # start = time.time()
 # ut.writeData(rawPopData, "raw_pop_data")

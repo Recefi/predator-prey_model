@@ -14,7 +14,7 @@ stratData = ut.readData("strat_data", "dynamic_pred")
 
 mpData, pqrsData = gs.calcMps(stratData)
 
-stratFitData = gs.calcFitness(stratData, pqrsData, F=0.2878)
+stratFitData = gs.calcFitness(stratData, pqrsData, F=0.2856)
 mpData = mpData.loc[stratFitData.index]
 print("strats: ", len(stratFitData.index))
 
