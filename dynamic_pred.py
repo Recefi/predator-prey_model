@@ -12,10 +12,10 @@ import libs.test_result as tr
 import libs.param as param
 
 
-stratData = gs.genStrats(1000, "beta")
-stratData.loc[len(stratData.index)] = [-35, -3.93, -83, -49.2]
-ut.writeData(stratData, "strat_data")
-# stratData = ut.readData("strat_data")
+# stratData = gs.genStrats(1000, "beta")
+# stratData.loc[len(stratData.index)] = [-34.58, -3.29, -83.32, -51.57]
+# ut.writeData(stratData, "strat_data")
+stratData = ut.readData("strat_data")
 
 mpData, pqrsData = gs.calcMps(stratData)
 ut.writeData(mpData, "mp_data")
@@ -47,7 +47,7 @@ ut.writeData(selData, "sel_data")
 print ("write sel time: ", time.time() - start)
 
 #gui.histMps(selData)
-plt.show()
+# plt.show()
 
 
 norm_mlLams, mpMaxsData = ml.runClfSVM(selData)
@@ -145,6 +145,10 @@ print(compareParamData)
 _p, _q, _r, _s = pqrsData.loc[optPntId, ['p','q','r','s']]
 _FLim = gs.calcFLim(_p, _q, _r, _s, F0=0.1)
 print(_FLim)
+_FLim = gs.calcFLim(_p, _q, _r, _s, F0=100000)
+print(_FLim)
+_FLim = gs.calcFLim(_p, _q, _r, _s, F0=0.00001)
+print(_FLim)
 
 gui.stratSinsById(stratData, optPntId)
-plt.show()
+# plt.show()

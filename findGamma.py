@@ -4,7 +4,7 @@ import libs.param as param
 import libs.gen_selection as gs
 
 
-Aj, Bj, Aa, Ba = (-35, -3.93, -83, -49.2)
+Aj, Bj, Aa, Ba = (-34.58, -3.29, -83.32, -51.57)
 
 M1 = param.sigma1 * (Aj + param.D)
 M2 = -param.sigma2 * (Aj + param.D + Bj/2)
@@ -25,7 +25,8 @@ FLim = 1
 _FLim = gs.calcFLim(p, q, r, s, F0=0.1)
 print("FLim:", _FLim)
 
-while(abs(FLim - _FLim) > 0.00001):
+i = 0
+while(abs(FLim - _FLim) > 1e-10):
     gamma_j = param.gamma_j / _FLim
     gamma_a = param.gamma_a / _FLim
     print("gamma_j:", gamma_j)
@@ -37,3 +38,5 @@ while(abs(FLim - _FLim) > 0.00001):
     FLim = _FLim
     _FLim = gs.calcFLim(p, q, r, s, F0=0.1)
     print("_FLim:", _FLim)
+    i+=1
+print(i, "iterations")
