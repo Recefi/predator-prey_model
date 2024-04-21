@@ -69,17 +69,25 @@ def getCoefData(pqrsData, norm_mlLams, mlLams, F=1):
             continue
         hp, hq, hr, hs, hpp, hpq, hpr, hps, hqq, hqr, hqs, hrr, hrs, hss = getDerivatives(p, q, r, s, F)
 
+        #_p = hp-hpp*p-1/2*hpq*q-1/2*hpr*r-1/2*hps*s
+        _p = hp
+        _q = hq
+        _r = hr
+        _s = hs
+        _pp, _qq, _rr, _ss = 1/2*hpp, 1/2*hqq, 1/2*hrr, 1/2*hss
+        _pq, _pr, _ps, _qr, _qs, _rs = 1/2*hpq, 1/2*hpr, 1/2*hps, 1/2*hqr, 1/2*hqs, 1/2*hrs
+
         # Считаем коэффициенты разложения в данной точке (по строкам: при M1-M8, M11-M18, M22-M28, M33-M38, ..., M88)
         calcCoefs = [
-        hp*a_j, hq*(-g_j), hp*b_j, hp*d_j, hr*a_a, hs*(-g_a), hr*b_a, hr*d_a,
-        1/2*hpp*a_j**2, 1/2*hpq*a_j*(-g_j), 1/2*hpp*2*a_j*b_j, 1/2*hpp*2*a_j*d_j, 1/2*hpr*a_j*a_a, 1/2*hps*a_j*(-g_a), 1/2*hpr*a_j*b_a, 1/2*hpr*a_j*d_a,
-        1/2*hqq*(-g_j)**2, 1/2*hpq*b_j*(-g_j), 1/2*hpq*d_j*(-g_j), 1/2*hqr*(-g_j)*a_a, 1/2*hqs*(-g_j)*(-g_a), 1/2*hqr*(-g_j)*b_a, 1/2*hqr*(-g_j)*d_a,
-        1/2*hpp*b_j**2, 1/2*hpp*2*b_j*d_j, 1/2*hpr*b_j*a_a, 1/2*hps*b_j*(-g_a), 1/2*hpr*b_j*b_a, 1/2*hpr*b_j*d_a,
-        1/2*hpp*d_j**2, 1/2*hpr*d_j*a_a, 1/2*hps*d_j*(-g_a), 1/2*hpr*d_j*b_a, 1/2*hpr*d_j*d_a,
-        1/2*hrr*a_a**2, 1/2*hrs*a_a*(-g_a), 1/2*hrr*2*a_a*b_a, 1/2*hrr*2*a_a*d_a,
-        1/2*hss*(-g_a)**2, 1/2*hrs*b_a*(-g_a), 1/2*hrs*d_a*(-g_a),
-        1/2*hrr*b_a**2, 1/2*hrr*2*b_a*d_a,
-        1/2*hrr*d_a**2
+        _p*a_j, _q*(-g_j), _p*b_j, _p*d_j, _r*a_a, _s*(-g_a), _r*b_a, _r*d_a,
+        _pp*a_j**2, _pq*a_j*(-g_j), _pp*2*a_j*b_j, _pp*2*a_j*d_j, _pr*a_j*a_a, _ps*a_j*(-g_a), _pr*a_j*b_a, _pr*a_j*d_a,
+        _qq*(-g_j)**2, _pq*b_j*(-g_j), _pq*d_j*(-g_j), _qr*(-g_j)*a_a, _qs*(-g_j)*(-g_a), _qr*(-g_j)*b_a,_qr*(-g_j)*d_a,
+        _pp*b_j**2, _pp*2*b_j*d_j, _pr*b_j*a_a, _ps*b_j*(-g_a), _pr*b_j*b_a, _pr*b_j*d_a,
+        _pp*d_j**2, _pr*d_j*a_a, _ps*d_j*(-g_a), _pr*d_j*b_a, _pr*d_j*d_a,
+        _rr*a_a**2, _rs*a_a*(-g_a), _rr*2*a_a*b_a, _rr*2*a_a*d_a,
+        _ss*(-g_a)**2, _rs*b_a*(-g_a), _rs*d_a*(-g_a),
+        _rr*b_a**2, _rr*2*b_a*d_a,
+        _rr*d_a**2
         ]
 
         indexes.append(i)
@@ -143,10 +151,10 @@ def compareFits_static(coefData, fitData, mpData, pqrsData, maxFitPntId, nearPnt
         taylorFit = []
         for i in coefData.loc[0:].index:
             p, q, r, s = pqrsData.loc[i]
-            taylorFit.append(fit0 + hp*(p-p0) + F*hq*(q-q0) + hr*(r-r0) + F*hs*(s-s0)
-                                + 1/2*(hpp*(p-p0)**2 + F*F*hqq*(q-q0)**2 + hrr*(r-r0)**2 + F*F*hss*(s-s0)**2
-                                            + F*hpq*(p-p0)*(q-q0) + hpr*(p-p0)*(r-r0) + F*hps*(p-p0)*(s-s0)
-                                                + F*hqr*(q-q0)*(r-r0) + F*F*hqs*(q-q0)*(s-s0) + F*hrs*(r-r0)*(s-s0)))
+            taylorFit.append(fit0 + hp*(p-p0) + hq*(q-q0) + hr*(r-r0) + hs*(s-s0)
+                                + 1/2*(hpp*(p-p0)**2 + hqq*(q-q0)**2 + hrr*(r-r0)**2 + hss*(s-s0)**2
+                                            + hpq*(p-p0)*(q-q0) + hpr*(p-p0)*(r-r0) + hps*(p-p0)*(s-s0)
+                                                + hqr*(q-q0)*(r-r0) + hqs*(q-q0)*(s-s0) + hrs*(r-r0)*(s-s0)))
         return taylorFit
 
     def restoreFits(pntId):

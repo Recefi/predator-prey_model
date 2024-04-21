@@ -75,7 +75,7 @@ def calcMps(stratData):
         res = [M1,M2,M3,M4,M5,M6,M7,M8]
         for m in range(8):
             for j in range(m,8):
-                res.append(res[m+1]*res[j+1])
+                res.append(res[m]*res[j])
         Mps.append(res)
 
         p = param.alpha_j*M1 + param.beta_j*M3 + param.delta_j*M4
