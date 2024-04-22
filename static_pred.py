@@ -12,8 +12,12 @@ import libs.test_result as tr
 
 
 stratData = gs.genStrats(500, "beta")
+stratData.loc[len(stratData.index)] = [-34.58, -3.29, -83.32, -51.57]
 ut.writeData(stratData, "strat_data")
-# stratData = ut.readData("strat_data")
+stratData = ut.readData("strat_data")
+#stratData = ut.readData("strat_pop_data")
+
+FLim = 0.3383
 
 mpData, pqrsData = gs.calcMps(stratData)
 ut.writeData(mpData, "mp_data")
@@ -23,7 +27,7 @@ ut.writeData(pqrsData, "pqrs_data")
 # mpData.plot.scatter(x='M2', y='M1', s=5)
 # plt.show()
 
-stratFitData = gs.calcFitness(stratData, pqrsData)
+stratFitData = gs.calcFitness(stratData, pqrsData, F=FLim)
 ut.writeData(stratFitData, "strat_fit_data")
 mpData = mpData.loc[stratFitData.index]
 print("strats: ", len(stratFitData.index))
@@ -53,23 +57,27 @@ mlLams = tr.denormMlLams(norm_mlLams, mpMaxs)
 norm_selData = selData.copy()
 norm_selData.loc[:,'M1':'M8M8'] = norm_selData.loc[:,'M1':'M8M8'] / mpMaxs
 
-coefData = tr.getCoefData(pqrsData, norm_mlLams[1:], mlLams[1:])
+coefData = tr.getCoefData(pqrsData, norm_mlLams[1:], mlLams[1:], F=FLim)
 ut.writeData(coefData, "coef_data")
 
-subprocess.Popen("python clfPlanes.py static_pred --lam0="+str(norm_mlLams[0])+" --show", shell=True)
+#subprocess.Popen("python clfPlanes.py static_pred --lam0="+str(norm_mlLams[0])+" --show", shell=True)
 
 
 cosines = tr.getCosinesCoef(coefData)
 print(cosines)
 nearPntId = cosines.idxmax()
 print("nearPnt cosine:", cosines[nearPntId])
-maxFitPntId = stratFitData['fit'].idxmax()
-print("maxFitPnt cosine:", cosines[maxFitPntId], "\n")
+optPntId = stratFitData['fit'].idxmax()
+print("optPnt cosine:", cosines[optPntId], "\n")
 
-compareCoefData = tr.compareCoefs_static(coefData, nearPntId, maxFitPntId)
+compareCoefData = tr.compareCoefs(coefData, nearPntId, optPntId)
 with pd.option_context('display.max_rows', 10):
     print(compareCoefData)
 
+
+compareFitsData, fitCosines = tr.compareFits(coefData, stratFitData, mpData, pqrsData, nearPntId, optPntId, F=FLim)
+print(compareFitsData)
+print(fitCosines)
 
 # gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M3', 'M4', 25, -130)
 # gui.clf3dPlane(norm_selData, norm_mlLams, 'M5', 'M7', 'M8', 25, -130)
@@ -83,5 +91,5 @@ with pd.option_context('display.max_rows', 10):
 
 #gui.clf2dPlane(norm_selData, norm_mlLams, 'M2', 'M4M8')
 
-plt.show()
+#plt.show()
 

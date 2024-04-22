@@ -147,11 +147,10 @@ def calcPopDynamics(pqrsData, tMax=1000, tParts=10000, z0=0.01, F0=0.1):
     z_0 = np.full(2*n, z0)
     z_0 = np.append(z_0, F0)
 
-    pop = integrate.solve_ivp(func, t_span=[0, tMax], y0=z_0, method='Radau', dense_output=True, vectorized=True)
+    pop = integrate.solve_ivp(func, t_span=[0, tMax], y0=z_0, method='Radau', dense_output=True)
     t = np.linspace(0, tMax, tParts)
     # dense_output=True need only for .sol(t)
-    # .sol(t) is better than .y & .t !!!
-    # max_step doesn't change .sol(t), it calculates in parallel when dense_output=True !!!
+    # either .sol(t) or .y & .t
 
     indxs = []
     for i in range(n):

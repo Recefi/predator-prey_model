@@ -12,7 +12,7 @@ import libs.test_result as tr
 import libs.param as param
 
 
-# stratData = gs.genStrats(1000, "beta")
+# stratData = gs.genStrats(500, "beta")
 # stratData.loc[len(stratData.index)] = [-34.58, -3.29, -83.32, -51.57]
 # ut.writeData(stratData, "strat_data")
 stratData = ut.readData("strat_data")
@@ -73,7 +73,7 @@ optPntId = stratPopData[['z1','z2']].sum(axis="columns").idxmax()
 print(optPntId)
 print("optPnt cosine:", cosines[optPntId], "\n")
 
-compareCoefData = tr.compareCoefs_static(coefData, nearPntId, optPntId)
+compareCoefData = tr.compareCoefs(coefData, nearPntId, optPntId)
 with pd.option_context('display.max_rows', 10):
     print(compareCoefData)
 
