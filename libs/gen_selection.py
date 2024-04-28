@@ -252,5 +252,29 @@ def calcFLim(p, q, r, s, F0=0.1):  # в качестве стартовой оц
     def func(F):
         return 2*r*p / (2*p*s + q*(-(p+q*F-s*F) + np.sqrt((p+q*F-s*F)**2 + 4*p*r))) - ((-(p+q*F+s*F) + np.sqrt((p+q*F-s*F)**2 + 4*p*r)) / 2)**2 - F
     root = fsolve(func, F0)
-    print("err:", func(root))
+    #TODO: #print("err:", func(root))
     return root
+
+def fitBySel(pqrsData):
+    p = pqrsData['p']
+    q = pqrsData['q']
+    r = pqrsData['r']
+    s = pqrsData['s']
+
+    indxs = []
+    mins = []
+    for j in pqrsData.index:
+        F = calcFLim(p[j], q[j], r[j], s[j], F0=0.1)
+        if(4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0):
+            continue
+        min = 1
+        for i in pqrsData.index:
+            if(4*r[i]*p[i]+(p[i]+q[i]*F-s[i]*F)**2 >= 0):
+                fit = -s[j]*F-p[j]-q[j]*F+(np.sqrt((4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2))) - (-s[i]*F-p[i]-q[i]*F+(np.sqrt((4*r[i]*p[i]+(p[i]+q[i]*F-s[i]*F)**2))))
+                if (fit < min):
+                    min = fit
+        indxs.append(j)
+        mins.append(min[0])
+    
+    minsData = pd.Series(mins, name="mins", index=indxs)
+    return minsData

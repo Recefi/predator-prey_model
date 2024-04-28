@@ -8,7 +8,7 @@ import libs.gen_selection as gs
 import libs.graphical_interface as gui
 import libs.utility as ut
 import libs.machine_learning as ml
-import libs.test_result as tr
+import libs.taylor as tr
 
 
 stratData = gs.genStrats(500, "beta")
@@ -93,3 +93,9 @@ print(fitCosines)
 
 #plt.show()
 
+
+
+# _p, _q, _r, _s = pqrsData.loc[optPntId, ['p','q','r','s']]
+# _FLim = gs.calcFLim(_p, _q, _r, _s, F0=0.1)
+# print(_FLim)
+# TODO: попробовать подогнать статическое F* к 1, мб результаты улучшаться...
