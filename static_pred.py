@@ -12,24 +12,25 @@ import libs.taylor as tr
 
 
 stratData = gs.genStrats(500, "beta")
-stratData.loc[len(stratData.index)] = [-34.58, -3.29, -83.32, -51.57]
+stratData.loc[len(stratData.index) - 1] = [-34.58, -3.29, -83.32, -51.57]
 ut.writeData(stratData, "strat_data")
 stratData = ut.readData("strat_data")
 #stratData = ut.readData("strat_pop_data")
 
 FLim = 0.3383
 
-mpData, pqrsData = gs.calcMps(stratData)
+mpData = gs.calcMpData(stratData)
 ut.writeData(mpData, "mp_data")
+pqrsData = gs.calcPqrsData(mpData)
 ut.writeData(pqrsData, "pqrs_data")
 
 # gui.histStrats(stratData)
 # mpData.plot.scatter(x='M2', y='M1', s=5)
 # plt.show()
 
-stratFitData = gs.calcFitness(stratData, pqrsData, F=FLim)
+stratFitData = gs.calcStratFitData(stratData, pqrsData, F=FLim)
 ut.writeData(stratFitData, "strat_fit_data")
-mpData = mpData.loc[stratFitData.index]
+mpData = mpData.loc[stratFitData.index]  # for taylor
 print("strats: ", len(stratFitData.index))
 
 # gui.allStratSins(stratFitData)

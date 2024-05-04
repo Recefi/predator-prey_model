@@ -14,9 +14,10 @@ stratData = gs.genStrats(10000, "beta")
 
 stratData.loc[len(stratData.index)] = [-34.58, -3.29, -83.32, -51.57]
 
-mpData, pqrsData = gs.calcMps(stratData)
+mpData = gs.calcMpData(stratData)
+pqrsData = gs.calcPqrsData(mpData)
 
-stratFitData = gs.calcFitness(stratData, pqrsData, F=0.3383)
+stratFitData = gs.calcStratFitData(stratData, pqrsData, F=0.3383)
 mpData = mpData.loc[stratFitData.index]
 print("strats: ", len(stratFitData.index))
 

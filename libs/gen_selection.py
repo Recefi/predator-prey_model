@@ -53,7 +53,7 @@ def genStrats(n, distrA="uniform", by4=False):
     stratData = pd.DataFrame({'Aj': Aj, 'Bj': Bj, 'Aa': Aa, 'Ba': Ba})
     return stratData
 
-def calcMps(stratData):
+def calcMpData(stratData):
     Aj = stratData['Aj']
     Bj = stratData['Bj']
     Aa = stratData['Aa']
@@ -78,12 +78,6 @@ def calcMps(stratData):
                 res.append(res[m]*res[j])
         Mps.append(res)
 
-        p = param.alpha_j*M1 + param.beta_j*M3 + param.delta_j*M4
-        r = param.alpha_a*M5 + param.beta_a*M7 + param.delta_a*M8
-        q = -param.gamma_j*M2
-        s = -param.gamma_a*M6
-        pqrs.append([p, q, r, s])
-
     cols = []
     for i in range(1, 9):
         cols.append('M'+str(i))
@@ -92,10 +86,24 @@ def calcMps(stratData):
             cols.append('M'+str(i) + 'M'+str(j))
 
     mpData = pd.DataFrame(Mps, columns=cols, index=stratData.index)
-    pqrsData = pd.DataFrame(pqrs, columns=["p", "q", "r", "s"], index=stratData.index)
-    return mpData, pqrsData
+    return mpData
 
-def calcFitness(stratData, pqrsData, F=1):
+def calcPqrsData(mpData, a_j=param.alpha_j, b_j=param.beta_j, g_j=param.gamma_j, d_j=param.delta_j,
+                                a_a = param.alpha_a, b_a=param.beta_a, g_a=param.gamma_a, d_a=param.delta_a):
+    pqrs = []
+    for i in mpData.index:
+        M1, M2, M3, M4, M5, M6, M7, M8 = mpData.loc[i, 'M1':'M8']
+
+        p = a_j*M1 + b_j*M3 + d_j*M4
+        r = a_a*M5 + b_a*M7 + d_a*M8
+        q = -g_j*M2
+        s = -g_a*M6
+        pqrs.append([p, q, r, s])
+
+    pqrsData = pd.DataFrame(pqrs, columns=["p", "q", "r", "s"], index=mpData.index)
+    return pqrsData
+
+def calcStratFitData(stratData, pqrsData, F=1):
     p = pqrsData['p']
     q = pqrsData['q']
     r = pqrsData['r']
@@ -255,7 +263,7 @@ def calcFLim(p, q, r, s, F0=0.1):  # в качестве стартовой оц
     #TODO: #print("err:", func(root))
     return root
 
-def fitBySel(pqrsData):
+def fitBySel(stratData, pqrsData):
     p = pqrsData['p']
     q = pqrsData['q']
     r = pqrsData['r']
@@ -276,5 +284,7 @@ def fitBySel(pqrsData):
         indxs.append(j)
         mins.append(min[0])
     
-    minsData = pd.Series(mins, name="mins", index=indxs)
-    return minsData
+    stratMinsData = stratData.loc[indxs]
+    stratMinsData.loc[:, 'min'] = mins
+    idOptStrat = stratMinsData['min'].idxmax()
+    return stratMinsData, idOptStrat

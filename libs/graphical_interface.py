@@ -21,12 +21,32 @@ def stratSins(Aj, Bj, Aa, Ba):
 
     ax.legend()
 
+def compareStratSins(Aj_1, Bj_1, Aa_1, Ba_1, Aj_2, Bj_2, Aa_2, Ba_2):
+    fig, ax = plt.subplots()
+
+    x = np.linspace(0, 1)
+    y = Aj_1 + Bj_1 * np.cos(2 * np.pi * x)
+    ax.plot(x, y, c="blue", label="Молодые особи")
+    y = Aa_1 + Ba_1 * np.cos(2 * np.pi * x)
+    ax.plot(x, y, c="red", label="Взрослые особи")
+    y = Aj_2 + Bj_2 * np.cos(2 * np.pi * x)
+    ax.plot(x, y, c="green", label="Молодые особи (восст.)")
+    y = Aa_2 + Ba_2 * np.cos(2 * np.pi * x)
+    ax.plot(x, y, c="orange", label="Взрослые особи (восст.)")
+
+    ax.legend()
+
 def stratSinsById(stratData, id):
     Aj = stratData.loc[id, 'Aj']
     Bj = stratData.loc[id, 'Bj']
     Aa = stratData.loc[id, 'Aa']
     Ba = stratData.loc[id, 'Ba']
     stratSins(Aj, Bj, Aa, Ba)
+
+def compareStratSinsById(stratData, id_1, id_2):
+    Aj_1, Bj_1, Aa_1, Ba_1 = stratData.loc[id_1, 'Aj':'Ba']
+    Aj_2, Bj_2, Aa_2, Ba_2 = stratData.loc[id_2, 'Aj':'Ba']
+    compareStratSins(Aj_1, Bj_1, Aa_1, Ba_1, Aj_2, Bj_2, Aa_2, Ba_2)
 
 def optStratSins_static(stratFitData):
     optPntId = stratFitData['fit'].idxmax()

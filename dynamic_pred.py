@@ -13,32 +13,60 @@ import libs.test_dynamic as td
 import libs.param as param
 
 
-# stratData = gs.genStrats(500, "beta")
-# stratData.loc[len(stratData.index)] = [-34.58, -3.29, -83.32, -51.57]
-# ut.writeData(stratData, "strat_data")
+stratData = gs.genStrats(500, "beta")
+stratData.loc[len(stratData.index) - 1] = [-34.58, -3.29, -83.32, -51.57]
+ut.writeData(stratData, "strat_data")
 stratData = ut.readData("strat_data")
 
-mpData, pqrsData = gs.calcMps(stratData)
+mpData = gs.calcMpData(stratData)
 ut.writeData(mpData, "mp_data")
+pqrsData = gs.calcPqrsData(mpData)
 ut.writeData(pqrsData, "pqrs_data")
 
+
+# first pass
 start = time.time()
-rawPopData = gs.calcPopDynamics(pqrsData, tMax=2000, tParts=20000, z0=0.001, F0=0.1)
+rawPopData = gs.calcPopDynamics(pqrsData, tMax=2000, tParts=20000, z0=0.01, F0=0.1)
+print ("calc pop dynamics: ", time.time() - start)
+
+start = time.time()
+stratPopData, FLim = gs.analyzePopDynamics(stratData, rawPopData, 0.01)
+print ("analyze pop dynamics: ", time.time() - start)
+pqrsData = pqrsData.loc[stratPopData.index]  # for next pass
+stratData = stratData.loc[stratPopData.index]  # for next pass
+print("strats: ", len(stratPopData.index))
+
+# second pass
+start = time.time()
+rawPopData = gs.calcPopDynamics(pqrsData, tMax=2000, tParts=20000, z0=0.01, F0=0.1)
+print ("calc pop dynamics: ", time.time() - start)
+
+start = time.time()
+stratPopData, FLim = gs.analyzePopDynamics(stratData, rawPopData, 0.01)
+print ("analyze pop dynamics: ", time.time() - start)
+pqrsData = pqrsData.loc[stratPopData.index]  # for next pass
+stratData = stratData.loc[stratPopData.index]  # for next pass
+print("strats: ", len(stratPopData.index))
+
+# third pass
+start = time.time()
+rawPopData = gs.calcPopDynamics(pqrsData, tMax=2000, tParts=20000, z0=0.01, F0=0.1)
 print ("calc pop dynamics: ", time.time() - start)
 # start = time.time()
 # ut.writeData(rawPopData, "raw_pop_data")
 # print ("write pop dynamics: ", time.time() - start)
 
-gui.popDynamics(rawPopData)
-gui.corrMps(mpData)
-#plt.show()
-
 start = time.time()
 stratPopData, FLim = gs.analyzePopDynamics(stratData, rawPopData, 0.01)
 print ("analyze pop dynamics: ", time.time() - start)
 ut.writeData(stratPopData, "strat_pop_data")
-mpData = mpData.loc[stratPopData.index]
+mpData = mpData.loc[stratPopData.index]  # for taylor
 print("strats: ", len(stratPopData.index))
+
+# gui.popDynamics(rawPopData)
+# gui.corrMps(mpData)
+# plt.show()
+
 
 start = time.time()
 selData = gs.calcSelection(stratPopData, mpData)
@@ -106,8 +134,19 @@ print(_FLim)
 _FLim = gs.calcFLim(_p, _q, _r, _s, F0=0.00001)
 print(_FLim)
 
-gui.stratSinsById(stratData, optPntId)
+#gui.stratSinsById(stratData, optPntId)
 # plt.show()
 
-minsData = gs.fitBySel(pqrsData)
-ut.writeData(minsData, "mins_data")
+
+stratMinsData, idOptStrat = gs.fitBySel(stratData, pqrsData)
+ut.writeData(stratMinsData, "strat_mins_data1")
+print(stratMinsData.loc[idOptStrat])
+gui.stratSinsById(stratData, idOptStrat)
+plt.show()
+
+pqrsData = gs.calcPqrsData(mpData, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
+stratMinsData, idOptStrat = gs.fitBySel(stratData, pqrsData)
+ut.writeData(stratMinsData, "strat_mins_data2")
+print(stratMinsData.loc[idOptStrat])
+gui.stratSinsById(stratData, idOptStrat)
+plt.show()
