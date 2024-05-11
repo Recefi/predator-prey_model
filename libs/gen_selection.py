@@ -257,11 +257,29 @@ def calcSelection(keyData, mpData):
     return selData
 
 def calcFLim(p, q, r, s, F0=0.1):  # в качестве стартовой оценки решения можно исп-ть нач.условие из задачи Коши
+    def func1(F):
+        return 2*r*p / (2*p*s + q*(-(p+q*F-s*F) + np.sqrt((p+q*F-s*F)**2 + 4*p*r))) \
+                                                - ((-(p+q*F+s*F) + np.sqrt((p+q*F-s*F)**2 + 4*p*r)) / 2)**2 - F
     def func(F):
-        return 2*r*p / (2*p*s + q*(-(p+q*F-s*F) + np.sqrt((p+q*F-s*F)**2 + 4*p*r))) - ((-(p+q*F+s*F) + np.sqrt((p+q*F-s*F)**2 + 4*p*r)) / 2)**2 - F
+        return np.abs(2*r*p / (2*p*s + q*(-(p+q*F-s*F) + np.emath.sqrt((p+q*F-s*F)**2 + 4*p*r)))
+                                                - ((-(p+q*F+s*F) + np.emath.sqrt((p+q*F-s*F)**2 + 4*p*r)) / 2)**2 - F)
+        # tmp1 = 2*r*p / (2*p*s + q*(-(p+q*F-s*F) + np.emath.sqrt((p+q*F-s*F)**2 + 4*p*r))) \
+        #                                 - ((-(p+q*F+s*F) + np.emath.sqrt((p+q*F-s*F)**2 + 4*p*r)) / 2)**2 - F
+        # tmp2 = np.abs(tmp1)
+        #print(tmp1, tmp2)
+        #return tmp2
+
+        # the modulus(euclidean norm) is the euclidean distance from 0 to the number, including complex number.
+        # |a + bi| = sqrt(a^2 + b^2), the distance between the origin (0, 0) and the point (a, b) in the complex plane.
+    
+    #root = fsolve(func1, 0.82596775)
     root = fsolve(func, F0)
-    #TODO: #print("err:", func(root))
-    return root
+    err1 = func1(root[0])
+    err = func(root[0])
+    print(root)
+    print(err1)
+    print(err)
+    return root[0]
 
 def fitBySel(stratData, pqrsData):
     p = pqrsData['p']
@@ -272,6 +290,7 @@ def fitBySel(stratData, pqrsData):
     indxs = []
     mins = []
     for j in pqrsData.index:
+        print(j)
         F = calcFLim(p[j], q[j], r[j], s[j], F0=0.1)
         if(4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0):
             continue
@@ -282,7 +301,7 @@ def fitBySel(stratData, pqrsData):
                 if (fit < min):
                     min = fit
         indxs.append(j)
-        mins.append(min[0])
+        mins.append(min)
     
     stratMinsData = stratData.loc[indxs]
     stratMinsData.loc[:, 'min'] = mins
