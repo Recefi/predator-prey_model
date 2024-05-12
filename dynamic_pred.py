@@ -96,13 +96,28 @@ a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = td.restoreParam(p, q, r, s, coefData, m
 compareParamData = td.compareRestoredParam(a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
 print(compareParamData)
 
+
 _p, _q, _r, _s = pqrsData.loc[optPntId, ['p','q','r','s']]
 _FLim = gs.calcFLim(_p, _q, _r, _s, F0=0.1)
 print(_FLim)
+z1, z2 = gs.calcZLim(_p, _q, _r, _s, _FLim)
+print(z1, z2)
+gs.checkFLim(_p, _q, _r, _s, _FLim, z1, z2)
+print()
+
 _FLim = gs.calcFLim(_p, _q, _r, _s, F0=100000)
 print(_FLim)
-_FLim = gs.calcFLim(_p, _q, _r, _s, F0=0.00001)
+z1, z2 = gs.calcZLim(_p, _q, _r, _s, _FLim)
+print(z1, z2)
+gs.checkFLim(_p, _q, _r, _s, _FLim, z1, z2)
+print()
+
+_FLim = gs.calcFLim(_p, _q, _r, _s, F0=-100000)
 print(_FLim)
+z1, z2 = gs.calcZLim(_p, _q, _r, _s, _FLim)
+print(z1, z2)
+gs.checkFLim(_p, _q, _r, _s, _FLim, z1, z2)
+print()
 
 
 stratMinsData, idOptStrat = gs.fitBySel(stratData, pqrsData)

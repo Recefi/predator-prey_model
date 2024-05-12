@@ -272,14 +272,36 @@ def calcFLim(p, q, r, s, F0=0.1):  # в качестве стартовой оц
         # the modulus(euclidean norm) is the euclidean distance from 0 to the number, including complex number.
         # |a + bi| = sqrt(a^2 + b^2), the distance between the origin (0, 0) and the point (a, b) in the complex plane.
     
-    #root = fsolve(func1, 0.82596775)
     root = fsolve(func, F0)
     err1 = func1(root[0])
     err = func(root[0])
-    print(root)
+    print(root[0])
     print(err1)
     print(err)
     return root[0]
+
+def calcZLim(p, q, r, s, F):
+    z2 = 2*p/(2*p*s + q*s*F - q*(p+q*F) + q*np.sqrt(4*r*p+(p+q*F-s*F)**2))
+    z1 = (s*F - (p+q*F) + np.sqrt(4*r*p+(p+q*F-s*F)**2))/(2*p) * z2
+    return z1, z2
+
+def checkFLim(p, q, r, s, F, z1, z2):
+    a11, a12, a13 = (-p - q*F - z1 - z2, -z1 + r, -q*z1)
+    a21, a22, a23 = (p-z2, -s*F - z1 - z2, -s*z2)
+    a31, a32, a33 = (q*F, s*F, q*z1 + s*z2 - 1)
+
+    #print("!!!test!!!", -q*z1, a13)
+
+    pows = [1, -(a11 + a22 + a33), (a11*a22 + a11*a33 + a22*a33 - a31*a13 - a32*a23 - a12*a21),
+            -(a11*a22*a33 + a21*a32*a13 + a12*a23*a31 - a31*a13*a22 - a32*a23*a11 - a12*a21*a33)]
+    L = np.roots(pows)
+    def err(L):
+        return (a11-L)*(a22-L)*(a33-L) + a21*a32*a13 + a12*a23*a31 - a31*a13*(a22-L) - a23*a32*(a11-L) - a12*a21*(a33-L)
+    errs = [err(L[0]), err(L[1]), err(L[2])]
+
+    print("roots: ", L)
+    print("errs: ", errs)
+    return L, errs
 
 def fitBySel(stratData, pqrsData):
     p = pqrsData['p']
@@ -289,21 +311,47 @@ def fitBySel(stratData, pqrsData):
 
     indxs = []
     mins = []
+    counts = []
     for j in pqrsData.index:
         print(j)
         F = calcFLim(p[j], q[j], r[j], s[j], F0=0.1)
-        if(4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0):
-            continue
+        next = 4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0
+        if (not next):
+            z1, z2 = calcZLim(p[j], q[j], r[j], s[j], F)
+            roots, errs = checkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
+            next = (roots > 0).any()
+        if next:
+            F = calcFLim(p[j], q[j], r[j], s[j], F0=-100000)
+            next = 4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0
+            if (not next):
+                z1, z2 = calcZLim(p[j], q[j], r[j], s[j], F)
+                roots, errs = checkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
+                next = (roots > 0).any()
+            if next:
+                F = calcFLim(p[j], q[j], r[j], s[j], F0=100000)
+                next = 4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0
+                if (not next):
+                    z1, z2 = calcZLim(p[j], q[j], r[j], s[j], F)
+                    roots, errs = checkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
+                    next = (roots > 0).any()
+                if next:
+                    print("!!! WARNING: both steady states are not suitable !!!", j)
+                    continue
+
         min = 1
+        count = 0
         for i in pqrsData.index:
             if(4*r[i]*p[i]+(p[i]+q[i]*F-s[i]*F)**2 >= 0):
+                count += 1
                 fit = -s[j]*F-p[j]-q[j]*F+(np.sqrt((4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2))) - (-s[i]*F-p[i]-q[i]*F+(np.sqrt((4*r[i]*p[i]+(p[i]+q[i]*F-s[i]*F)**2))))
                 if (fit < min):
                     min = fit
         indxs.append(j)
         mins.append(min)
+        counts.append(count)
     
     stratMinsData = stratData.loc[indxs]
     stratMinsData.loc[:, 'min'] = mins
+    stratMinsData.loc[:, 'count'] = counts
     idOptStrat = stratMinsData['min'].idxmax()
     return stratMinsData, idOptStrat
