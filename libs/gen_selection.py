@@ -272,12 +272,12 @@ def calcFLim(p, q, r, s, F0=0.1):  # в качестве стартовой оц
         # the modulus(euclidean norm) is the euclidean distance from 0 to the number, including complex number.
         # |a + bi| = sqrt(a^2 + b^2), the distance between the origin (0, 0) and the point (a, b) in the complex plane.
     
-    root = fsolve(func, F0)
+    root = fsolve(func1, F0)
     err1 = func1(root[0])
     err = func(root[0])
     print(root[0])
-    print(err1)
-    print(err)
+    print("err1:", err1)
+    print("err:", err)
     return root[0]
 
 def calcZLim(p, q, r, s, F):
@@ -319,21 +319,21 @@ def fitBySel(stratData, pqrsData):
         if (not next):
             z1, z2 = calcZLim(p[j], q[j], r[j], s[j], F)
             roots, errs = checkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
-            next = (roots > 0).any()
+            next = (roots.real > 0).any()
         if next:
             F = calcFLim(p[j], q[j], r[j], s[j], F0=-100000)
             next = 4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0
             if (not next):
                 z1, z2 = calcZLim(p[j], q[j], r[j], s[j], F)
                 roots, errs = checkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
-                next = (roots > 0).any()
+                next = (roots.real > 0).any()
             if next:
                 F = calcFLim(p[j], q[j], r[j], s[j], F0=100000)
                 next = 4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0
                 if (not next):
                     z1, z2 = calcZLim(p[j], q[j], r[j], s[j], F)
                     roots, errs = checkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
-                    next = (roots > 0).any()
+                    next = (roots.real > 0).any()
                 if next:
                     print("!!! WARNING: both steady states are not suitable !!!", j)
                     continue

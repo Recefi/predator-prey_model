@@ -30,17 +30,17 @@ ut.writeData(pqrsData, "pqrs_data")
 
 stratFitData = gs.calcStratFitData(stratData, pqrsData, F=FLim)
 ut.writeData(stratFitData, "strat_fit_data")
-mpData = mpData.loc[stratFitData.index]  # for taylor
+shortMpData = mpData.loc[stratFitData.index]
 print("strats: ", len(stratFitData.index))
 
 # gui.allStratSins(stratFitData)
 # gui.optStratSins_static(stratFitData)
 #gui.mostOptStratSins_static(stratFitData, 3, 4)
-#gui.corrMps(mpData)
+#gui.corrMps(shortMpData)
 #plt.show()
 
 start = time.time()
-selData = gs.calcSelection(stratFitData, mpData)
+selData = gs.calcSelection(stratFitData, shortMpData)
 print ("calc sel time: ", time.time() - start)
 start = time.time()
 ut.writeData(selData, "sel_data")
@@ -76,7 +76,7 @@ with pd.option_context('display.max_rows', 10):
     print(compareCoefData)
 
 
-compareFitsData, fitCosines = tr.compareFits(coefData, stratFitData, mpData, pqrsData, nearPntId, optPntId, F=FLim)
+compareFitsData, fitCosines = tr.compareFits(coefData, stratFitData, shortMpData, pqrsData, nearPntId, optPntId, F=FLim)
 print(compareFitsData)
 print(fitCosines)
 

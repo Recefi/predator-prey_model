@@ -11,40 +11,40 @@ import libs.utility as ut
 
 
 # stratData = gs.genStrats(10000, "beta")
-stratData = ut.readData("strat_data", "dynamic_pred")
+# stratData = ut.readData("strat_data", "dynamic_pred")
 
-#stratData.loc[len(stratData.index)] = [-34.58, -3.29, -83.32, -51.57]
+# #stratData.loc[len(stratData.index)] = [-34.58, -3.29, -83.32, -51.57]
 
-mpData = gs.calcMpData(stratData)
-pqrsData = gs.calcPqrsData(mpData)
+# mpData = gs.calcMpData(stratData)
+# pqrsData = gs.calcPqrsData(mpData)
 
-stratFitData = gs.calcStratFitData(stratData, pqrsData, F=0.82596775326931)
-mpData = mpData.loc[stratFitData.index]
-print("strats: ", len(stratFitData.index))
+# stratFitData = gs.calcStratFitData(stratData, pqrsData, F=0.82596775326931)
+# mpData = mpData.loc[stratFitData.index]
+# print("strats: ", len(stratFitData.index))
 
-gui.mostOptStratSins_static(stratFitData, 3, 4)
-plt.show()
+# gui.mostOptStratSins_static(stratFitData, 3, 4)
+# plt.show()
 
 
-# pqrsData = ut.readData("pqrs_data", "dynamic_pred")
-# _p, _q, _r, _s = pqrsData.loc[491, ['p','q','r','s']]
-# _FLim = gs.calcFLim(_p, _q, _r, _s, F0=0.1)
-# print(_FLim)
-# z1, z2 = gs.calcZLim(_p, _q, _r, _s, _FLim)
-# print(z1, z2)
-# gs.checkFLim(_p, _q, _r, _s, _FLim, z1, z2)
-# print()
+pqrsData = ut.readData("pqrs_data", "dynamic_pred")
+_p, _q, _r, _s = pqrsData.loc[19, ['p','q','r','s']]
+_FLim = gs.calcFLim(_p, _q, _r, _s, F0=0.1)
+print(_FLim)
+z1, z2 = gs.calcZLim(_p, _q, _r, _s, _FLim)
+print(z1, z2)
+gs.checkFLim(_p, _q, _r, _s, _FLim, z1, z2)
+print()
 
-# _FLim = gs.calcFLim(_p, _q, _r, _s, F0=100000)
-# print(_FLim)
-# z1, z2 = gs.calcZLim(_p, _q, _r, _s, _FLim)
-# print(z1, z2)
-# gs.checkFLim(_p, _q, _r, _s, _FLim, z1, z2)
-# print()
+_FLim = gs.calcFLim(_p, _q, _r, _s, F0=10000)
+print(_FLim)
+z1, z2 = gs.calcZLim(_p, _q, _r, _s, _FLim)
+print(z1, z2)
+gs.checkFLim(_p, _q, _r, _s, _FLim, z1, z2)
+print()
 
-# _FLim = gs.calcFLim(_p, _q, _r, _s, F0=-100000)
-# print(_FLim)
-# z1, z2 = gs.calcZLim(_p, _q, _r, _s, _FLim)
-# print(z1, z2)
-# gs.checkFLim(_p, _q, _r, _s, _FLim, z1, z2)
-# print()
+_FLim = gs.calcFLim(_p, _q, _r, _s, F0=-10000)
+print(_FLim)
+z1, z2 = gs.calcZLim(_p, _q, _r, _s, _FLim)
+print(z1, z2)
+gs.checkFLim(_p, _q, _r, _s, _FLim, z1, z2)
+print()

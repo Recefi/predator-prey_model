@@ -31,15 +31,15 @@ start = time.time()
 stratPopData, FLim = gs.analyzePopDynamics(stratData, rawPopData, 0.01)
 print ("analyze pop dynamics: ", time.time() - start)
 ut.writeData(stratPopData, "strat_pop_data")
-mpData = mpData.loc[stratPopData.index]  # for taylor
+shortMpData = mpData.loc[stratPopData.index]
 print("strats: ", len(stratPopData.index))
 
 # gui.popDynamics(rawPopData)
-# gui.corrMps(mpData)
+# gui.corrMps(shortMpData)
 # plt.show()
 
 start = time.time()
-selData = gs.calcSelection(stratPopData, mpData)
+selData = gs.calcSelection(stratPopData, shortMpData)
 print ("calc sel time: ", time.time() - start)
 start = time.time()
 ut.writeData(selData, "sel_data")
