@@ -26,25 +26,36 @@ import libs.utility as ut
 # plt.show()
 
 
+# pqrsData = ut.readData("pqrs_data", "dynamic_pred")
+# _p, _q, _r, _s = pqrsData.loc[19, ['p','q','r','s']]
+# _FLim, err = gs.calcFLim(_p, _q, _r, _s, F0=0.1)
+# print(_FLim)
+# z1, z2 = gs.calcZLim(_p, _q, _r, _s, _FLim)
+# print(z1, z2)
+# gs.checkFLim(_p, _q, _r, _s, _FLim, z1, z2)
+# print()
+
+# _FLim, err = gs.calcFLim(_p, _q, _r, _s, F0=10000)
+# print(_FLim)
+# z1, z2 = gs.calcZLim(_p, _q, _r, _s, _FLim)
+# print(z1, z2)
+# gs.checkFLim(_p, _q, _r, _s, _FLim, z1, z2)
+# print()
+
+# _FLim, err = gs.calcFLim(_p, _q, _r, _s, F0=-10000)
+# print(_FLim)
+# z1, z2 = gs.calcZLim(_p, _q, _r, _s, _FLim)
+# print(z1, z2)
+# gs.checkFLim(_p, _q, _r, _s, _FLim, z1, z2)
+# print()
+
+
 pqrsData = ut.readData("pqrs_data", "dynamic_pred")
-_p, _q, _r, _s = pqrsData.loc[19, ['p','q','r','s']]
-_FLim = gs.calcFLim(_p, _q, _r, _s, F0=0.1)
-print(_FLim)
-z1, z2 = gs.calcZLim(_p, _q, _r, _s, _FLim)
-print(z1, z2)
-gs.checkFLim(_p, _q, _r, _s, _FLim, z1, z2)
-print()
+_p, _q, _r, _s = pqrsData.loc[171, ['p','q','r','s']]
+# gs.calcFLimSympy(_p, _q, _r, _s, 0.1)
 
-_FLim = gs.calcFLim(_p, _q, _r, _s, F0=10000)
-print(_FLim)
-z1, z2 = gs.calcZLim(_p, _q, _r, _s, _FLim)
-print(z1, z2)
-gs.checkFLim(_p, _q, _r, _s, _FLim, z1, z2)
-print()
-
-_FLim = gs.calcFLim(_p, _q, _r, _s, F0=-10000)
-print(_FLim)
-z1, z2 = gs.calcZLim(_p, _q, _r, _s, _FLim)
-print(z1, z2)
-gs.checkFLim(_p, _q, _r, _s, _FLim, z1, z2)
-print()
+# Fsols = gs.findFsols(_p, _q, _r, _s, -1000, 1000, 1)
+Fsols = gs.findComplexFsols(_p, _q, _r, _s, -1000, 1000, 1)
+print(Fsols)
+FLams, errs = gs.checkFsols(_p, _q, _r, _s, Fsols)
+print(FLams)

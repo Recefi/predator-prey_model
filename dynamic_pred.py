@@ -98,21 +98,21 @@ print(compareParamData)
 
 
 _p, _q, _r, _s = pqrsData.loc[optPntId, ['p','q','r','s']]
-_FLim = gs.calcFLim(_p, _q, _r, _s, F0=0.1)
+_FLim, err = gs.calcFLim(_p, _q, _r, _s, F0=0.1)
 print(_FLim)
 z1, z2 = gs.calcZLim(_p, _q, _r, _s, _FLim)
 print(z1, z2)
 gs.checkFLim(_p, _q, _r, _s, _FLim, z1, z2)
 print()
 
-_FLim = gs.calcFLim(_p, _q, _r, _s, F0=100000)
+_FLim, err = gs.calcFLim(_p, _q, _r, _s, F0=100000)
 print(_FLim)
 z1, z2 = gs.calcZLim(_p, _q, _r, _s, _FLim)
 print(z1, z2)
 gs.checkFLim(_p, _q, _r, _s, _FLim, z1, z2)
 print()
 
-_FLim = gs.calcFLim(_p, _q, _r, _s, F0=-100000)
+_FLim, err = gs.calcFLim(_p, _q, _r, _s, F0=-100000)
 print(_FLim)
 z1, z2 = gs.calcZLim(_p, _q, _r, _s, _FLim)
 print(z1, z2)
@@ -126,8 +126,8 @@ print(stratMinsData.loc[idOptStrat])
 gui.stratSinsById(stratData, idOptStrat)
 plt.show()
 
-pqrsData = gs.calcPqrsData(mpData, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
-stratMinsData, idOptStrat = gs.fitBySel(stratData, pqrsData)
+restorePqrsData = gs.calcPqrsData(mpData, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
+stratMinsData, idOptStrat = gs.fitBySel(stratData, restorePqrsData)
 ut.writeData(stratMinsData, "strat_mins_data2")
 print(stratMinsData.loc[idOptStrat])
 gui.stratSinsById(stratData, idOptStrat)
@@ -135,3 +135,20 @@ plt.show()
 
 gui.compareStratSinsById(stratData, optPntId, idOptStrat)
 plt.show()
+
+
+# _p, _q, _r, _s = restorePqrsData.loc[132, ['p','q','r','s']]
+# #Fsols = gs.findFsols(_p, _q, _r, _s, -10000, 10000, 1)
+# Fsols = gs.findComplexFsols(_p, _q, _r, _s, -10000, 10000, 1)
+# print(Fsols)
+# FLams, errs = gs.checkFsols(_p, _q, _r, _s, Fsols)
+# print(FLams)
+
+FsolsData = gs.checkFsolsOnSel(stratData, pqrsData)
+ut.writeData(FsolsData, "Fsols_data")
+complexFsolsData = gs.checkComplexFsolsOnSel(stratData, pqrsData)
+ut.writeData(complexFsolsData, "complex_Fsols_data")
+restoreFsolsData = gs.checkFsolsOnSel(stratData, restorePqrsData)
+ut.writeData(FsolsData, "restore_Fsols_data")
+restoreComplexFsolsData = gs.checkComplexFsolsOnSel(stratData, restorePqrsData)
+ut.writeData(complexFsolsData, "restore_complex_Fsols_data")

@@ -3,6 +3,8 @@ import pandas as pd
 import scipy.integrate as integrate
 import time
 from scipy.optimize import fsolve
+# import sympy
+# import mpmath
 
 import libs.param as param
 import libs.utility as ut
@@ -272,13 +274,66 @@ def calcFLim(p, q, r, s, F0=0.1):  # в качестве стартовой оц
         # the modulus(euclidean norm) is the euclidean distance from 0 to the number, including complex number.
         # |a + bi| = sqrt(a^2 + b^2), the distance between the origin (0, 0) and the point (a, b) in the complex plane.
     
-    root = fsolve(func1, F0)
-    err1 = func1(root[0])
+    root = fsolve(func, F0)
+    #err1 = func1(root[0])
     err = func(root[0])
-    print(root[0])
-    print("err1:", err1)
-    print("err:", err)
-    return root[0]
+    # print(root[0])
+    #print("err1:", err1)
+    # print("err:", err)
+    return root[0], err
+
+def findFsols(p, q, r, s, left=-1000, right=1000, step=1, errEps = 1e-12, rndEps = 10):
+    Fsols = []
+    for F0 in range(left, right, step):
+        F, err = calcFLim(p, q, r, s, F0)
+        if (err < errEps):
+            F = np.round(F, rndEps)
+            if not Fsols:
+                Fsols.append(F)
+            elif (np.abs(F - Fsols) > 10**(-rndEps)).all():
+                Fsols.append(F)
+    return Fsols
+
+def calcComplexFLim(p, q, r, s, F0=0.1):
+    def tmpFunc(F):
+        return 2*r*p / (2*p*s + q*(-(p+q*F-s*F) + np.emath.sqrt((p+q*F-s*F)**2 + 4*p*r))) \
+                                    - ((-(p+q*F+s*F) + np.emath.sqrt((p+q*F-s*F)**2 + 4*p*r)) / 2)**2 - F
+    def complexFunc(F):
+        re, im = F
+        tmp = tmpFunc(complex(re, im))
+        return [tmp.real, tmp.imag]
+    
+    root = fsolve(complexFunc, (F0, 1))
+    F = complex(root[0], root[1])
+    err = tmpFunc(F)
+    # print(F)
+    # print("err:", err)
+    return F, err
+
+def findComplexFsols(p, q, r, s, left=-1000, right=1000, step=1, errEps = 1e-15, reRndEps = 7, imRndEps = 6):
+    Fsols = []
+    for F0 in range(left, right, step):
+        F, err = calcComplexFLim(p, q, r, s, F0)
+        if (err.real < errEps):
+            F = np.round(F, reRndEps)
+            if not Fsols:
+                Fsols.append(F)
+            elif((np.abs(F.real-np.real(Fsols)) > 10**(-reRndEps)).all()
+            or (np.abs(F.imag-np.imag(Fsols)) > 10**(-imRndEps)).all()):
+                Fsols.append(F)
+    return Fsols
+
+# def calcFLimSympy(p, q, r, s, F0=0.1):
+#     F = sympy.symbols('F')
+#     equation = sympy.Eq(2*r*p / (2*p*s + q*(-(p+q*F-s*F) + sympy.sqrt((p+q*F-s*F)**2 + 4*p*r))) \
+#                                     - ((-(p+q*F+s*F) + sympy.sqrt((p+q*F-s*F)**2 + 4*p*r)) / 2)**2 - F, 0)
+#     sols = sympy.nsolve(equation, F, F0)
+    
+#     # def func(F):
+#     #     return 2*r*p / (2*p*s + q*(-(p+q*F-s*F) + sympy.sqrt((p+q*F-s*F)**2 + 4*p*r))) \
+#     #                                             - ((-(p+q*F+s*F) + sympy.sqrt((p+q*F-s*F)**2 + 4*p*r)) / 2)**2 - F
+#     # sols = mpmath.findroot(func, 0)
+#     print("sols:", sols)
 
 def calcZLim(p, q, r, s, F):
     z2 = 2*p/(2*p*s + q*s*F - q*(p+q*F) + q*np.sqrt(4*r*p+(p+q*F-s*F)**2))
@@ -303,6 +358,56 @@ def checkFLim(p, q, r, s, F, z1, z2):
     print("errs: ", errs)
     return L, errs
 
+def checkFsols(p, q, r, s, Fsols):
+    Flams = []
+    lamsErrs = []
+    for i in range(len(Fsols)):
+        z1, z2 = calcZLim(p, q, r, s, Fsols[i])
+        roots, errs = checkFLim(p, q, r, s, Fsols[i], z1, z2)
+        if (roots.real > 0).any():
+            Flams.append('+')
+        else:
+            Flams.append('-')
+        lamsErrs.append(errs)
+    return Flams, lamsErrs
+
+def checkFsolsOnSel(stratData, pqrsData):
+    res = []
+    for i in pqrsData.index:
+        resStr = []
+        p, q, r, s = pqrsData.loc[i, ['p', 'q', 'r', 's']]
+        Fsols = findFsols(p, q, r, s)
+        Flams, lamsErrs = checkFsols(p, q, r, s, Fsols)
+        #resStr.append(Fsols)
+        resStr.append(Flams)
+        resStr.append(lamsErrs)
+        res.append(resStr)
+    #FsolsData = stratData.copy()
+    #FsolsData.loc[:, 'Fsols'] = FsolsList
+    #FsolsData.loc[:, 'Flams'] = FlamsList
+    #FsolsData.loc[:, 'errs'] = errsList
+    FsolsData = pd.DataFrame(res, columns=['Flams', 'lamsErrs'], index=pqrsData.index)
+    return FsolsData
+
+def checkComplexFsolsOnSel(stratData, pqrsData):
+    #FsolsList = []
+    FlamsList = []
+    lamsErrsList = []
+    for i in pqrsData.index:
+        resStr = []
+        p, q, r, s = pqrsData.loc[i, ['p', 'q', 'r', 's']]
+        Fsols = findComplexFsols(p, q, r, s)
+        Flams, lamsErrs = checkFsols(p, q, r, s, Fsols)
+        #FsolsList.append(Fsols)
+        FlamsList.append(Flams)
+        lamsErrsList.append(lamsErrs)
+    complexFsolsData = stratData.copy()
+    for j in range(len(max(FlamsList, key=len))):
+        complexFsolsData.loc[:, 'Fsol_'+str(j)] = FlamsList[:, j]
+    for j in range(len(max(lamsErrsList, key=len))):
+        complexFsolsData.loc[:, 'lamsErrs_'+str(j)] = lamsErrsList[:, j]
+    return complexFsolsData
+
 def fitBySel(stratData, pqrsData):
     p = pqrsData['p']
     q = pqrsData['q']
@@ -314,21 +419,21 @@ def fitBySel(stratData, pqrsData):
     counts = []
     for j in pqrsData.index:
         print(j)
-        F = calcFLim(p[j], q[j], r[j], s[j], F0=0.1)
+        F, err = calcFLim(p[j], q[j], r[j], s[j], F0=0.1)
         next = 4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0
         if (not next):
             z1, z2 = calcZLim(p[j], q[j], r[j], s[j], F)
             roots, errs = checkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
             next = (roots.real > 0).any()
         if next:
-            F = calcFLim(p[j], q[j], r[j], s[j], F0=-100000)
+            F, err = calcFLim(p[j], q[j], r[j], s[j], F0=-100000)
             next = 4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0
             if (not next):
                 z1, z2 = calcZLim(p[j], q[j], r[j], s[j], F)
                 roots, errs = checkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
                 next = (roots.real > 0).any()
             if next:
-                F = calcFLim(p[j], q[j], r[j], s[j], F0=100000)
+                F, err = calcFLim(p[j], q[j], r[j], s[j], F0=100000)
                 next = 4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0
                 if (not next):
                     z1, z2 = calcZLim(p[j], q[j], r[j], s[j], F)
@@ -343,7 +448,8 @@ def fitBySel(stratData, pqrsData):
         for i in pqrsData.index:
             if(4*r[i]*p[i]+(p[i]+q[i]*F-s[i]*F)**2 >= 0):
                 count += 1
-                fit = -s[j]*F-p[j]-q[j]*F+(np.sqrt((4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2))) - (-s[i]*F-p[i]-q[i]*F+(np.sqrt((4*r[i]*p[i]+(p[i]+q[i]*F-s[i]*F)**2))))
+                fit = -s[j]*F-p[j]-q[j]*F+(np.sqrt((4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2))) \
+                    - (-s[i]*F-p[i]-q[i]*F+(np.sqrt((4*r[i]*p[i]+(p[i]+q[i]*F-s[i]*F)**2))))
                 if (fit < min):
                     min = fit
         indxs.append(j)
