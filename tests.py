@@ -32,30 +32,37 @@ import libs.utility as ut
 # print(_FLim)
 # z1, z2 = gs.calcZLim(_p, _q, _r, _s, _FLim)
 # print(z1, z2)
-# gs.checkFLim(_p, _q, _r, _s, _FLim, z1, z2)
+# gs.chkFLim(_p, _q, _r, _s, _FLim, z1, z2)
 # print()
 
 # _FLim, err = gs.calcFLim(_p, _q, _r, _s, F0=10000)
 # print(_FLim)
 # z1, z2 = gs.calcZLim(_p, _q, _r, _s, _FLim)
 # print(z1, z2)
-# gs.checkFLim(_p, _q, _r, _s, _FLim, z1, z2)
+# gs.chkFLim(_p, _q, _r, _s, _FLim, z1, z2)
 # print()
 
 # _FLim, err = gs.calcFLim(_p, _q, _r, _s, F0=-10000)
 # print(_FLim)
 # z1, z2 = gs.calcZLim(_p, _q, _r, _s, _FLim)
 # print(z1, z2)
-# gs.checkFLim(_p, _q, _r, _s, _FLim, z1, z2)
+# gs.chkFLim(_p, _q, _r, _s, _FLim, z1, z2)
 # print()
 
 
-pqrsData = ut.readData("pqrs_data", "dynamic_pred")
-_p, _q, _r, _s = pqrsData.loc[171, ['p','q','r','s']]
-# gs.calcFLimSympy(_p, _q, _r, _s, 0.1)
+# rstdPqrsData = ut.readData("pqrs_rstd_data", "dynamic_pred")
+# _p, _q, _r, _s = rstdPqrsData.loc[132, ['p','q','r','s']]
+# #Fsols = gs.findFsols(_p, _q, _r, _s)
+# Fsols = gs.findComplexFsols(_p, _q, _r, _s)
+# print(Fsols)
+# FLams, errs = gs.chkFsols(_p, _q, _r, _s, Fsols)
+# print(FLams)
 
-# Fsols = gs.findFsols(_p, _q, _r, _s, -1000, 1000, 1)
-Fsols = gs.findComplexFsols(_p, _q, _r, _s, -1000, 1000, 1)
+pqrsData = ut.readData("pqrs_data", "dynamic_pred")
+_p, _q, _r, _s = pqrsData.loc[89, ['p','q','r','s']]
+Fsols = gs.findFsols(_p, _q, _r, _s, abs=False)
+#Fsols = gs.findFsols(_p, _q, _r, _s)
+#Fsols = gs.findComplexFsols(_p, _q, _r, _s)
 print(Fsols)
-FLams, errs = gs.checkFsols(_p, _q, _r, _s, Fsols)
+FLams, errs = gs.chkFsols(_p, _q, _r, _s, Fsols)
 print(FLams)
