@@ -10,7 +10,7 @@ import libs.utility as ut
 # plt.show()
 
 
-# stratData = gs.genStrats(10000, "beta")
+# #stratData = gs.genStrats(10000, "beta")
 # stratData = ut.readData("strat_data", "dynamic_pred")
 
 # #stratData.loc[len(stratData.index)] = [-34.58, -3.29, -83.32, -51.57]
@@ -21,6 +21,7 @@ import libs.utility as ut
 # stratFitData = gs.calcStratFitData(stratData, pqrsData, F=0.82596775326931)
 # mpData = mpData.loc[stratFitData.index]
 # print("strats: ", len(stratFitData.index))
+# #ut.writeData(stratFitData, "strat_fit_data")
 
 # gui.mostOptStratSins_static(stratFitData, 3, 4)
 # plt.show()
