@@ -410,6 +410,7 @@ def fitMaxMin(stratData, pqrsData):
             roots, errs = chkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
             next = (roots.real > 0).any()
         if next:
+            #continue
             F, err = calcFLim(p[j], q[j], r[j], s[j], F0=-1000)
             next = 4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0
             if (not next):

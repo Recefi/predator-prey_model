@@ -120,7 +120,7 @@ gs.chkFLim(_p, _q, _r, _s, _FLim, z1, z2)
 print()
 
 
-stratMinsData, idOptStrat = gs.fitBySel(stratData, pqrsData)
+stratMinsData, idOptStrat = gs.fitMaxMin(stratData, pqrsData)
 ut.writeData(stratMinsData, "strat_mins_data")
 print(stratMinsData.loc[idOptStrat])
 gui.stratSinsById(stratData, idOptStrat)
@@ -128,7 +128,7 @@ plt.show()
 
 rstdPqrsData = gs.calcPqrsData(mpData, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
 ut.writeData(rstdPqrsData, "pqrs_rstd_data")
-stratMinsData, idOptStrat = gs.fitBySel(stratData, rstdPqrsData)
+stratMinsData, idOptStrat = gs.fitMaxMin(stratData, rstdPqrsData)
 ut.writeData(stratMinsData, "strat_mins_rstd_data")
 print(stratMinsData.loc[idOptStrat])
 gui.stratSinsById(stratData, idOptStrat)

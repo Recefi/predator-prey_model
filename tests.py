@@ -59,9 +59,9 @@ import libs.utility as ut
 # print(FLams)
 
 pqrsData = ut.readData("pqrs_data", "dynamic_pred")
-_p, _q, _r, _s = pqrsData.loc[89, ['p','q','r','s']]
-Fsols = gs.findFsols(_p, _q, _r, _s, abs=False)
-#Fsols = gs.findFsols(_p, _q, _r, _s)
+_p, _q, _r, _s = pqrsData.loc[491, ['p','q','r','s']]
+#Fsols = gs.findFsols(_p, _q, _r, _s, abs=False)
+Fsols = gs.findFsols(_p, _q, _r, _s)
 #Fsols = gs.findComplexFsols(_p, _q, _r, _s)
 print(Fsols)
 FLams, errs = gs.chkFsols(_p, _q, _r, _s, Fsols)
