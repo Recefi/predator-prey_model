@@ -3,6 +3,9 @@ import pandas as pd
 import scipy.integrate as integrate
 import time
 from scipy.optimize import fsolve
+import tqdm
+import gc
+from numba import jit, njit
 
 import libs.param as param
 import libs.utility as ut
@@ -49,7 +52,6 @@ def genStrats(n, distrA="uniform", by4=False):
             Aa.append(a_a[i])
             Ba.append(b_a)
 
-
     stratData = pd.DataFrame({'Aj': Aj, 'Bj': Bj, 'Aa': Aa, 'Ba': Ba})
     return stratData
 
@@ -60,7 +62,6 @@ def calcMpData(stratData):
     Ba = stratData['Ba']
 
     Mps = []
-    pqrs = []
     for i in Aj.index:
         M1 = param.sigma1 * (Aj[i] + param.D)
         M2 = -param.sigma2 * (Aj[i] + param.D + Bj[i]/2)
@@ -340,8 +341,8 @@ def chkFLim(p, q, r, s, F, z1, z2):
         return (a11-L)*(a22-L)*(a33-L) + a21*a32*a13 + a12*a23*a31 - a31*a13*(a22-L) - a23*a32*(a11-L) - a12*a21*(a33-L)
     errs = [err(L[0]), err(L[1]), err(L[2])]
 
-    print("roots: ", L)
-    print("errs: ", errs)
+    # print("roots: ", L)
+    # print("errs: ", errs)
     return L, errs
 
 def chkFsols(p, q, r, s, Fsols):
@@ -359,7 +360,7 @@ def chkFsols(p, q, r, s, Fsols):
 
 def chkFsolsOnSel(stratData, pqrsData, abs=True):
     res = []
-    for i in pqrsData.index:
+    for i in tqdm.tqdm(pqrsData.index):
         resStr = []
         p, q, r, s = pqrsData.loc[i, ['p', 'q', 'r', 's']]
         Fsols = findFsols(p, q, r, s,
@@ -376,7 +377,7 @@ def chkFsolsOnSel(stratData, pqrsData, abs=True):
 
 def chkComplexFsolsOnSel(stratData, pqrsData):
     res = []
-    for i in pqrsData.index:
+    for i in tqdm.tqdm(pqrsData.index):
         resStr = []
         p, q, r, s = pqrsData.loc[i, ['p', 'q', 'r', 's']]
         Fsols = findComplexFsols(p, q, r, s,
@@ -391,7 +392,7 @@ def chkComplexFsolsOnSel(stratData, pqrsData):
     complexFsolsData = pd.concat([stratData, complexFsolsData], axis=1)
     return complexFsolsData
 
-def fitBySel(stratData, pqrsData):
+def fitMaxMin(stratData, pqrsData):
     p = pqrsData['p']
     q = pqrsData['q']
     r = pqrsData['r']
@@ -400,8 +401,8 @@ def fitBySel(stratData, pqrsData):
     indxs = []
     mins = []
     counts = []
-    for j in pqrsData.index:
-        print(j)
+    for j in tqdm.tqdm(pqrsData.index):
+        #print(j)
         F, err = calcFLim(p[j], q[j], r[j], s[j], F0=0.1)
         next = 4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0
         if (not next):
@@ -442,5 +443,112 @@ def fitBySel(stratData, pqrsData):
     stratMinsData = stratData.loc[indxs]
     stratMinsData.loc[:, 'min'] = mins
     stratMinsData.loc[:, 'count'] = counts
+    idOptStrat = stratMinsData['min'].idxmax()
+    return stratMinsData, idOptStrat
+
+def genGenlStrats():
+    Aj = []
+    Bj = []
+    Aa = []
+    Ba = []
+
+    for a_j in tqdm.tqdm(range(-1, -param.D, -1)):
+        m_j = min(-a_j, a_j + param.D)
+        for b_j in range(-m_j, 0):
+            for a_a in range(-1, -param.D, -1):
+                m_a = min(-a_a, a_a + param.D)
+                for b_a in range(-m_a, 0):
+                    Aj.append(a_j)
+                    Bj.append(b_j)
+                    Aa.append(a_a)
+                    Ba.append(b_a)
+                for b_a in range(1, m_a+1):
+                    Aj.append(a_j)
+                    Bj.append(b_j)
+                    Aa.append(a_a)
+                    Ba.append(b_a)
+        for b_j in range(1, m_j+1):
+            for a_a in range(-1, -param.D, -1):
+                m_a = min(-a_a, a_a + param.D)
+                for b_a in range(-m_a, 0):
+                    Aj.append(a_j)
+                    Bj.append(b_j)
+                    Aa.append(a_a)
+                    Ba.append(b_a)
+                for b_a in range(1, m_a+1):
+                    Aj.append(a_j)
+                    Bj.append(b_j)
+                    Aa.append(a_a)
+                    Ba.append(b_a)
+
+    return Aj, Bj, Aa, Ba
+
+def calcGenlPqrsData(Aj, Bj, Aa, Ba, a_j=param.alpha_j, b_j=param.beta_j, g_j=param.gamma_j, d_j=param.delta_j,
+                                a_a = param.alpha_a, b_a=param.beta_a, g_a=param.gamma_a, d_a=param.delta_a):
+    p = []
+    q = []
+    r = []
+    s = []
+    for i in tqdm.tqdm(range(len(Aj))):
+        M1 = param.sigma1 * (Aj[i] + param.D)
+        M2 = -param.sigma2 * (Aj[i] + param.D + Bj[i]/2)
+        M3 = -2*(np.pi*Bj[i])**2
+        M4 = -((Aj[i]+param.D0)**2 + (Bj[i]**2)/2)
+
+        M5 = param.sigma1 * (Aa[i] + param.D)
+        M6 = -param.sigma2 * (Aa[i] + param.D + Ba[i]/2)
+        M7 = -2*(np.pi*Ba[i])**2
+        M8 = -((Aa[i]+param.D0)**2 + (Ba[i]**2)/2)
+
+        p.append(a_j*M1 + b_j*M3 + d_j*M4)
+        r.append(a_a*M5 + b_a*M7 + d_a*M8)
+        q.append(-g_j*M2)
+        s.append(-g_a*M6)
+
+    return p, q, r, s
+
+@njit
+def findMin(p, q, r, s, j, F):
+    min = 1
+    for i in range(len(p)):
+        if(4*r[i]*p[i]+(p[i]+q[i]*F-s[i]*F)**2 >= 0):
+            fit = -s[j]*F-p[j]-q[j]*F+(np.sqrt((4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2))) \
+                - (-s[i]*F-p[i]-q[i]*F+(np.sqrt((4*r[i]*p[i]+(p[i]+q[i]*F-s[i]*F)**2))))
+            if (fit < min):
+                min = fit
+    return min
+
+def genlFitMaxMin(Aj, Bj, Aa, Ba, p, q, r, s):
+    mins = []
+    for j in tqdm.tqdm(range(len(p))):
+        F, err = calcFLim(p[j], q[j], r[j], s[j], F0=0.1)
+        next = 4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0
+        # if (not next):
+        #     z1, z2 = calcZLim(p[j], q[j], r[j], s[j], F)
+        #     roots, errs = chkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
+        #     next = (roots.real > 0).any()
+        if next:
+            continue
+            # F, err = calcFLim(p[j], q[j], r[j], s[j], F0=-1000)
+            # next = 4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0
+            # if (not next):
+            #     z1, z2 = calcZLim(p[j], q[j], r[j], s[j], F)
+            #     roots, errs = chkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
+            #     next = (roots.real > 0).any()
+            # if next:
+            #     F, err = calcFLim(p[j], q[j], r[j], s[j], F0=1000)
+            #     next = 4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0
+            #     if (not next):
+            #         z1, z2 = calcZLim(p[j], q[j], r[j], s[j], F)
+            #         roots, errs = chkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
+            #         next = (roots.real > 0).any()
+            #     if next:
+            #         print("!!! WARNING: both steady states are not suitable !!!", j)
+            #         continue
+
+        min = findMin(p, q, r, s, j, F)
+        mins.append(min)
+
+    stratMinsData = pd.DataFrame({'Aj': Aj, 'Bj': Bj, 'Aa': Aa, 'Ba': Ba, 'min': mins})
     idOptStrat = stratMinsData['min'].idxmax()
     return stratMinsData, idOptStrat
