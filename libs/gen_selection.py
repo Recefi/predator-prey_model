@@ -410,7 +410,6 @@ def fitMaxMin(stratData, pqrsData):
             roots, errs = chkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
             next = (roots.real > 0).any()
         if next:
-            #continue
             F, err = calcFLim(p[j], q[j], r[j], s[j], F0=-1000)
             next = 4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0
             if (not next):
@@ -425,7 +424,6 @@ def fitMaxMin(stratData, pqrsData):
                     roots, errs = chkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
                     next = (roots.real > 0).any()
                 if next:
-                    print("!!! WARNING: both steady states are not suitable !!!", j)
                     continue
 
         min = 1
@@ -447,40 +445,27 @@ def fitMaxMin(stratData, pqrsData):
     idOptStrat = stratMinsData['min'].idxmax()
     return stratMinsData, idOptStrat
 
-def genGenlStrats():
+def genGenlStrats(a_j=param.alpha_j, b_j=param.beta_j, g_j=param.gamma_j, d_j=param.delta_j,
+                    a_a = param.alpha_a, b_a=param.beta_a, g_a=param.gamma_a, d_a=param.delta_a):
     Aj = []
     Bj = []
     Aa = []
     Ba = []
 
-    for a_j in tqdm.tqdm(range(-1, -param.D, -1)):
-        m_j = min(-a_j, a_j + param.D)
-        for b_j in range(-m_j, 0):
-            for a_a in range(-1, -param.D, -1):
-                m_a = min(-a_a, a_a + param.D)
-                for b_a in range(-m_a, 0):
-                    Aj.append(a_j)
-                    Bj.append(b_j)
-                    Aa.append(a_a)
-                    Ba.append(b_a)
-                for b_a in range(1, m_a+1):
-                    Aj.append(a_j)
-                    Bj.append(b_j)
-                    Aa.append(a_a)
-                    Ba.append(b_a)
-        for b_j in range(1, m_j+1):
-            for a_a in range(-1, -param.D, -1):
-                m_a = min(-a_a, a_a + param.D)
-                for b_a in range(-m_a, 0):
-                    Aj.append(a_j)
-                    Bj.append(b_j)
-                    Aa.append(a_a)
-                    Ba.append(b_a)
-                for b_a in range(1, m_a+1):
-                    Aj.append(a_j)
-                    Bj.append(b_j)
-                    Aa.append(a_a)
-                    Ba.append(b_a)
+    for i in tqdm.tqdm(range(-1, -param.D*10, -1)):
+        A_j = i*0.1
+        m_j = min(-A_j, A_j + param.D)
+        B_j = -(a_j*param.sigma1 - 2*d_j*(A_j + param.D0))/(2*(4*np.pi**2 * b_j + d_j))
+        if (-m_j <= B_j and B_j <= m_j):
+            for j in range(-1, -param.D*10, -1):
+                A_a = j*0.1
+                m_a = min(-A_a, A_a + param.D)
+                B_a = -(a_a*param.sigma1 - 2*d_a*(A_a + param.D0))/(2*(4*np.pi**2 * b_a + d_a))
+                if (-m_a <= B_a and B_a <= m_a):
+                    Aj.append(A_j)
+                    Bj.append(B_j)
+                    Aa.append(A_a)
+                    Ba.append(B_a)
 
     return Aj, Bj, Aa, Ba
 
@@ -509,47 +494,58 @@ def calcGenlPqrsData(Aj, Bj, Aa, Ba, a_j=param.alpha_j, b_j=param.beta_j, g_j=pa
     return p, q, r, s
 
 @njit
-def findMin(p, q, r, s, j, F):
-    min = 1
-    for i in range(len(p)):
-        if(4*r[i]*p[i]+(p[i]+q[i]*F-s[i]*F)**2 >= 0):
-            fit = -s[j]*F-p[j]-q[j]*F+(np.sqrt((4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2))) \
-                - (-s[i]*F-p[i]-q[i]*F+(np.sqrt((4*r[i]*p[i]+(p[i]+q[i]*F-s[i]*F)**2))))
-            if (fit < min):
-                min = fit
-    return min
+def findMins(p, q, r, s, Fs, Fsj):
+    mins = []
+    for _j in range(len(Fs)):
+        j = Fsj[_j]
+        F = Fs[_j]
+        min = 1
+        for i in range(len(p)):
+            if(4*r[i]*p[i]+(p[i]+q[i]*F-s[i]*F)**2 >= 0):
+                fit = -s[j]*F-p[j]-q[j]*F+(np.sqrt((4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2))) \
+                    - (-s[i]*F-p[i]-q[i]*F+(np.sqrt((4*r[i]*p[i]+(p[i]+q[i]*F-s[i]*F)**2))))
+                if (fit < min):
+                    min = fit
+        mins.append(min)
+    return mins
 
 def genlFitMaxMin(Aj, Bj, Aa, Ba, p, q, r, s):
-    mins = []
+    Fs = []
+    Fsj = []
     for j in tqdm.tqdm(range(len(p))):
         F, err = calcFLim(p[j], q[j], r[j], s[j], F0=0.1)
         next = 4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0
-        # if (not next):
-        #     z1, z2 = calcZLim(p[j], q[j], r[j], s[j], F)
-        #     roots, errs = chkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
-        #     next = (roots.real > 0).any()
+        if (not next):
+            z1, z2 = calcZLim(p[j], q[j], r[j], s[j], F)
+            roots, errs = chkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
+            next = (roots.real > 0).any()
         if next:
-            continue
-            # F, err = calcFLim(p[j], q[j], r[j], s[j], F0=-1000)
-            # next = 4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0
-            # if (not next):
-            #     z1, z2 = calcZLim(p[j], q[j], r[j], s[j], F)
-            #     roots, errs = chkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
-            #     next = (roots.real > 0).any()
-            # if next:
-            #     F, err = calcFLim(p[j], q[j], r[j], s[j], F0=1000)
-            #     next = 4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0
-            #     if (not next):
-            #         z1, z2 = calcZLim(p[j], q[j], r[j], s[j], F)
-            #         roots, errs = chkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
-            #         next = (roots.real > 0).any()
-            #     if next:
-            #         print("!!! WARNING: both steady states are not suitable !!!", j)
-            #         continue
+            F, err = calcFLim(p[j], q[j], r[j], s[j], F0=-100)
+            next = 4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0
+            if (not next):
+                z1, z2 = calcZLim(p[j], q[j], r[j], s[j], F)
+                roots, errs = chkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
+                next = (roots.real > 0).any()
+            if next:
+                F, err = calcFLim(p[j], q[j], r[j], s[j], F0=100)
+                next = 4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0
+                if (not next):
+                    z1, z2 = calcZLim(p[j], q[j], r[j], s[j], F)
+                    roots, errs = chkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
+                    next = (roots.real > 0).any()
+                if next:
+                    continue
+        Fs.append(F)
+        Fsj.append(j)
 
-        min = findMin(p, q, r, s, j, F)
-        mins.append(min)
+    start = time.time()
+    mins = findMins(p, q, r, s, Fs, Fsj)
+    print ("calc genl mins time: ", time.time() - start)
 
-    stratMinsData = pd.DataFrame({'Aj': Aj, 'Bj': Bj, 'Aa': Aa, 'Ba': Ba, 'min': mins})
+    _Aj = [Aj[j] for j in Fsj]
+    _Bj = [Bj[j] for j in Fsj]
+    _Aa = [Aa[j] for j in Fsj]
+    _Ba = [Ba[j] for j in Fsj]
+    stratMinsData = pd.DataFrame({'Aj': _Aj, 'Bj': _Bj, 'Aa': _Aa, 'Ba': _Ba, 'min': mins})
     idOptStrat = stratMinsData['min'].idxmax()
     return stratMinsData, idOptStrat
