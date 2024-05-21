@@ -121,6 +121,30 @@ def calcStratFitData(stratData, pqrsData, F=1):
     stratFitData = pd.concat([stratData.loc[fitData.index], fitData], axis=1)
     return stratFitData
 
+@njit
+def integrateIter(t, z, n, p, q, r, s):
+    sumComp = 0
+    sumDeath = 0
+    for i in range(n):
+        if (z[i] > 0 and z[i+n] > 0):
+            sumComp += (z[i] + z[i+n])
+            sumDeath += (q[i]*z[i] + s[i]*z[i+n])
+        else:
+            if (z[i] > 0):
+                sumComp += z[i]
+                sumDeath += (q[i]*z[i])
+            if (z[i+n] > 0):
+                sumComp += z[i+n]
+                sumDeath += (s[i]*z[i+n])
+    F = z[2*n]
+    result = np.empty(2*n + 1)
+    for i in range(n):
+        result[i] = -p[i]*z[i] - q[i]*z[i]*F + r[i]*z[i+n] - z[i]*sumComp
+    for i in range(n):
+        result[i+n] = p[i]*z[i] - s[i]*z[i+n]*F - z[i+n]*sumComp
+    result[2*n] = sumDeath*F - F
+    return result
+
 def calcPopDynamics(pqrsData, tMax=1000, tParts=10000, z0=0.01, F0=0.1):
     n = len(pqrsData.index)
     p = pqrsData['p'].values
@@ -128,35 +152,11 @@ def calcPopDynamics(pqrsData, tMax=1000, tParts=10000, z0=0.01, F0=0.1):
     r = pqrsData['r'].values
     s = pqrsData['s'].values
 
-    def func(t, z):
-        sumComp = 0
-        sumDeath = 0
-        for i in range(n):
-            if ((z[i] >= 0) & (z[i+n] >= 0)).all():
-                sumComp += (z[i] + z[i+n])
-                sumDeath += (q[i]*z[i] + s[i]*z[i+n])
-            else:
-                if (z[i] >= 0).all():
-                    sumComp += z[i]
-                    sumDeath += (q[i]*z[i])
-                if (z[i+n] >= 0).all():
-                    sumComp += z[i+n]
-                    sumDeath += (s[i]*z[i+n])
-
-        F = z[2*n]
-        result = []
-        for i in range(n):
-            result.append(-p[i]*z[i] - q[i]*z[i]*F + r[i]*z[i+n] - z[i]*sumComp)
-        for i in range(n):
-            result.append(p[i]*z[i] - s[i]*z[i+n]*F - z[i+n]*sumComp)
-        result.append(sumDeath*F - F)
-
-        return result
-
     z_0 = np.full(2*n, z0)
     z_0 = np.append(z_0, F0)
 
-    pop = integrate.solve_ivp(func, t_span=[0, tMax], y0=z_0, method='Radau', dense_output=True)
+    pop = integrate.solve_ivp(integrateIter, args=(n, p, q, r, s), t_span=[0, tMax], y0=z_0, method='Radau',
+                                                                                                    dense_output=True)
     t = np.linspace(0, tMax, tParts)
     # dense_output=True need only for .sol(t)
     # either .sol(t) or .y & .t
