@@ -155,11 +155,8 @@ def calcPopDynamics(pqrsData, tMax=1000, tParts=10000, z0=0.01, F0=0.1):
     z_0 = np.full(2*n, z0)
     z_0 = np.append(z_0, F0)
 
-    pop = integrate.solve_ivp(integrateIter, args=(n, p, q, r, s), t_span=[0, tMax], y0=z_0, method='Radau',
-                                                                                                    dense_output=True)
     t = np.linspace(0, tMax, tParts)
-    # dense_output=True need only for .sol(t)
-    # either .sol(t) or .y & .t
+    pop = integrate.solve_ivp(integrateIter, args=(n, p, q, r, s), t_span=[0, tMax], t_eval=t, y0=z_0, method='LSODA')
 
     indxs = []
     for i in range(n):
@@ -167,12 +164,13 @@ def calcPopDynamics(pqrsData, tMax=1000, tParts=10000, z0=0.01, F0=0.1):
     for i in range(n):
         indxs.append('z2_v'+str(pqrsData.index[i]))
     indxs.append('F')
-    popData = pd.DataFrame(pop.sol(t), columns=t, index=indxs)
+    popData = pd.DataFrame(pop.y, columns=pop.t, index=indxs)
     return popData
 
 def analyzePopDynamics(stratData, rawPopData, eps):
     n = len(stratData.index)
     t = len(rawPopData.columns)
+    rawPopMatr = rawPopData.values  # 38s ---> 0.44s !!!
 
     timeTicks = []
     indexes = []
@@ -180,23 +178,23 @@ def analyzePopDynamics(stratData, rawPopData, eps):
     for i in range(n):
         strat = []
         for j in range(t):
-            if (rawPopData.iloc[i,j] < 0 and rawPopData.iloc[i+n,j] < 0):
+            if (rawPopMatr[i,j] < 0 and rawPopMatr[i+n,j] < 0):
                 if (np.isin(j, timeTicks)):
                     indexes.append(stratData.index[i])
                     strat.append(-1)
                 else:
                     strat.append(rawPopData.columns[j])
-                    strat.append(rawPopData.iloc[i,j])
-                    strat.append(rawPopData.iloc[i+n,j])
+                    strat.append(rawPopMatr[i,j])
+                    strat.append(rawPopMatr[i+n,j])
                     strats.append(strat)
                     timeTicks.append(j)
                 break
         if not strat:
-            if (rawPopData.iloc[i,t-1] >= eps and rawPopData.iloc[i+n,t-1] >= eps):
+            if (rawPopMatr[i,t-1] >= eps and rawPopMatr[i+n,t-1] >= eps):
                 print(stratData.index[i], "not nullified")
                 strat.append(rawPopData.columns[t-1])
-                strat.append(rawPopData.iloc[i,t-1])
-                strat.append(rawPopData.iloc[i+n,t-1])
+                strat.append(rawPopMatr[i,t-1])
+                strat.append(rawPopMatr[i+n,t-1])
                 strats.append(strat)
             else:
                 print(stratData.index[i], "not nullified, dropped")
