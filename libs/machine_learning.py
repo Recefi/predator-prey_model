@@ -38,21 +38,31 @@ def runClfSVM(selData):
                                                         "train_X": X_train.mean(axis=0), "train_y": y_train.mean()}))
 
     # Train
-    clf = svm.LinearSVC(fit_intercept=False, dual=False, random_state=21, C=1)
+    clf = svm.LinearSVC(fit_intercept=False, dual=False, random_state=55, C=1)
+    #clf = svm.SVC(kernel="linear", random_state=55, C=1)
     clf.fit(X_train, y_train)
     lams = clf.coef_[0]
-    # if (lams[39] > 0 and lams[1] > 0 and lams[2] > 0 and lams[3] > 0 and lams[4] > 0
-    #                     and lams[5] > 0 and lams[6] > 0 and lams[7] > 0 and lams[8] > 0):
-    #     print("Ok")
-    # else:
-    #     for i in tqdm.tqdm(range(1, 1001)):
-    #         clf = svm.LinearSVC(fit_intercept=False, dual=False, random_state=21, C=i*1e-2)
-    #         clf.fit(X_train, y_train)
-    #         lams = clf.coef_[0]
-    #         if (lams[39] > 0 and lams[1] > 0 and lams[2] > 0 and lams[3] > 0 and lams[4] > 0
-    #                             and lams[5] > 0 and lams[6] > 0 and lams[7] > 0 and lams[8] > 0):
-    #             print("Ok")
-    #             break
+    print(lams)
+    if (lams[38] > 0 and lams[0] > 0 and lams[1] > 0 and lams[2] > 0 and lams[3] > 0
+                        and lams[4] > 0 and lams[5] > 0 and lams[6] > 0 and lams[7] > 0):
+        print("Ok")
+    else:
+        for i in tqdm.tqdm(range(100, 1001)):
+            clf = svm.LinearSVC(fit_intercept=False, dual=False, random_state=55, C=i*1e-2)
+            clf.fit(X_train, y_train)
+            lams = clf.coef_[0]
+            if (lams[38] > 0 and lams[0] > 0 and lams[1] > 0 and lams[2] > 0 and lams[3] > 0
+                                and lams[4] > 0 and lams[5] > 0 and lams[6] > 0 and lams[7] > 0):
+                print("Ok")
+                break
+        for i in tqdm.tqdm(range(100, 0, -1)):
+            clf = svm.LinearSVC(fit_intercept=False, dual=False, random_state=55, C=i*1e-2)
+            clf.fit(X_train, y_train)
+            lams = clf.coef_[0]
+            if (lams[38] > 0 and lams[0] > 0 and lams[1] > 0 and lams[2] > 0 and lams[3] > 0
+                                and lams[4] > 0 and lams[5] > 0 and lams[6] > 0 and lams[7] > 0):
+                print("Ok")
+                break
 
     # Test
     print(confusion_matrix(y_test, clf.predict(X_test)))

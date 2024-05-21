@@ -14,9 +14,18 @@ import libs.param as param
 
 
 # stratData = gs.genStrats(500, "beta")
+# #gs.filterStratsByBa(stratData, eps=0.25)
 # stratData.loc[len(stratData.index) - 1] = [-34.58, -3.29, -83.32, -51.57]
 # ut.writeData(stratData, "strat_data")
 stratData = ut.readData("strat_data")
+#stratData = ut.readData("strat_data.bck")
+#gs.filterStratsByBa2(stratData, epsBa=30, epsCnt=1)
+#gs.filterStratsByBa2(stratData, epsBa=15, epsCnt=1)
+#print(len(stratData.index))
+#ut.writeData(stratData, "strat_data")
+
+#gui.histStrats(stratData)
+#plt.show()
 
 mpData = gs.calcMpData(stratData)
 ut.writeData(mpData, "mp_data")
@@ -35,8 +44,9 @@ shortMpData = mpData.loc[stratPopData.index]
 print("strats: ", len(stratPopData.index))
 
 # gui.popDynamics(rawPopData)
-# gui.corrMps(shortMpData)
-# plt.show()
+#gui.corrMps(shortMpData)
+#gui.histStrats(stratData)
+#plt.show()
 
 start = time.time()
 selData = gs.calcSelection(stratPopData, shortMpData)
@@ -45,7 +55,7 @@ start = time.time()
 ut.writeData(selData, "sel_data")
 print ("write sel time: ", time.time() - start)
 
-#gui.histMps(selData)
+# gui.histMps(selData)
 # plt.show()
 
 
@@ -59,6 +69,7 @@ norm_selData.loc[:,'M1':'M8M8'] = norm_selData.loc[:,'M1':'M8M8'] / mpMaxs
 
 coefData = tr.getCoefData(pqrsData, norm_mlLams[1:], mlLams[1:], FLim)
 ut.writeData(coefData, "coef_data")
+
 
 #subprocess.Popen("python clfPlanes.py dynamic_pred --lam0="+str(norm_mlLams[0])+" --show", shell=True)
 
@@ -95,7 +106,7 @@ print(comparePqrsData)
 a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = td.restoreParam(p, q, r, s, coefData, mpData, optPntId)
 compareParamData = td.compareRestoredParam(a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
 print(compareParamData)
-
+ut.writeData(compareParamData, "compare_param_data")
 
 _p, _q, _r, _s = pqrsData.loc[optPntId, ['p','q','r','s']]
 _FLim, err = gs.calcFLim(_p, _q, _r, _s, F0=0.1)
@@ -120,22 +131,22 @@ gs.chkFLim(_p, _q, _r, _s, _FLim, z1, z2)
 print()
 
 
-stratMinsData, idOptStrat = gs.fitMaxMin(stratData, pqrsData)
-ut.writeData(stratMinsData, "strat_mins_data")
-print(stratMinsData.loc[idOptStrat])
-gui.stratSinsById(stratData, idOptStrat)
-plt.show()
+# stratMinsData, idOptStrat = gs.fitMaxMin(stratData, pqrsData)
+# ut.writeData(stratMinsData, "strat_mins_data")
+# print(stratMinsData.loc[idOptStrat])
+# gui.stratSinsById(stratData, idOptStrat)
+# plt.show()
 
-rstdPqrsData = gs.calcPqrsData(mpData, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
-ut.writeData(rstdPqrsData, "pqrs_rstd_data")
-stratMinsData, idOptStrat = gs.fitMaxMin(stratData, rstdPqrsData)
-ut.writeData(stratMinsData, "strat_mins_rstd_data")
-print(stratMinsData.loc[idOptStrat])
-gui.stratSinsById(stratData, idOptStrat)
-plt.show()
+# rstdPqrsData = gs.calcPqrsData(mpData, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
+# ut.writeData(rstdPqrsData, "pqrs_rstd_data")
+# stratMinsData, idOptStrat = gs.fitMaxMin(stratData, rstdPqrsData)
+# ut.writeData(stratMinsData, "strat_mins_rstd_data")
+# print(stratMinsData.loc[idOptStrat])
+# gui.stratSinsById(stratData, idOptStrat)
+# plt.show()
 
-gui.compareStratSinsById(stratData, optPntId, idOptStrat)
-plt.show()
+# gui.compareStratSinsById(stratData, optPntId, idOptStrat)
+# plt.show()
 
 
 # FsolsData = gs.chkFsolsOnSel(stratData, pqrsData, abs=False)

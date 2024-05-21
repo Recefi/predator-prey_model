@@ -5,7 +5,7 @@ import time
 from scipy.optimize import fsolve
 import tqdm
 import gc
-from numba import jit, njit
+from numba import jit, njit, prange
 
 import libs.param as param
 import libs.utility as ut
@@ -152,7 +152,7 @@ def calcPopDynamics(pqrsData, tMax=1000, tParts=10000, z0=0.01, F0=0.1):
         result.append(sumDeath*F - F)
 
         return result
-    
+
     z_0 = np.full(2*n, z0)
     z_0 = np.append(z_0, F0)
 
@@ -169,7 +169,7 @@ def calcPopDynamics(pqrsData, tMax=1000, tParts=10000, z0=0.01, F0=0.1):
     indxs.append('F')
     popData = pd.DataFrame(pop.sol(t), columns=t, index=indxs)
     return popData
-    
+
 def analyzePopDynamics(stratData, rawPopData, eps):
     n = len(stratData.index)
     t = len(rawPopData.columns)
@@ -201,7 +201,7 @@ def analyzePopDynamics(stratData, rawPopData, eps):
             else:
                 print(stratData.index[i], "not nullified, dropped")
                 indexes.append(stratData.index[i])
-    
+
     tmpStratData = stratData.drop(indexes)
     popData = pd.DataFrame(strats, columns=['t', 'z1', 'z2'], index=tmpStratData.index)
     stratPopData = pd.concat([tmpStratData, popData], axis=1)
@@ -493,10 +493,10 @@ def calcGenlPqrsData(Aj, Bj, Aa, Ba, a_j=param.alpha_j, b_j=param.beta_j, g_j=pa
 
     return p, q, r, s
 
-@njit
+@njit(parallel=True)
 def findMins(p, q, r, s, Fs, Fsj):
-    mins = []
-    for _j in range(len(Fs)):
+    mins = np.empty(len(Fs))
+    for _j in prange(len(Fs)):  # parallel range
         j = Fsj[_j]
         F = Fs[_j]
         min = 1
@@ -506,7 +506,7 @@ def findMins(p, q, r, s, Fs, Fsj):
                     - (-s[i]*F-p[i]-q[i]*F+(np.sqrt((4*r[i]*p[i]+(p[i]+q[i]*F-s[i]*F)**2))))
                 if (fit < min):
                     min = fit
-        mins.append(min)
+        mins[_j] = min
     return mins
 
 def genlFitMaxMin(Aj, Bj, Aa, Ba, p, q, r, s):
@@ -549,3 +549,30 @@ def genlFitMaxMin(Aj, Bj, Aa, Ba, p, q, r, s):
     stratMinsData = pd.DataFrame({'Aj': _Aj, 'Bj': _Bj, 'Aa': _Aa, 'Ba': _Ba, 'min': mins})
     idOptStrat = stratMinsData['min'].idxmax()
     return stratMinsData, idOptStrat
+
+@njit
+def findIndxsByBa(Ba, offsets, eps):
+    indxs = []
+    for i in range(len(Ba)):
+        for j in range(i+1, len(Ba)):
+            if (np.abs(Ba[i] - Ba[j]) < eps):
+                indxs.append(offsets[j])
+    return indxs
+
+def filterStratsByBa(stratData, eps):
+    Ba = stratData['Ba'].tolist()
+    offsets = stratData.index.tolist()
+    indxs = findIndxsByBa(Ba, offsets, eps)
+    stratData.drop(index=indxs, inplace=True)
+
+def filterStratsByBa2(stratData, epsBa=25, epsCnt=2):
+    Ba = stratData['Ba'].tolist()
+    offsets = stratData.index.tolist()
+    indxs = []
+    count = 0
+    for i in range(len(Ba)):
+        if (np.abs(Ba[i]) < epsBa):
+            if (count % epsCnt == 0):
+                indxs.append(offsets[i])
+            count+=1
+    stratData.drop(index=indxs, inplace=True)
