@@ -471,10 +471,10 @@ def genGenlStrats(a_j=param.alpha_j, b_j=param.beta_j, g_j=param.gamma_j, d_j=pa
 
 def calcGenlPqrsData(Aj, Bj, Aa, Ba, a_j=param.alpha_j, b_j=param.beta_j, g_j=param.gamma_j, d_j=param.delta_j,
                                 a_a = param.alpha_a, b_a=param.beta_a, g_a=param.gamma_a, d_a=param.delta_a):
-    p = []
-    q = []
-    r = []
-    s = []
+    p = np.empty(len(Aj))
+    q = np.empty(len(Aj))
+    r = np.empty(len(Aj))
+    s = np.empty(len(Aj))
     for i in tqdm.tqdm(range(len(Aj))):
         M1 = param.sigma1 * (Aj[i] + param.D)
         M2 = -param.sigma2 * (Aj[i] + param.D + Bj[i]/2)
@@ -486,10 +486,10 @@ def calcGenlPqrsData(Aj, Bj, Aa, Ba, a_j=param.alpha_j, b_j=param.beta_j, g_j=pa
         M7 = -2*(np.pi*Ba[i])**2
         M8 = -((Aa[i]+param.D0)**2 + (Ba[i]**2)/2)
 
-        p.append(a_j*M1 + b_j*M3 + d_j*M4)
-        r.append(a_a*M5 + b_a*M7 + d_a*M8)
-        q.append(-g_j*M2)
-        s.append(-g_a*M6)
+        p[i] = a_j*M1 + b_j*M3 + d_j*M4
+        r[i] = a_a*M5 + b_a*M7 + d_a*M8
+        q[i] = -g_j*M2
+        s[i] = -g_a*M6
 
     return p, q, r, s
 
