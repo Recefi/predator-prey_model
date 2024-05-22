@@ -11,7 +11,7 @@ import libs.param as param
 import libs.utility as ut
 
 
-def genStrats(n, distrA="uniform", by4=False):
+def genStrats(n, distrA="uniform", by4=False, ab=5):
     if (distrA == "uniform"):  # r12,r56:~0.96  # r34,r78:~-0.2  # =beta(1,1)
         a_j = np.random.uniform(0, -param.D, size=n)
         a_a = np.random.uniform(0, -param.D, size=n)
@@ -19,8 +19,8 @@ def genStrats(n, distrA="uniform", by4=False):
         a_j = np.random.triangular(-param.D, -param.D/2, 0, size=n)
         a_a = np.random.triangular(-param.D, -param.D/2, 0, size=n)
     if (distrA == "beta"):  # по мере увеличения (a=b) A сужает диапозон и повышает пред.высоту гистограммы, B наоборот
-        a_j = -param.D * np.random.beta(5, 5, size=n)
-        a_a = -param.D * np.random.beta(5, 5, size=n)
+        a_j = -param.D * np.random.beta(ab, ab, size=n)
+        a_a = -param.D * np.random.beta(ab, ab, size=n)
         # при (4,4)  # r12,r56:~0.84  # r34,r78:~0.3
         # при (5,5)  # r12,r56:~0.8  # r34,r78:~0.5
         # при (6,6)  # r12,r56:~0.77  # r34,r78:~0.55
@@ -91,14 +91,15 @@ def calcMpData(stratData):
 
 def calcPqrsData(mpData, a_j=param.alpha_j, b_j=param.beta_j, g_j=param.gamma_j, d_j=param.delta_j,
                                 a_a = param.alpha_a, b_a=param.beta_a, g_a=param.gamma_a, d_a=param.delta_a):
+    #M1, M2, M3, M4, M5, M6, M7, M8 = (mpData[col] for col in mpData[['M1','M2','M3','M4','M5','M6','M7','M8']])
+    M1, M2, M3, M4, M5, M6, M7, M8 = (mpData[col].values for col in mpData[['M1','M2','M3','M4','M5','M6','M7','M8']])
     pqrs = []
-    for i in mpData.index:
-        M1, M2, M3, M4, M5, M6, M7, M8 = mpData.loc[i, 'M1':'M8']
-
-        p = a_j*M1 + b_j*M3 + d_j*M4
-        r = a_a*M5 + b_a*M7 + d_a*M8
-        q = -g_j*M2
-        s = -g_a*M6
+    #for i in mpData.index:
+    for i in range(len(M1)):
+        p = a_j*M1[i] + b_j*M3[i] + d_j*M4[i]
+        r = a_a*M5[i] + b_a*M7[i] + d_a*M8[i]
+        q = -g_j*M2[i]
+        s = -g_a*M6[i]
         pqrs.append([p, q, r, s])
 
     pqrsData = pd.DataFrame(pqrs, columns=["p", "q", "r", "s"], index=mpData.index)
@@ -156,7 +157,7 @@ def calcPopDynamics(pqrsData, tMax=1000, tParts=10000, z0=0.01, F0=0.1):
     z_0 = np.append(z_0, F0)
 
     t = np.linspace(0, tMax, tParts)
-    pop = integrate.solve_ivp(integrateIter, args=(n, p, q, r, s), t_span=[0, tMax], t_eval=t, y0=z_0, method='LSODA')
+    pop = integrate.solve_ivp(integrateIter, args=(n, p, q, r, s), t_span=[0, tMax], t_eval=t, y0=z_0, method='Radau')
 
     indxs = []
     for i in range(n):
@@ -212,10 +213,13 @@ def analyzePopDynamics(stratData, rawPopData, eps):
         print("WARNING: F* haven't reached!!!")
     return stratPopData, FLim
 
-def calcSelection(keyData, mpData):
+def calcSelection(keyData, mpData, callerName=""):
     n = len(mpData.index)
+    mpMatr = mpData.values  # 17.84s ---> 2.27s !!!
 
-    if (ut.getCallerName() == "static_pred"):
+    if not callerName:
+        callerName = ut.getCallerName()
+    if (callerName == "static_pred"):
         fit = keyData['fit'].values
         def assignClass(i, j):
             if (fit[i] > fit[j]):
@@ -223,8 +227,7 @@ def calcSelection(keyData, mpData):
             else:
                 elem = -1
             return elem
-
-    if (ut.getCallerName() == "dynamic_pred"):
+    if (callerName == "dynamic_pred"):
         t = keyData['t'].values
         z1 = keyData['z1'].values
         z2 = keyData['z2'].values
@@ -245,9 +248,9 @@ def calcSelection(keyData, mpData):
     for i in range(n):
         for j in range(i+1, n):  
             elemClass = assignClass(i, j)
-            elemDiffs = mpData.iloc[i] - mpData.iloc[j]
-            sel.append([elemClass] + elemDiffs.to_list())
-            sel.append([-elemClass] + (-elemDiffs).to_list())
+            elemDiffs = mpMatr[i] - mpMatr[j]
+            sel.append([elemClass] + elemDiffs.tolist())
+            sel.append([-elemClass] + (-elemDiffs).tolist())
     # с обр.парами, чтобы получить выборку центрированную как по разностям макропараметров, так и по классам
     # за счет этого восст.гиперплоскость будет проходить примерно(с погр-тью до точн-ти класс-ра) ч-з центр координат
     #                                        и lam0 можно будет приравнять нулю (или сообщить класс-ру считать lam0 = 0)
