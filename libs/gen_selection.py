@@ -6,6 +6,7 @@ from scipy.optimize import fsolve
 import tqdm
 import gc
 from numba import jit, njit, prange
+from joblib import Parallel, delayed
 
 import libs.param as param
 import libs.utility as ut
@@ -491,6 +492,31 @@ def calcGenlPqrsData(Aj, Bj, Aa, Ba, a_j=param.alpha_j, b_j=param.beta_j, g_j=pa
 
     return p, q, r, s
 
+def findF(p, q, r, s, j):
+    F, err = calcFLim(p[j], q[j], r[j], s[j], F0=0.1)
+    next = 4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0
+    if (not next):
+        z1, z2 = calcZLim(p[j], q[j], r[j], s[j], F)
+        roots, errs = chkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
+        next = (roots.real > 0).any()
+    if next:
+        F, err = calcFLim(p[j], q[j], r[j], s[j], F0=-100)
+        next = 4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0
+        if (not next):
+            z1, z2 = calcZLim(p[j], q[j], r[j], s[j], F)
+            roots, errs = chkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
+            next = (roots.real > 0).any()
+        if next:
+            F, err = calcFLim(p[j], q[j], r[j], s[j], F0=100)
+            next = 4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0
+            if (not next):
+                z1, z2 = calcZLim(p[j], q[j], r[j], s[j], F)
+                roots, errs = chkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
+                next = (roots.real > 0).any()
+            if next:
+                return []
+    return [F, j]
+
 @njit(parallel=True)
 def findMins(p, q, r, s, Fs, Fsj):
     mins = np.empty(len(Fs))
@@ -508,33 +534,11 @@ def findMins(p, q, r, s, Fs, Fsj):
     return mins
 
 def genlFitMaxMin(Aj, Bj, Aa, Ba, p, q, r, s):
-    Fs = []
-    Fsj = []
-    for j in tqdm.tqdm(range(len(p))):
-        F, err = calcFLim(p[j], q[j], r[j], s[j], F0=0.1)
-        next = 4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0
-        if (not next):
-            z1, z2 = calcZLim(p[j], q[j], r[j], s[j], F)
-            roots, errs = chkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
-            next = (roots.real > 0).any()
-        if next:
-            F, err = calcFLim(p[j], q[j], r[j], s[j], F0=-100)
-            next = 4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0
-            if (not next):
-                z1, z2 = calcZLim(p[j], q[j], r[j], s[j], F)
-                roots, errs = chkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
-                next = (roots.real > 0).any()
-            if next:
-                F, err = calcFLim(p[j], q[j], r[j], s[j], F0=100)
-                next = 4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0
-                if (not next):
-                    z1, z2 = calcZLim(p[j], q[j], r[j], s[j], F)
-                    roots, errs = chkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
-                    next = (roots.real > 0).any()
-                if next:
-                    continue
-        Fs.append(F)
-        Fsj.append(j)
+    res = Parallel(n_jobs=-1)(delayed(findF)(p, q, r, s, j) for j in tqdm.tqdm(range(len(p))) if j)
+    start = time.time()
+    Fs = [item[0] for item in res if item]
+    Fsj = [item[1] for item in res if item]
+    print ("analyze res list: ", time.time() - start)
 
     start = time.time()
     mins = findMins(p, q, r, s, Fs, Fsj)
