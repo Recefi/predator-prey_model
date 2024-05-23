@@ -28,5 +28,8 @@ p, q, r, s = gs.calcGenlPqrsData(Aj, Bj, Aa, Ba, a_j, b_j, g_j, d_j, a_a, b_a, g
 genlStratMinsData, idOptStrat = gs.genlFitMaxMin(Aj, Bj, Aa, Ba, p, q, r, s)
 print(genlStratMinsData.loc[idOptStrat])
 ut.writeData(genlStratMinsData, "general_strat_mins_rstd_data")
+
 gui.stratSinsById(genlStratData, idOptStrat)
+_Aj, _Bj, _Aa, _Ba = genlStratData.loc[idOptStrat, 'Aj':'Ba']
+gui.compareStratSins(-34.58, -3.29, -83.32, -51.57, _Aj, _Bj, _Aa, _Ba)
 plt.show()

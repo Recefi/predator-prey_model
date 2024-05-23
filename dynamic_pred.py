@@ -13,11 +13,11 @@ import libs.test_dynamic as td
 import libs.param as param
 
 
-stratData = gs.genStrats(100, "beta", ab=5)
-#stratData = gs.genStrats(500, "uniform")
-#gs.filterStratsByBa(stratData, eps=0.25)
-stratData.loc[len(stratData.index) - 1] = [-34.58, -3.29, -83.32, -51.57]
-ut.writeData(stratData, "strat_data")
+# stratData = gs.genStrats(100, "beta", ab=5)
+# #stratData = gs.genStrats(500, "uniform")
+# #gs.filterStratsByBa(stratData, eps=0.25)
+# stratData.loc[len(stratData.index) - 1] = [-34.58, -3.29, -83.32, -51.57]
+# ut.writeData(stratData, "strat_data")
 stratData = ut.readData("strat_data")
 
 #gui.histStrats(stratData)
@@ -101,12 +101,12 @@ print(comparePqrsData)
 
 a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = td.restoreParam(p, q, r, s, coefData, mpData, optPntId)
 compareParamData = td.compareRestoredParam(a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
-#with pd.option_context('display.precision', 6, 'display.float_format', '{:.6f}'.format):
 print(compareParamData)
 ut.writeData(compareParamData, "compare_param_data")
-_compareParamData = ut.readData("_compare_param_data")
-_compareParamData = pd.concat([_compareParamData, compareParamData], axis=0)
-ut.writeData(_compareParamData, "_compare_param_data")
+
+# _compareParamData = ut.readData("_compare_param_data")
+# _compareParamData = pd.concat([_compareParamData, compareParamData], axis=0)
+# ut.writeData(_compareParamData, "_compare_param_data")
 
 _p, _q, _r, _s = pqrsData.loc[optPntId, ['p','q','r','s']]
 _FLim, err = gs.calcFLim(_p, _q, _r, _s, F0=0.1)
