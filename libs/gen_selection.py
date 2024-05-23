@@ -534,7 +534,7 @@ def findMins(p, q, r, s, Fs, Fsj):
     return mins
 
 def genlFitMaxMin(Aj, Bj, Aa, Ba, p, q, r, s):
-    res = Parallel(n_jobs=-1)(delayed(findF)(p, q, r, s, j) for j in tqdm.tqdm(range(len(p))) if j)
+    res = Parallel(n_jobs=-1)(delayed(findF)(p, q, r, s, j) for j in tqdm.tqdm(range(len(p))))
     start = time.time()
     Fs = [item[0] for item in res if item]
     Fsj = [item[1] for item in res if item]
@@ -548,7 +548,7 @@ def genlFitMaxMin(Aj, Bj, Aa, Ba, p, q, r, s):
     _Bj = [Bj[j] for j in Fsj]
     _Aa = [Aa[j] for j in Fsj]
     _Ba = [Ba[j] for j in Fsj]
-    stratMinsData = pd.DataFrame({'Aj': _Aj, 'Bj': _Bj, 'Aa': _Aa, 'Ba': _Ba, 'min': mins})
+    stratMinsData = pd.DataFrame({'Aj': _Aj, 'Bj': _Bj, 'Aa': _Aa, 'Ba': _Ba, 'min': mins}, index=Fsj)
     idOptStrat = stratMinsData['min'].idxmax()
     return stratMinsData, idOptStrat
 
