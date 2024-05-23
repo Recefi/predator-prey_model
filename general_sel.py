@@ -1,6 +1,7 @@
 import time
 import gc
 import pandas as pd
+import matplotlib.pyplot as plt
 
 import libs.gen_selection as gs
 import libs.utility as ut
@@ -28,3 +29,4 @@ genlStratMinsData, idOptStrat = gs.genlFitMaxMin(Aj, Bj, Aa, Ba, p, q, r, s)
 print(genlStratMinsData.loc[idOptStrat])
 ut.writeData(genlStratMinsData, "general_strat_mins_rstd_data")
 gui.stratSinsById(genlStratData, idOptStrat)
+plt.show()

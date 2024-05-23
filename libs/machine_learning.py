@@ -45,34 +45,34 @@ def runClfSVM(selData):
     lams = clf.coef_[0]
     print(lams)
 
-    def mlIter(i):
-        clf = svm.LinearSVC(fit_intercept=False, dual=False, random_state=55, C=i*1e-2)
-        clf.fit(X_train, y_train)
-        return clf
+    # def mlIter(i):
+    #     clf = svm.LinearSVC(fit_intercept=False, dual=False, random_state=55, C=i*1e-2)
+    #     clf.fit(X_train, y_train)
+    #     return clf
 
     if (lams[38] > 0 and lams[0] > 0 and lams[1] > 0 and lams[2] > 0 and lams[3] > 0
                         and lams[4] > 0 and lams[5] > 0 and lams[6] > 0 and lams[7] > 0):
         print("Ok")
-    else:
-        Cs = []
-        res = Parallel(n_jobs=-1)(delayed(mlIter)(i) for i in tqdm.tqdm(range(100, 1001)))
-        for _clf in tqdm.tqdm(res):
-            _lams = _clf.coef_[0]
-            if (_lams[38] > 0 and _lams[0] > 0 and _lams[1] > 0 and _lams[2] > 0 and _lams[3] > 0
-                                and _lams[4] > 0 and _lams[5] > 0 and _lams[6] > 0 and _lams[7] > 0):
-                Cs.append(_clf.get_params()['C'])
-                clf = _clf
-                lams = _lams
-        if not Cs:
-            res = Parallel(n_jobs=-1)(delayed(mlIter)(i) for i in tqdm.tqdm(range(100, 0, -1)))
-            for _clf in tqdm.tqdm(res):
-                _lams = _clf.coef_[0]
-                if (_lams[38] > 0 and _lams[0] > 0 and _lams[1] > 0 and _lams[2] > 0 and _lams[3] > 0
-                                    and _lams[4] > 0 and _lams[5] > 0 and _lams[6] > 0 and _lams[7] > 0):
-                    Cs.append(_clf.get_params()['C'])
-                    clf = _clf
-                    lams = _lams
-        print(Cs)
+    # else:
+    #     Cs = []
+    #     res = Parallel(n_jobs=-1)(delayed(mlIter)(i) for i in tqdm.tqdm(range(100, 1001)))
+    #     for _clf in tqdm.tqdm(res):
+    #         _lams = _clf.coef_[0]
+    #         if (_lams[38] > 0 and _lams[0] > 0 and _lams[1] > 0 and _lams[2] > 0 and _lams[3] > 0
+    #                             and _lams[4] > 0 and _lams[5] > 0 and _lams[6] > 0 and _lams[7] > 0):
+    #             Cs.append(_clf.get_params()['C'])
+    #             clf = _clf
+    #             lams = _lams
+    #     if not Cs:
+    #         res = Parallel(n_jobs=-1)(delayed(mlIter)(i) for i in tqdm.tqdm(range(100, 0, -1)))
+    #         for _clf in tqdm.tqdm(res):
+    #             _lams = _clf.coef_[0]
+    #             if (_lams[38] > 0 and _lams[0] > 0 and _lams[1] > 0 and _lams[2] > 0 and _lams[3] > 0
+    #                                 and _lams[4] > 0 and _lams[5] > 0 and _lams[6] > 0 and _lams[7] > 0):
+    #                 Cs.append(_clf.get_params()['C'])
+    #                 clf = _clf
+    #                 lams = _lams
+    #     print(Cs)
 
     # Test
     print(confusion_matrix(y_test, clf.predict(X_test)))

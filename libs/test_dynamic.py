@@ -16,6 +16,21 @@ def restorePQRS(FLim, stratPopData, coefData, mpData, optPntId):
 
     return p, q, r, s
 
+def restorePQRS_2(FLim, stratPopData, coefData, mpData, optPntId):
+    z1Lim = stratPopData.loc[optPntId, 'z1']
+    z2Lim = stratPopData.loc[optPntId, 'z2']
+    M2 = mpData.loc[optPntId, 'M2']
+    M6 = mpData.loc[optPntId, 'M6']
+    lam26 = coefData.loc[-1, 'lam26']
+    lam22 = coefData.loc[-1, 'lam22']
+    
+    r = (FLim + (z1Lim+z2Lim)**2)/z2Lim
+    s = (r*z2Lim - (z1Lim + z2Lim)**2)/(FLim*(z2Lim-(lam22*M2*z1Lim)/(lam26*M6)))
+    q = -(lam22*M2*s)/(lam26*M6)
+    p = (-q*FLim*z1Lim + r*z2Lim - z1Lim*(z1Lim + z2Lim))/z1Lim
+
+    return p, q, r, s
+
 def restoreParam(p, q, r, s, coefData, mpData, optPntId):
     M1, M2, M3, M4, M5, M6, M7, M8 = mpData.loc[optPntId, 'M1':'M8']
     lam1, lam2, lam3, lam4, lam5, lam6, lam7, lam8 = coefData.loc[-1, 'lam1':'lam8']

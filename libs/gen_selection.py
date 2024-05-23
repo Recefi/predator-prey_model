@@ -91,10 +91,8 @@ def calcMpData(stratData):
 
 def calcPqrsData(mpData, a_j=param.alpha_j, b_j=param.beta_j, g_j=param.gamma_j, d_j=param.delta_j,
                                 a_a = param.alpha_a, b_a=param.beta_a, g_a=param.gamma_a, d_a=param.delta_a):
-    #M1, M2, M3, M4, M5, M6, M7, M8 = (mpData[col] for col in mpData[['M1','M2','M3','M4','M5','M6','M7','M8']])
     M1, M2, M3, M4, M5, M6, M7, M8 = (mpData[col].values for col in mpData[['M1','M2','M3','M4','M5','M6','M7','M8']])
     pqrs = []
-    #for i in mpData.index:
     for i in range(len(M1)):
         p = a_j*M1[i] + b_j*M3[i] + d_j*M4[i]
         r = a_a*M5[i] + b_a*M7[i] + d_a*M8[i]
@@ -141,7 +139,6 @@ def integrateIter(t, z, n, p, q, r, s):
     result = np.empty(2*n + 1)
     for i in range(n):
         result[i] = -p[i]*z[i] - q[i]*z[i]*F + r[i]*z[i+n] - z[i]*sumComp
-    for i in range(n):
         result[i+n] = p[i]*z[i] - s[i]*z[i+n]*F - z[i+n]*sumComp
     result[2*n] = sumDeath*F - F
     return result

@@ -13,16 +13,12 @@ import libs.test_dynamic as td
 import libs.param as param
 
 
-# stratData = gs.genStrats(500, "beta")
-# #gs.filterStratsByBa(stratData, eps=0.25)
-# stratData.loc[len(stratData.index) - 1] = [-34.58, -3.29, -83.32, -51.57]
-# ut.writeData(stratData, "strat_data")
+stratData = gs.genStrats(100, "beta", ab=5)
+#stratData = gs.genStrats(500, "uniform")
+#gs.filterStratsByBa(stratData, eps=0.25)
+stratData.loc[len(stratData.index) - 1] = [-34.58, -3.29, -83.32, -51.57]
+ut.writeData(stratData, "strat_data")
 stratData = ut.readData("strat_data")
-#stratData = ut.readData("strat_data.bck")
-#gs.filterStratsByBa2(stratData, epsBa=30, epsCnt=1)
-#gs.filterStratsByBa2(stratData, epsBa=15, epsCnt=1)
-#print(len(stratData.index))
-#ut.writeData(stratData, "strat_data")
 
 #gui.histStrats(stratData)
 #plt.show()
@@ -33,7 +29,7 @@ pqrsData = gs.calcPqrsData(mpData)
 ut.writeData(pqrsData, "pqrs_data")
 
 start = time.time()
-rawPopData = gs.calcPopDynamics(pqrsData, tMax=2000, tParts=20000, z0=0.01, F0=0.1)
+rawPopData = gs.calcPopDynamics(pqrsData, tMax=5000, tParts=100000, z0=0.001, F0=0.001)
 print ("calc pop dynamics: ", time.time() - start)
 
 start = time.time()
@@ -43,17 +39,17 @@ ut.writeData(stratPopData, "strat_pop_data")
 shortMpData = mpData.loc[stratPopData.index]
 print("strats: ", len(stratPopData.index))
 
-# gui.popDynamics(rawPopData)
+#gui.popDynamics(rawPopData)
 #gui.corrMps(shortMpData)
 #gui.histStrats(stratData)
 #plt.show()
 
 start = time.time()
-selData = gs.calcSelection(stratPopData, shortMpData)
+selData = gs.calcSelection(stratPopData, shortMpData, callerName="dynamic_pred")
 print ("calc sel time: ", time.time() - start)
-start = time.time()
-ut.writeData(selData, "sel_data")
-print ("write sel time: ", time.time() - start)
+# start = time.time()
+# ut.writeData(selData, "sel_data")
+# print ("write sel time: ", time.time() - start)
 
 # gui.histMps(selData)
 # plt.show()
@@ -99,14 +95,18 @@ with pd.option_context('display.max_rows', 10):
 #plt.show()
 
 
-p, q, r, s = td.restorePQRS(FLim, stratPopData, coefData, mpData, optPntId)
+p, q, r, s = td.restorePQRS_2(FLim, stratPopData, coefData, mpData, optPntId)
 comparePqrsData = td.compareRestoredPQRS(p, q, r, s, pqrsData, optPntId)
 print(comparePqrsData)
 
 a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = td.restoreParam(p, q, r, s, coefData, mpData, optPntId)
 compareParamData = td.compareRestoredParam(a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
+#with pd.option_context('display.precision', 6, 'display.float_format', '{:.6f}'.format):
 print(compareParamData)
 ut.writeData(compareParamData, "compare_param_data")
+_compareParamData = ut.readData("_compare_param_data")
+_compareParamData = pd.concat([_compareParamData, compareParamData], axis=0)
+ut.writeData(_compareParamData, "_compare_param_data")
 
 _p, _q, _r, _s = pqrsData.loc[optPntId, ['p','q','r','s']]
 _FLim, err = gs.calcFLim(_p, _q, _r, _s, F0=0.1)
