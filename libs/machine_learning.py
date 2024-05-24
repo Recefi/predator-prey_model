@@ -26,8 +26,14 @@ def runClfSVM(selData):
                                                         random_state=74,
                                                         train_size=4*(len(y)//5), shuffle=False)
 
-    # X_train['M6M6'].plot(kind='box')
-    # plt.show()
+    X_train.loc[:,'M7'].plot(kind='box')
+    plt.show()
+    print(X_train['M7'].quantile([0.001,.005,.01,.04,.045,.05,.1,.2,.5,.9,.91,.925,.95,.99,.995,.999]))
+    indexes = X_train[(X_train['M7']<X_train['M7'].quantile(.02)) | (X_train['M7']>X_train['M7'].quantile(.98))].index
+    X_train = X_train.drop(index=indexes)
+    y_train = y_train.drop(index=indexes)
+    X_train.loc[:,'M7'].plot(kind='box')
+    plt.show()
     # corrMatr = X_train.loc[:, 'M2M2':'M6M6'].corr()
     # sns.heatmap(corrMatr, square=True, annot=True, fmt='.2f', vmin=-1, vmax=1, cmap='coolwarm')
     # plt.show()
