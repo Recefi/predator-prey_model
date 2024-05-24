@@ -552,29 +552,29 @@ def genlFitMaxMin(Aj, Bj, Aa, Ba, p, q, r, s):
     idOptStrat = stratMinsData['min'].idxmax()
     return stratMinsData, idOptStrat
 
-@njit
-def findIndxsByBa(Ba, offsets, eps):
-    indxs = []
-    for i in range(len(Ba)):
-        for j in range(i+1, len(Ba)):
-            if (np.abs(Ba[i] - Ba[j]) < eps):
-                indxs.append(offsets[j])
-    return indxs
+# @njit
+# def findIndxsByBa(Ba, offsets, eps):
+#     indxs = []
+#     for i in range(len(Ba)):
+#         for j in range(i+1, len(Ba)):
+#             if (np.abs(Ba[i] - Ba[j]) < eps):
+#                 indxs.append(offsets[j])
+#     return indxs
 
-def filterStratsByBa(stratData, eps):
-    Ba = stratData['Ba'].tolist()
-    offsets = stratData.index.tolist()
-    indxs = findIndxsByBa(Ba, offsets, eps)
-    stratData.drop(index=indxs, inplace=True)
+# def filterStratsByBa(stratData, eps):
+#     Ba = stratData['Ba'].tolist()
+#     offsets = stratData.index.tolist()
+#     indxs = findIndxsByBa(Ba, offsets, eps)
+#     stratData.drop(index=indxs, inplace=True)
 
-def filterStratsByBa2(stratData, epsBa=25, epsCnt=2):
-    Ba = stratData['Ba'].tolist()
-    offsets = stratData.index.tolist()
-    indxs = []
-    count = 0
-    for i in range(len(Ba)):
-        if (np.abs(Ba[i]) < epsBa):
-            if (count % epsCnt == 0):
-                indxs.append(offsets[i])
-            count+=1
-    stratData.drop(index=indxs, inplace=True)
+# def filterStratsByBa2(stratData, epsBa=25, epsCnt=2):
+#     Ba = stratData['Ba'].tolist()
+#     offsets = stratData.index.tolist()
+#     indxs = []
+#     count = 0
+#     for i in range(len(Ba)):
+#         if (np.abs(Ba[i]) < epsBa):
+#             if (count % epsCnt == 0):
+#                 indxs.append(offsets[i])
+#             count+=1
+#     stratData.drop(index=indxs, inplace=True)

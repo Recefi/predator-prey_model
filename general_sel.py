@@ -20,7 +20,6 @@ ut.writeData(genlStratData, "general_strat_data")
 
 
 compareParamData = ut.readData("compare_param_data", "dynamic_pred")
-#compareParamData = ut.readData("compare_param_data.best", "dynamic_pred")
 a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = compareParamData.loc['restored']
 print(a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
 
@@ -29,7 +28,6 @@ genlStratMinsData, idOptStrat = gs.genlFitMaxMin(Aj, Bj, Aa, Ba, p, q, r, s)
 print(genlStratMinsData.loc[idOptStrat])
 ut.writeData(genlStratMinsData, "general_strat_mins_rstd_data")
 
-gui.stratSinsById(genlStratData, idOptStrat)
 _Aj, _Bj, _Aa, _Ba = genlStratData.loc[idOptStrat, 'Aj':'Ba']
 gui.compareStratSins(-34.58, -3.29, -83.32, -51.57, _Aj, _Bj, _Aa, _Ba)
 plt.show()
