@@ -131,6 +131,17 @@ gs.chkFLim(_p, _q, _r, _s, _FLim, z1, z2)
 print()
 
 
+pqrsRow = pqrsData.loc[[optPntId]]
+stratRow = stratData.loc[[optPntId]]
+rawPopData = gs.calcPopDynamics(pqrsRow, tMax=5000, tParts=100000, z0=0.001, F0=0.1)
+stratPopData, FLim = gs.analyzePopDynamics(stratRow, rawPopData, 0.01)
+rawPopData = gs.calcPopDynamics(pqrsRow, tMax=5000, tParts=100000, z0=0.001, F0=1000)
+stratPopData, FLim = gs.analyzePopDynamics(stratRow, rawPopData, 0.01)
+
+
+# gui.phasePortrait(_p, _q, _r, _s)
+# plt.show()
+
 # stratMinsData, idOptStrat = gs.fitMaxMin(stratData, pqrsData)
 # ut.writeData(stratMinsData, "strat_mins_data")
 # print(stratMinsData.loc[idOptStrat])

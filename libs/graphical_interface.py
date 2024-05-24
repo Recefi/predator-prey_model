@@ -230,12 +230,14 @@ def clfPlanes(selData, lams):
     return fig
 
 def phasePortrait(p, q, r, s):
-    z1, z2, F = np.meshgrid(np.arange(-0.5, 1, 0.1), np.arange(-0.5, 1, 0.1), np.arange(-0.5, 1, 0.1))
+    z1, z2, F = np.meshgrid(np.arange(-0.1, 1, 0.1), np.arange(-0.1, 1, 0.1), np.arange(-0.1, 1, 0.1))
 
     dz1_dt = -p*z1 - q*z1*F + r*z2 - z1*(z1 + z2)
     dz2_dt = p*z1 - s*z2*F - z2*(z1 + z2)
     dF_dt = (q*z1 + s*z2)*F - F
     
-    ax = plt.figure().add_subplot(projection='3d')
+    fig = plt.figure()
+    ax = fig.add_subplot(projection='3d')
     #ax.quiver(z1, z2, F, dz1_dt, dz2_dt, dF_dt, length=0.1, normalize=True)
-    ax.quiver(z1, z2, F, dz1_dt, dz2_dt, dF_dt)
+    ax.quiver(z1, z2, F, dz1_dt, dz2_dt, dF_dt, length=0.1, normalize=True)
+    fig.tight_layout()
