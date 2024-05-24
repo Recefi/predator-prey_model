@@ -8,6 +8,7 @@ import pandas as pd
 import time
 import tqdm
 from joblib import Parallel, delayed
+import seaborn as sns
 
 
 def runClfSVM(selData):
@@ -24,6 +25,12 @@ def runClfSVM(selData):
     X_train, X_test, y_train, y_test = train_test_split(X, y,
                                                         random_state=74,
                                                         train_size=4*(len(y)//5), shuffle=False)
+
+    # X_train['M6M6'].plot(kind='box')
+    # plt.show()
+    # corrMatr = X_train.loc[:, 'M2M2':'M6M6'].corr()
+    # sns.heatmap(corrMatr, square=True, annot=True, fmt='.2f', vmin=-1, vmax=1, cmap='coolwarm')
+    # plt.show()
 
     # Нормирование
     mpMaxsSeries = X_train.loc[:,'M1':'M8M8'].abs().max()

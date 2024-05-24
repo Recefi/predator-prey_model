@@ -9,7 +9,7 @@ import libs.param as param
 def calcFit(p, q, r, s, i):
     return -s[i]*F-p[i]-q[i]*F+(np.sqrt((4*r[i]*p[i]+(p[i]+q[i]*F-s[i]*F)**2)))
 
-def manualCalcPqrs(Aj, Bj, Aa, Ba):
+def manualCalcPqrs(Aj, Bj, Aa, Ba, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a):
     M1 = param.sigma1 * (Aj + param.D)
     M2 = -param.sigma2 * (Aj + param.D + Bj/2)
     M3 = -2*(np.pi*Bj)**2
@@ -20,10 +20,10 @@ def manualCalcPqrs(Aj, Bj, Aa, Ba):
     M7 = -2*(np.pi*Ba)**2
     M8 = -((Aa+param.D0)**2 + (Ba**2)/2)
 
-    p = param.alpha_j*M1 + param.beta_j*M3 + param.delta_j*M4
-    r = param.alpha_a*M5 + param.beta_a*M7 + param.delta_a*M8
-    q = -param.gamma_j*M2
-    s = -param.gamma_a*M6
+    p = a_j*M1 + b_j*M3 + d_j*M4
+    r = a_a*M5 + b_a*M7 + d_a*M8
+    q = -g_j*M2
+    s = -g_a*M6
 
     return p, q, r, s
 
@@ -70,14 +70,14 @@ def manualFindF(p, q, r, s):
 # Ba    -45.733644
 # Name: 251395
 
-_Aj, _Bj, _Aa, _Ba = gs.genGenlStrats()
+_Aj, _Bj, _Aa, _Ba = gs.genGenlStrats()  # TODO
 compareParamData = ut.readData("compare_param_data", "dynamic_pred")
 a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = compareParamData.loc['restored']
 _p, _q, _r, _s = gs.calcGenlPqrsData(_Aj, _Bj, _Aa, _Ba, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
 F, j = gs.findF(_p, _q, _r, _s, 521)
 fit1 = calcFit(_p, _q, _r, _s, 521)
 fit2 = calcFit(_p, _q, _r, _s, 140901)
-p, q, r, s = manualCalcPqrs(-34.58, -3.29, -83.32, -51.57)
+p, q, r, s = manualCalcPqrs(-34.58, -3.29, -83.32, -51.57, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
 fit3 = -s*F-p-q*F+(np.sqrt((4*r*p+(p+q*F-s*F)**2)))
 print(F)
 print(fit1, fit2, fit3)
@@ -86,16 +86,40 @@ print(fit1, fit2, fit3)
 F, j = gs.findF(_p, _q, _r, _s, 140901)
 fit1 = calcFit(_p, _q, _r, _s, 521)
 fit2 = calcFit(_p, _q, _r, _s, 140901)
-p, q, r, s = manualCalcPqrs(-34.58, -3.29, -83.32, -51.57)
+p, q, r, s = manualCalcPqrs(-34.58, -3.29, -83.32, -51.57, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
 fit3 = -s*F-p-q*F+(np.sqrt((4*r*p+(p+q*F-s*F)**2)))
 print(F)
 print(fit1, fit2, fit3)
 
 
-p, q, r, s = manualCalcPqrs(-34.58, -3.29, -83.32, -51.57)
+p, q, r, s = manualCalcPqrs(-34.58, -3.29, -83.32, -51.57, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
 F, j = manualFindF(p, q, r, s)
 fit1 = calcFit(_p, _q, _r, _s, 521)
 fit2 = calcFit(_p, _q, _r, _s, 140901)
 fit3 = -s*F-p-q*F+(np.sqrt((4*r*p+(p+q*F-s*F)**2)))
 print(F)
 print(fit1, fit2, fit3)
+
+# p, q, r, s = manualCalcPqrs(-7.700000, 7.620953, -87.100000, -52.869876, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
+# F, j = manualFindF(p, q, r, s)
+# fit1 = -s*F-p-q*F+(np.sqrt((4*r*p+(p+q*F-s*F)**2)))
+# p, q, r, s = manualCalcPqrs(-7.700000, -7.620953, -87.100000, -52.869876, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
+# fit2 = -s*F-p-q*F+(np.sqrt((4*r*p+(p+q*F-s*F)**2)))
+# print(F)
+# print(fit1, fit2)
+
+# p, q, r, s = manualCalcPqrs(-7.700000, -7.620953, -87.100000, -52.869876, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
+# F, j = manualFindF(p, q, r, s)
+# fit2 = -s*F-p-q*F+(np.sqrt((4*r*p+(p+q*F-s*F)**2)))
+# p, q, r, s = manualCalcPqrs(-7.700000, 7.620953, -87.100000, -52.869876, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
+# fit1 = -s*F-p-q*F+(np.sqrt((4*r*p+(p+q*F-s*F)**2)))
+# print(F)
+# print(fit1, fit2)
+
+#3
+p, q, r, s = manualCalcPqrs(-7.700000, -7.620953, -87.100000, -52.869876, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
+Fsols = gs.findFsols(p, q, r, s)
+print(Fsols)
+FLams, errs = gs.chkFsols(p, q, r, s, Fsols)
+print(FLams)
+print(errs)

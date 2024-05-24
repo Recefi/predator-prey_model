@@ -11,14 +11,14 @@ import libs.utility as ut
 
 
 # #stratData = gs.genStrats(10000, "beta")
-# stratData = ut.readData("strat_data", "dynamic_pred")
+stratData = ut.readData("strat_data", "dynamic_pred")
 
 # #stratData.loc[len(stratData.index)] = [-34.58, -3.29, -83.32, -51.57]
 
 # mpData = gs.calcMpData(stratData)
 # pqrsData = gs.calcPqrsData(mpData)
 
-# stratFitData = gs.calcStratFitData(stratData, pqrsData, F=0.82596775326931)
+# stratFitData = gs.calcStratFitData(stratData, pqrsData, F=0.577304230127284)
 # mpData = mpData.loc[stratFitData.index]
 # print("strats: ", len(stratFitData.index))
 # #ut.writeData(stratFitData, "strat_fit_data")
@@ -59,11 +59,22 @@ import libs.utility as ut
 # FLams, errs = gs.chkFsols(_p, _q, _r, _s, Fsols)
 # print(FLams)
 
+# 3sel 5strat
+# 3sel 88strat
+i = 491
 pqrsData = ut.readData("pqrs_data", "dynamic_pred")
-_p, _q, _r, _s = pqrsData.loc[491, ['p','q','r','s']]
+_p, _q, _r, _s = pqrsData.loc[i, ['p','q','r','s']]
 #Fsols = gs.findFsols(_p, _q, _r, _s, abs=False)
 Fsols = gs.findFsols(_p, _q, _r, _s)
 #Fsols = gs.findComplexFsols(_p, _q, _r, _s)
 print(Fsols)
 FLams, errs = gs.chkFsols(_p, _q, _r, _s, Fsols)
 print(FLams)
+
+pqrsRow = pqrsData.loc[[i]]
+stratRow = stratData.loc[[i]]
+rawPopData = gs.calcPopDynamics(pqrsRow, tMax=500, tParts=100000, z0=0.001, F0=0.1)
+stratPopData, FLim = gs.analyzePopDynamics(stratRow, rawPopData, 0.01)
+print(FLim)
+gui.popDynamics(rawPopData)
+plt.show()

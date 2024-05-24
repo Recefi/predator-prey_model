@@ -409,14 +409,14 @@ def fitMaxMin(stratData, pqrsData):
             roots, errs = chkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
             next = (roots.real > 0).any()
         if next:
-            F, err = calcFLim(p[j], q[j], r[j], s[j], F0=-1000)
+            F, err = calcFLim(p[j], q[j], r[j], s[j], F0=-100)
             next = 4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0
             if (not next):
                 z1, z2 = calcZLim(p[j], q[j], r[j], s[j], F)
                 roots, errs = chkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
                 next = (roots.real > 0).any()
             if next:
-                F, err = calcFLim(p[j], q[j], r[j], s[j], F0=1000)
+                F, err = calcFLim(p[j], q[j], r[j], s[j], F0=100)
                 next = 4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0
                 if (not next):
                     z1, z2 = calcZLim(p[j], q[j], r[j], s[j], F)
@@ -551,6 +551,39 @@ def genlFitMaxMin(Aj, Bj, Aa, Ba, p, q, r, s):
     stratMinsData = pd.DataFrame({'Aj': _Aj, 'Bj': _Bj, 'Aa': _Aa, 'Ba': _Ba, 'min': mins}, index=Fsj)
     idOptStrat = stratMinsData['min'].idxmax()
     return stratMinsData, idOptStrat
+
+def compareSearchFsols(stratData, pqrsData):
+    p = pqrsData['p']
+    q = pqrsData['q']
+    r = pqrsData['r']
+    s = pqrsData['s']
+    _F01 = []
+    _Fm100 = []
+    _F100 = []
+    _resF = []
+    _integrF = []
+
+    for j in tqdm.tqdm(pqrsData.index):
+        F01, err = calcFLim(p[j], q[j], r[j], s[j], F0=0.1)
+        _F01.append(F01)
+        Fm100, err = calcFLim(p[j], q[j], r[j], s[j], F0=-100)
+        _Fm100.append(Fm100)
+        F100, err = calcFLim(p[j], q[j], r[j], s[j], F0=100)
+        _F100.append(F100)
+        _resF.append(findF(p, q, r, s, j))
+        pqrsRow = pqrsData.loc[[j]]
+        stratRow = stratData.loc[[j]]
+        rawPopData = calcPopDynamics(pqrsRow, tMax=500, tParts=1000, z0=0.001, F0=0.1)
+        stratPopData, integrF = analyzePopDynamics(stratRow, rawPopData, 0.01)
+        _integrF.append(integrF)
+
+    compareData = stratData.copy()
+    compareData.loc[:, 'F_0.1'] = _F01
+    compareData.loc[:, 'F_-100'] = _Fm100
+    compareData.loc[:, 'F_100'] = _F100
+    compareData.loc[:, 'F_res'] = _resF
+    compareData.loc[:, 'F_integr'] = _integrF
+    return compareData
 
 # @njit
 # def findIndxsByBa(Ba, offsets, eps):
