@@ -71,9 +71,11 @@ print(Fsols)
 FLams, errs = gs.chkFsols(_p, _q, _r, _s, Fsols)
 print(FLams)
 
-pqrsRow = pqrsData.loc[[i]]
-stratRow = stratData.loc[[i]]
-rawPopData = gs.calcPopDynamics(pqrsRow, tMax=500, tParts=100000, z0=0.001, F0=0.1)
+pqrsRow = pqrsData.loc[[i, 10, 12, 15, 98, 112]]
+stratRow = stratData.loc[[i, 10, 12, 15, 98, 112]]
+stratFitRow = gs.calcStratFitData(stratRow, pqrsRow, F = 1)
+gui.mostOptStratSins_static(stratFitRow, 2, 2)
+rawPopData = gs.calcPopDynamics(pqrsRow, tMax=500, tParts=100000, z0=0.001, F0=0.001)
 stratPopData, FLim = gs.analyzePopDynamics(stratRow, rawPopData, 0.01)
 print(FLim)
 gui.popDynamics(rawPopData)

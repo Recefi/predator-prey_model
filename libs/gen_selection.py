@@ -524,7 +524,9 @@ def findMins(p, q, r, s, Fs, Fsj):
         j = Fsj[_j]
         F = Fs[_j]
         min = 1
-        for i in range(len(p)):
+        #for i in range(len(p)):
+        for _i in range(len(Fs)):
+            i = Fsj[_i]
             if(4*r[i]*p[i]+(p[i]+q[i]*F-s[i]*F)**2 >= 0):
                 fit = -s[j]*F-p[j]-q[j]*F+(np.sqrt((4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2))) \
                     - (-s[i]*F-p[i]-q[i]*F+(np.sqrt((4*r[i]*p[i]+(p[i]+q[i]*F-s[i]*F)**2))))
@@ -573,7 +575,7 @@ def compareSearchFsols(stratData, pqrsData):
         _resF.append(findF(p, q, r, s, j))
         pqrsRow = pqrsData.loc[[j]]
         stratRow = stratData.loc[[j]]
-        rawPopData = calcPopDynamics(pqrsRow, tMax=500, tParts=1000, z0=0.001, F0=0.1)
+        rawPopData = calcPopDynamics(pqrsRow, tMax=500, tParts=1000, z0=0.001, F0=0.001)
         stratPopData, integrF = analyzePopDynamics(stratRow, rawPopData, 0.01)
         _integrF.append(integrF)
 
