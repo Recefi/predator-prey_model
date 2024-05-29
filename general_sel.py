@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import libs.gen_selection as gs
 import libs.utility as ut
 import libs.graphical_interface as gui
+import find_param as fp
 
 # Aj, Bj, Aa, Ba = gs.genGenlStrats()
 # genlStratData = pd.DataFrame({'Aj': Aj, 'Bj': Bj, 'Aa': Aa, 'Ba': Ba})
@@ -20,42 +21,16 @@ import libs.graphical_interface as gui
 compareParamData = ut.readData("compare_param_data", "dynamic_pred")
 a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = compareParamData.loc['restored']
 print(a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
+strat = fp.stratByParam(a_j, a_a, b_j, b_a, g_j, g_a, d_j, d_a)
+print(strat.x, strat.fun)
 Aj, Bj, Aa, Ba = gs.genGenlStrats(a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
+# Aj.append(-55.8)
+# Bj.append(-11.907889)
+# Aa.append(-66.3)
+# Ba.append(-45.733644)
 genlStratData = pd.DataFrame({'Aj': Aj, 'Bj': Bj, 'Aa': Aa, 'Ba': Ba})
 ut.writeData(genlStratData, "general_strat_data_rstd")
 p, q, r, s = gs.calcGenlPqrsData(Aj, Bj, Aa, Ba, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
-
-
-# pqrsData = pd.DataFrame({'p': p,'q': q,'r': r,'s': s})
-# _p, _q, _r, _s = pqrsData.loc[1043, ['p','q','r','s']]
-# _FLim, err = gs.calcFLim(_p, _q, _r, _s, F0=0.1)
-# print(_FLim)
-# z1, z2 = gs.calcZLim(_p, _q, _r, _s, _FLim)
-# print(z1, z2)
-# gs.chkFLim(_p, _q, _r, _s, _FLim, z1, z2)
-# print()
-
-# _FLim, err = gs.calcFLim(_p, _q, _r, _s, F0=1000)
-# print(_FLim)
-# z1, z2 = gs.calcZLim(_p, _q, _r, _s, _FLim)
-# print(z1, z2)
-# gs.chkFLim(_p, _q, _r, _s, _FLim, z1, z2)
-# print()
-
-# _FLim, err = gs.calcFLim(_p, _q, _r, _s, F0=-1000)
-# print(_FLim)
-# z1, z2 = gs.calcZLim(_p, _q, _r, _s, _FLim)
-# print(z1, z2)
-# gs.chkFLim(_p, _q, _r, _s, _FLim, z1, z2)
-# print()
-
-# pqrsRow = pqrsData.loc[[1043]]
-# stratRow = genlStratData.loc[[1043]]
-# rawPopData = gs.calcPopDynamics(pqrsRow, tMax=5000, tParts=100000, z0=0.001, F0=0.1)
-# stratPopData, FLim = gs.analyzePopDynamics(stratRow, rawPopData, 0.01)
-# rawPopData = gs.calcPopDynamics(pqrsRow, tMax=5000, tParts=100000, z0=0.001, F0=1000)
-# stratPopData, FLim = gs.analyzePopDynamics(stratRow, rawPopData, 0.01)
-
 
 genlStratMinsData, idOptStrat = gs.genlFitMaxMin(Aj, Bj, Aa, Ba, p, q, r, s)
 print(genlStratMinsData.loc[idOptStrat])

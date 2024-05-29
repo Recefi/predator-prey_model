@@ -49,7 +49,7 @@ def stratByParam(a_j, a_a, b_j, b_a, g_j, g_a, d_j, d_a):
     lc_a1 = optimize.LinearConstraint([[0, 0, 1, 1]], -D, 0)
     lc_a2 = optimize.LinearConstraint([[0, 0, 1, -1]], -D, 0)
     return optimize.differential_evolution(fitByParam,
-    bounds=[(-D, 0), (-D, 0), (-D, 0), (-D, 0)], constraints=(lc_j1, lc_j2, lc_a1, lc_a2))
+                        bounds=[(-D, 0), (-D, 0), (-D, 0), (-D, 0)], constraints=(lc_j1, lc_j2, lc_a1, lc_a2))
 
 def paramByStrat(Aj, Bj, Aa, Ba):
     def stratDeviation(x):
@@ -72,6 +72,9 @@ def paramByStrat(Aj, Bj, Aa, Ba):
     bounds=[(1e-6, 1), (1e-6, 1), (1e-6, 1), (1e-6, 1), (1e-6, 1), (1e-6, 1), (1e-6, 1), (1e-6, 1)])
 
 if __name__ == "__main__":
+    #strat = stratByParam(0.00470259, 29089.2, 0.0000055, 0.0098, 1.73809, 36.282, 0.00005, 441)
+    #strat = stratByParam(0.0000000470259, 0.290892, 0.000000000055, 0.000000098, 0.0000173809, 0.00036282, 0.0000000005, 0.00441)
+    #strat = stratByParam(0.000000047,0.290892,0.000000000055,0.000000098,0.0000173809,0.00036282,0.0000000005,0.00441)
     strat = stratByParam(0.013, 0.042, 0.0000063, 0.0000097, 0.0009, 0.036, 0.00017, 0.0002)
     print(strat.x, strat.fun)
 

@@ -508,25 +508,25 @@ def findF(p, q, r, s, j):
             next = (roots.real > 0).any()
         if next:
             F, err = calcFLim(p[j], q[j], r[j], s[j], F0=100)
-            next = 4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0
-            if (not next):
+            if (4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0):
+                #return [1, j]  # use this strat as i
+                return [0]
+            else:
                 z1, z2 = calcZLim(p[j], q[j], r[j], s[j], F)
                 roots, errs = chkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
-                next = (roots.real > 0).any()
-            if next:
-                return []
-    return [F, j]
+                if (roots.real > 0).any():
+                    return [0]
+    return [2, j, F]
 
 @njit(parallel=True)
-def findMins(p, q, r, s, Fs, Fsj):
+def findMins(p, q, r, s, Fs, Fsj, Fsi):
     mins = np.empty(len(Fs))
     for _j in prange(len(Fs)):  # parallel range
         j = Fsj[_j]
         F = Fs[_j]
         min = 1
-        #for i in range(len(p)):
-        for _i in range(len(Fs)):
-            i = Fsj[_i]
+        for _i in range(len(Fsi)):
+            i = Fsi[_i]
             if(4*r[i]*p[i]+(p[i]+q[i]*F-s[i]*F)**2 >= 0):
                 fit = -s[j]*F-p[j]-q[j]*F+(np.sqrt((4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2))) \
                     - (-s[i]*F-p[i]-q[i]*F+(np.sqrt((4*r[i]*p[i]+(p[i]+q[i]*F-s[i]*F)**2))))
@@ -538,12 +538,13 @@ def findMins(p, q, r, s, Fs, Fsj):
 def genlFitMaxMin(Aj, Bj, Aa, Ba, p, q, r, s):
     res = Parallel(n_jobs=-1)(delayed(findF)(p, q, r, s, j) for j in tqdm.tqdm(range(len(p))))
     start = time.time()
-    Fs = [item[0] for item in res if item]
-    Fsj = [item[1] for item in res if item]
+    Fs = [item[2] for item in res if (item[0] == 2)]
+    Fsj = [item[1] for item in res if (item[0] == 2)]
+    Fsi = [item[1] for item in res if (item[0])]
     print ("analyze res list: ", time.time() - start)
 
     start = time.time()
-    mins = findMins(p, q, r, s, Fs, Fsj)
+    mins = findMins(p, q, r, s, Fs, Fsj, Fsi)
     print ("calc genl mins time: ", time.time() - start)
 
     _Aj = [Aj[j] for j in Fsj]
@@ -586,30 +587,3 @@ def compareSearchFsols(stratData, pqrsData):
     compareData.loc[:, 'F_res'] = _resF
     compareData.loc[:, 'F_integr'] = _integrF
     return compareData
-
-# @njit
-# def findIndxsByBa(Ba, offsets, eps):
-#     indxs = []
-#     for i in range(len(Ba)):
-#         for j in range(i+1, len(Ba)):
-#             if (np.abs(Ba[i] - Ba[j]) < eps):
-#                 indxs.append(offsets[j])
-#     return indxs
-
-# def filterStratsByBa(stratData, eps):
-#     Ba = stratData['Ba'].tolist()
-#     offsets = stratData.index.tolist()
-#     indxs = findIndxsByBa(Ba, offsets, eps)
-#     stratData.drop(index=indxs, inplace=True)
-
-# def filterStratsByBa2(stratData, epsBa=25, epsCnt=2):
-#     Ba = stratData['Ba'].tolist()
-#     offsets = stratData.index.tolist()
-#     indxs = []
-#     count = 0
-#     for i in range(len(Ba)):
-#         if (np.abs(Ba[i]) < epsBa):
-#             if (count % epsCnt == 0):
-#                 indxs.append(offsets[i])
-#             count+=1
-#     stratData.drop(index=indxs, inplace=True)

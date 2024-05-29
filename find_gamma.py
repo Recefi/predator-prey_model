@@ -22,7 +22,7 @@ q = -param.gamma_j*M2
 s = -param.gamma_a*M6
 
 FLim = 1
-_FLim = gs.calcFLim(p, q, r, s, F0=0.1)
+_FLim, err = gs.calcFLim(p, q, r, s, F0=0.1)
 print("FLim:", _FLim)
 
 i = 0
@@ -36,7 +36,7 @@ while(abs(FLim - _FLim) > 1e-10):
     s = -gamma_a*M6
 
     FLim = _FLim
-    _FLim = gs.calcFLim(p, q, r, s, F0=0.1)
+    _FLim, err = gs.calcFLim(p, q, r, s, F0=0.1)
     print("_FLim:", _FLim)
     i+=1
 print(i, "iterations")

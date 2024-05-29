@@ -11,13 +11,15 @@ import libs.machine_learning as ml
 import libs.taylor as tr
 
 
-stratData = gs.genStrats(500, "beta")
-stratData.loc[len(stratData.index) - 1] = [-34.58, -3.29, -83.32, -51.57]
-ut.writeData(stratData, "strat_data")
+# stratData = gs.genStrats(500, "uniform")
+# stratData.loc[len(stratData.index) - 1] = [-34.58, -3.29, -83.32, -51.57]
+# ut.writeData(stratData, "strat_data")
 stratData = ut.readData("strat_data")
 #stratData = ut.readData("strat_pop_data")
 
-FLim = 0.3383
+print(stratData)
+
+FLim = 1
 
 mpData = gs.calcMpData(stratData)
 ut.writeData(mpData, "mp_data")
@@ -35,9 +37,9 @@ print("strats: ", len(stratFitData.index))
 
 # gui.allStratSins(stratFitData)
 # gui.optStratSins_static(stratFitData)
-#gui.mostOptStratSins_static(stratFitData, 3, 4)
+gui.mostOptStratSins_static(stratFitData, 3, 4)
 #gui.corrMps(shortMpData)
-#plt.show()
+plt.show()
 
 start = time.time()
 selData = gs.calcSelection(stratFitData, shortMpData)
@@ -67,8 +69,10 @@ ut.writeData(coefData, "coef_data")
 cosines = tr.getCosinesCoef(coefData)
 print(cosines)
 nearPntId = cosines.idxmax()
+print(nearPntId)
 print("nearPnt cosine:", cosines[nearPntId])
 optPntId = stratFitData['fit'].idxmax()
+print(optPntId)
 print("optPnt cosine:", cosines[optPntId], "\n")
 
 compareCoefData = tr.compareCoefs(coefData, nearPntId, optPntId)

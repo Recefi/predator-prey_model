@@ -13,10 +13,11 @@ import libs.test_dynamic as td
 import libs.param as param
 
 
-# stratData = gs.genStrats(100, "beta", ab=5)
+# stratData = gs.genStrats(500, "beta", ab=5)
 # #stratData = gs.genStrats(500, "uniform")
 # #gs.filterStratsByBa(stratData, eps=0.25)
 # stratData.loc[len(stratData.index) - 1] = [-34.58, -3.29, -83.32, -51.57]
+# #stratData.loc[len(stratData.index) - 1] = [-20.73, -3.93, -51.10, -39.16]
 # ut.writeData(stratData, "strat_data")
 stratData = ut.readData("strat_data")
 
@@ -79,18 +80,21 @@ optPntId = stratPopData[['z1','z2']].sum(axis="columns").idxmax()
 print(optPntId)
 print("optPnt cosine:", cosines[optPntId], "\n")
 
-compareCoefData = tr.compareCoefs(coefData, nearPntId, optPntId)
+compareCoefData = tr.compareCoefs_pres(coefData, nearPntId, optPntId)
 with pd.option_context('display.max_rows', 10):
     print(compareCoefData)
+ut.writeData(compareCoefData, "compare_coef_data")
 
 
-# gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M3', 'M4', 25, -130)
-# gui.clf3dPlane(norm_selData, norm_mlLams, 'M5', 'M7', 'M8', 25, -130)
+#gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M3', 'M4', 25, -130, a=0.2)
+#gui.clf3dPlane(norm_selData, norm_mlLams, 'M5', 'M7', 'M8', 25, -130, a=0.2)
 
 # gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M2', 'M4', 25, -130)
 # gui.clf3dPlane(norm_selData, norm_mlLams, 'M5', 'M6', 'M8', 25, -130)
 
 #gui.clf2dPlane(norm_selData, norm_mlLams, 'M2', 'M4M8')
+
+#gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M5', 'M2M6', 25, -130, a=0.2)
 
 #plt.show()
 

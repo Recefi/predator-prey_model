@@ -113,13 +113,24 @@ def compareCoefs(coefData, nearPntId, optPntId):
     norm_mlLams/=(np.abs(norm_mlLams.loc['lam1']))
     mlLams/=(np.abs(mlLams.loc['lam1']))
     calcLams_nearPnt/=(np.abs(calcLams_nearPnt.loc['lam1']))
-    calcLams_optPnt/=(np.abs(calcLams_optPnt.loc['lam1']))   
+    calcLams_optPnt/=(np.abs(calcLams_optPnt.loc['lam1']))
 
     compareCoefData = pd.DataFrame({'norm_machine': norm_mlLams, 'machine': mlLams,
                                 'nearPnt': calcLams_nearPnt, 'optPnt': calcLams_optPnt}, index=coefData.columns)
     compareCoefData.loc['cosines'] = cosine_similarity(compareCoefData.transpose())[1]
     return compareCoefData
 
+def compareCoefs_pres(coefData, nearPntId, optPntId):
+    """Сравниваем коэффициенты, нормируя по lam1 для презентации"""
+    mlLams = coefData.loc[-1].copy()
+    calcLams_nearPnt = coefData.loc[nearPntId].copy()
+
+    mlLams/=(np.abs(mlLams.loc['lam1']))
+    calcLams_nearPnt/=(np.abs(calcLams_nearPnt.loc['lam1']))
+
+    compareCoefData = pd.DataFrame({'machine': mlLams, 'taylor': calcLams_nearPnt}, index=coefData.columns)
+    compareCoefData.loc['cosines'] = cosine_similarity(compareCoefData.transpose())[0]
+    return compareCoefData
 
 def compareFits(coefData, fitData, mpData, pqrsData, nearPntId, optPntId, F=1):
     """Оценка восстановления функции фитнеса по самим значениям функции"""

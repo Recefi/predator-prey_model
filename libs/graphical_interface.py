@@ -21,6 +21,38 @@ def stratSins(Aj, Bj, Aa, Ba):
 
     ax.legend()
 
+def stratSinsPoints(Aj, Bj, Aa, Ba):
+    fig, ax = plt.subplots()
+
+    x = np.linspace(0, 1)
+    yj = Aj + Bj * np.cos(2 * np.pi * x)
+    ax.plot(x, yj, c="blue", label="Молодые особи")
+    ya = Aa + Ba * np.cos(2 * np.pi * x)
+    ax.plot(x, ya, c="red", label="Взрослые особи")
+
+    t = [[0.06, 0.19, 0.27, 0.38, 0.55, 0.7, 0.82, 0.98], [0.06, 0.19, 0.27, 0.38, 0.55, 0.7, 0.82, 0.98]]
+    d = [[-35, -39.5, -34, -33, -41, -40, -32.5, -33.8], [-43, -34.5, -110, -124, -125, -105, -39.5, -32.8]]
+
+    ax.scatter(t[0], d[0], color="blue")
+    ax.scatter(t[1], d[1], color="red")
+    ax.legend()
+
+def stratSinsPoints_2(Aj, Bj, Aa, Ba):
+    fig, ax = plt.subplots()
+
+    x = np.linspace(0, 1)
+    yj = Aj + Bj * np.cos(2 * np.pi * x)
+    ax.plot(x, yj, c="blue", label="Молодые особи")
+    ya = Aa + Ba * np.cos(2 * np.pi * x)
+    ax.plot(x, ya, c="red", label="Взрослые особи")
+
+    t = [[0.56, 0.69, 0.77, 0.88, 0.05, 0.2, 0.32, 0.48], [0.56, 0.69, 0.77, 0.88, 0.05, 0.2, 0.32, 0.48]]
+    d = [[-35, -39.5, -34, -33, -41, -40, -32.5, -33.8], [-43, -34.5, -110, -124, -125, -105, -39.5, -32.8]]
+
+    ax.scatter(t[0], d[0], color="blue")
+    ax.scatter(t[1], d[1], color="red")
+    ax.legend()
+
 def compareStratSins(Aj_1, Bj_1, Aa_1, Ba_1, Aj_2, Bj_2, Aa_2, Ba_2):
     fig, ax = plt.subplots()
 
@@ -114,6 +146,9 @@ def popDynamics(rawData):
     ax1.set_ylim([0, aj_yMax*1.1])
     ax2.set_ylim([0, aj_yMax*1.1])
     ax3.set_ylim([0, F_data.max()*1.1])
+    # ax1.set_xlim([-5, 400])
+    # ax2.set_xlim([-5, 400])
+    # ax3.set_xlim([-5, 400])
 
 def histStrats(stratData):
     ax = stratData[['Aj','Bj','Aa','Ba']].hist(layout=(2, 2), figsize=(12, 6), bins=200)
@@ -161,7 +196,7 @@ def clf2dPlane(selData, lams, M1, M2):
 
     fig.tight_layout()
 
-def clf3dPlane(selData, lams, M1, M2, M3, elevation=30, azimuth=-60):
+def clf3dPlane(selData, lams, M1, M2, M3, elevation=30, azimuth=-60, a=0.02):
     x_x = selData[M1].values
     x_y = selData[M2].values
     x_z = selData[M3].values
@@ -176,7 +211,7 @@ def clf3dPlane(selData, lams, M1, M2, M3, elevation=30, azimuth=-60):
     ax.set_xlabel(M1)
     ax.set_ylabel(M2)
     ax.set_zlabel(M3)
-    s = ax.scatter(x_x, x_y, x_z, c=y, cmap=cMap, alpha=0.02)
+    s = ax.scatter(x_x, x_y, x_z, c=y, cmap=cMap, alpha=a)
 
     tmp = np.linspace(-1,1)
     x_visual, y_visual = np.meshgrid(tmp,tmp)
