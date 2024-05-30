@@ -7,6 +7,7 @@ import tqdm
 import gc
 from numba import jit, njit, prange
 from joblib import Parallel, delayed
+import itertools
 
 import libs.param as param
 import libs.utility as ut
@@ -118,6 +119,20 @@ def calcStratFitData(stratData, pqrsData, F=1):
             fitness.append(fit)
             indxs.append(i)
     fitData = pd.DataFrame(fitness, columns=['fit'], index=indxs)
+    stratFitData = pd.concat([stratData.loc[fitData.index], fitData], axis=1)
+    return stratFitData
+
+def calcStratFitData_linsum(stratData, mpData, coefData):
+    mpMatr = mpData.values
+    lams = coefData.iloc[-1].values
+
+    fitness = []
+    for i in range(len(mpMatr)):
+        fit = 0
+        for j in range(len(mpMatr[i])):
+            fit += lams[j]*mpMatr[i, j]
+        fitness.append(fit)
+    fitData = pd.DataFrame(fitness, columns=['fit'], index=mpData.index)
     stratFitData = pd.concat([stratData.loc[fitData.index], fitData], axis=1)
     return stratFitData
 
@@ -263,15 +278,9 @@ def calcFLim(p,q,r,s, F0=0.1, abs=True):  # в качестве стартово
     def func(F):
         return np.abs(2*r*p / (2*p*s + q*(-(p+q*F-s*F) + np.emath.sqrt((p+q*F-s*F)**2 + 4*p*r)))
                                                 - ((-(p+q*F+s*F) + np.emath.sqrt((p+q*F-s*F)**2 + 4*p*r)) / 2)**2 - F)
-        # tmp1 = 2*r*p / (2*p*s + q*(-(p+q*F-s*F) + np.emath.sqrt((p+q*F-s*F)**2 + 4*p*r))) \
-        #                                 - ((-(p+q*F+s*F) + np.emath.sqrt((p+q*F-s*F)**2 + 4*p*r)) / 2)**2 - F
-        # tmp2 = np.abs(tmp1)
-        #print(tmp1, tmp2)
-        #return tmp2
-
         # the modulus(euclidean norm) is the euclidean distance from 0 to the number, including complex number.
         # |a + bi| = sqrt(a^2 + b^2), the distance between the origin (0, 0) and the point (a, b) in the complex plane.
-    
+
     root = fsolve(func, F0) if abs else fsolve(func1, F0)
     #err1 = func1(root[0])
     err = func(root[0])
@@ -279,6 +288,13 @@ def calcFLim(p,q,r,s, F0=0.1, abs=True):  # в качестве стартово
     #print("err1:", err1)
     # print("err:", err)
     return root[0], err
+
+def calcFLim_fast(p,q,r,s, F0=0.1):
+    def func(F):
+        return np.abs(2*r*p / (2*p*s + q*(-(p+q*F-s*F) + np.emath.sqrt((p+q*F-s*F)**2 + 4*p*r)))
+                                                - ((-(p+q*F+s*F) + np.emath.sqrt((p+q*F-s*F)**2 + 4*p*r)) / 2)**2 - F)
+    root = fsolve(func, F0)
+    return root[0]
 
 def findFsols(p, q, r, s, left=-1000, right=1000, step=1, errEps = 1e-15, rndEps = 10, abs=True):
     Fsols = []
@@ -344,6 +360,15 @@ def chkFLim(p, q, r, s, F, z1, z2):
     # print("errs: ", errs)
     return L, errs
 
+def chkFLim_fast(p, q, r, s, F, z1, z2):
+    a11, a12, a13 = (-p - q*F - z1 - z2, -z1 + r, -q*z1)
+    a21, a22, a23 = (p-z2, -s*F - z1 - z2, -s*z2)
+    a31, a32, a33 = (q*F, s*F, q*z1 + s*z2 - 1)
+    pows = [1, -(a11 + a22 + a33), (a11*a22 + a11*a33 + a22*a33 - a31*a13 - a32*a23 - a12*a21),
+            -(a11*a22*a33 + a21*a32*a13 + a12*a23*a31 - a31*a13*a22 - a32*a23*a11 - a12*a21*a33)]
+    L = np.roots(pows)
+    return L
+
 def chkFsols(p, q, r, s, Fsols):
     Flams = []
     lamsErrs = []
@@ -392,57 +417,17 @@ def chkComplexFsolsOnSel(stratData, pqrsData):
     return complexFsolsData
 
 def fitMaxMin(stratData, pqrsData):
-    p = pqrsData['p']
-    q = pqrsData['q']
-    r = pqrsData['r']
-    s = pqrsData['s']
-
-    indxs = []
-    mins = []
-    counts = []
-    for j in tqdm.tqdm(pqrsData.index):
-        #print(j)
-        F, err = calcFLim(p[j], q[j], r[j], s[j], F0=0.1)
-        next = 4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0
-        if (not next):
-            z1, z2 = calcZLim(p[j], q[j], r[j], s[j], F)
-            roots, errs = chkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
-            next = (roots.real > 0).any()
-        if next:
-            F, err = calcFLim(p[j], q[j], r[j], s[j], F0=-100)
-            next = 4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0
-            if (not next):
-                z1, z2 = calcZLim(p[j], q[j], r[j], s[j], F)
-                roots, errs = chkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
-                next = (roots.real > 0).any()
-            if next:
-                F, err = calcFLim(p[j], q[j], r[j], s[j], F0=100)
-                next = 4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0
-                if (not next):
-                    z1, z2 = calcZLim(p[j], q[j], r[j], s[j], F)
-                    roots, errs = chkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
-                    next = (roots.real > 0).any()
-                if next:
-                    continue
-
-        min = 1
-        count = 0
-        for i in pqrsData.index:
-            if(4*r[i]*p[i]+(p[i]+q[i]*F-s[i]*F)**2 >= 0):
-                count += 1
-                fit = -s[j]*F-p[j]-q[j]*F+(np.sqrt((4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2))) \
-                    - (-s[i]*F-p[i]-q[i]*F+(np.sqrt((4*r[i]*p[i]+(p[i]+q[i]*F-s[i]*F)**2))))
-                if (fit < min):
-                    min = fit
-        indxs.append(j)
-        mins.append(min)
-        counts.append(count)
+    Aj = stratData['Aj'].tolist()
+    Bj = stratData['Bj'].tolist()
+    Aa = stratData['Aa'].tolist()
+    Ba = stratData['Ba'].tolist()
     
-    stratMinsData = stratData.loc[indxs]
-    stratMinsData.loc[:, 'min'] = mins
-    stratMinsData.loc[:, 'count'] = counts
-    idOptStrat = stratMinsData['min'].idxmax()
-    return stratMinsData, idOptStrat
+    p = pqrsData['p'].values
+    q = pqrsData['q'].values
+    r = pqrsData['r'].values
+    s = pqrsData['s'].values
+
+    return genlFitMaxMin(Aj, Bj, Aa, Ba, p, q, r, s)
 
 def genGenlStrats(a_j=param.alpha_j, b_j=param.beta_j, g_j=param.gamma_j, d_j=param.delta_j,
                     a_a = param.alpha_a, b_a=param.beta_a, g_a=param.gamma_a, d_a=param.delta_a):
@@ -450,7 +435,6 @@ def genGenlStrats(a_j=param.alpha_j, b_j=param.beta_j, g_j=param.gamma_j, d_j=pa
     Bj = []
     Aa = []
     Ba = []
-
     for i in tqdm.tqdm(range(-1, -param.D*10, -1)):
         A_j = i*0.1
         m_j = min(-A_j, A_j + param.D)
@@ -465,7 +449,26 @@ def genGenlStrats(a_j=param.alpha_j, b_j=param.beta_j, g_j=param.gamma_j, d_j=pa
                     Bj.append(B_j)
                     Aa.append(A_a)
                     Ba.append(B_a)
+    return Aj, Bj, Aa, Ba
 
+def genGenlStratsAll(a_j=param.alpha_j, b_j=param.beta_j, g_j=param.gamma_j, d_j=param.delta_j,
+                        a_a=param.alpha_a, b_a=param.beta_a, g_a=param.gamma_a, d_a=param.delta_a,
+                            Aj_left=-param.D+1, Aj_right=0, Aj_step=2, Bj_step=1,
+                                Aa_left=-param.D+1, Aa_right=0, Aa_step=2, Ba_step=1):
+    Aj = []
+    Bj = []
+    Aa = []
+    Ba = []
+    for A_j in tqdm.tqdm(range(Aj_left, Aj_right, Aj_step)):
+        m_j = min(-A_j, A_j + param.D)
+        for B_j in itertools.chain(range(-m_j, 0, Bj_step), range(1, m_j+1, Bj_step)):
+            for A_a in range(Aa_left, Aa_right, Aa_step):
+                m_a = min(-A_a, A_a + param.D)
+                for B_a in itertools.chain(range(-m_a, 0, Ba_step), range(1, m_a+1, Ba_step)):
+                    Aj.append(A_j)
+                    Bj.append(B_j)
+                    Aa.append(A_a)
+                    Ba.append(B_a)
     return Aj, Bj, Aa, Ba
 
 def calcGenlPqrsData(Aj, Bj, Aa, Ba, a_j=param.alpha_j, b_j=param.beta_j, g_j=param.gamma_j, d_j=param.delta_j,
@@ -493,27 +496,28 @@ def calcGenlPqrsData(Aj, Bj, Aa, Ba, a_j=param.alpha_j, b_j=param.beta_j, g_j=pa
     return p, q, r, s
 
 def findF(p, q, r, s, j):
-    F, err = calcFLim(p[j], q[j], r[j], s[j], F0=0.1)
-    next = 4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0
+    p, q, r, s = p[j], q[j], r[j], s[j]
+    F = calcFLim_fast(p, q, r, s, F0=0.1)
+    next = 4*r*p+(p+q*F-s*F)**2 < 0
     if (not next):
-        z1, z2 = calcZLim(p[j], q[j], r[j], s[j], F)
-        roots, errs = chkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
+        z1, z2 = calcZLim(p, q, r, s, F)
+        roots = chkFLim_fast(p, q, r, s, F, z1, z2)
         next = (roots.real > 0).any()
     if next:
-        F, err = calcFLim(p[j], q[j], r[j], s[j], F0=-100)
-        next = 4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0
+        F = calcFLim_fast(p, q, r, s, F0=-100)
+        next = 4*r*p+(p+q*F-s*F)**2 < 0
         if (not next):
-            z1, z2 = calcZLim(p[j], q[j], r[j], s[j], F)
-            roots, errs = chkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
+            z1, z2 = calcZLim(p, q, r, s, F)
+            roots = chkFLim_fast(p, q, r, s, F, z1, z2)
             next = (roots.real > 0).any()
         if next:
-            F, err = calcFLim(p[j], q[j], r[j], s[j], F0=100)
-            if (4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2 < 0):
+            F = calcFLim_fast(p, q, r, s, F0=100)
+            if (4*r*p+(p+q*F-s*F)**2 < 0):
                 #return [1, j]  # use this strat as i
                 return [0]
             else:
-                z1, z2 = calcZLim(p[j], q[j], r[j], s[j], F)
-                roots, errs = chkFLim(p[j], q[j], r[j], s[j], F, z1, z2)
+                z1, z2 = calcZLim(p, q, r, s, F)
+                roots = chkFLim_fast(p, q, r, s, F, z1, z2)
                 if (roots.real > 0).any():
                     return [0]
     return [2, j, F]
@@ -524,12 +528,14 @@ def findMins(p, q, r, s, Fs, Fsj, Fsi):
     for _j in prange(len(Fs)):  # parallel range
         j = Fsj[_j]
         F = Fs[_j]
+
+        fitj = -s[j]*F-p[j]-q[j]*F+(np.sqrt((4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2)))
         min = 1
         for _i in range(len(Fsi)):
             i = Fsi[_i]
-            if(4*r[i]*p[i]+(p[i]+q[i]*F-s[i]*F)**2 >= 0):
-                fit = -s[j]*F-p[j]-q[j]*F+(np.sqrt((4*r[j]*p[j]+(p[j]+q[j]*F-s[j]*F)**2))) \
-                    - (-s[i]*F-p[i]-q[i]*F+(np.sqrt((4*r[i]*p[i]+(p[i]+q[i]*F-s[i]*F)**2))))
+            tmp = 4*r[i]*p[i]+(p[i]+q[i]*F-s[i]*F)**2
+            if(tmp >= 0):
+                fit = fitj - (-s[i]*F-p[i]-q[i]*F+np.sqrt(tmp))
                 if (fit < min):
                     min = fit
         mins[_j] = min

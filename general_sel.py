@@ -21,13 +21,13 @@ import find_param as fp
 compareParamData = ut.readData("compare_param_data", "dynamic_pred")
 a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = compareParamData.loc['restored']
 print(a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
-strat = fp.stratByParam(a_j, a_a, b_j, b_a, g_j, g_a, d_j, d_a)
-print(strat.x, strat.fun)
-Aj, Bj, Aa, Ba = gs.genGenlStrats(a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
-# Aj.append(-55.8)
-# Bj.append(-11.907889)
-# Aa.append(-66.3)
-# Ba.append(-45.733644)
+# strat = fp.stratByParam(a_j, a_a, b_j, b_a, g_j, g_a, d_j, d_a)
+# print(strat.x, strat.fun)
+#Aj, Bj, Aa, Ba = gs.genGenlStrats(a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
+Aj, Bj, Aa, Ba = gs.genGenlStratsAll(a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a,
+                                        Aj_left=-90, Aj_right=-30, Aj_step=2, Bj_step=1,
+                                            Aa_left=-90, Aa_right=-30, Aa_step=4, Ba_step=4)
+
 genlStratData = pd.DataFrame({'Aj': Aj, 'Bj': Bj, 'Aa': Aa, 'Ba': Ba})
 ut.writeData(genlStratData, "general_strat_data_rstd")
 p, q, r, s = gs.calcGenlPqrsData(Aj, Bj, Aa, Ba, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)

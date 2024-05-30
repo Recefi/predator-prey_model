@@ -80,14 +80,14 @@ def compareStratSinsById(stratData, id_1, id_2):
     Aj_2, Bj_2, Aa_2, Ba_2 = stratData.loc[id_2, 'Aj':'Ba']
     compareStratSins(Aj_1, Bj_1, Aa_1, Ba_1, Aj_2, Bj_2, Aa_2, Ba_2)
 
-def optStratSins_static(stratFitData):
-    optPntId = stratFitData['fit'].idxmax()
+def optStratSins(stratFitData, key='fit'):
+    optPntId = stratFitData[key].idxmax()
     stratSinsById(stratFitData, optPntId)
 
-def mostOptStratSins_static(stratFitData, rows, cols):
-    optStratData = stratFitData.sort_values(by=['fit'], ascending=False).head(12)
+def mostOptStratSins(stratFitData, rows, cols, key='fit', title=""):
+    optStratData = stratFitData.sort_values(by=[key], ascending=False).head(12)
     indxs = optStratData.index
-    fit = optStratData['fit'].values
+    fit = optStratData[key].values
     Aj = optStratData['Aj'].values
     Bj = optStratData['Bj'].values
     Aa = optStratData['Aa'].values
@@ -103,13 +103,14 @@ def mostOptStratSins_static(stratFitData, rows, cols):
             ya = Aa[i*4+j] + Ba[i*4+j] * np.cos(2 * np.pi * x)
             ax[i][j].plot(x,ya, c="red", label="Aa: "+str(np.round(Aa[i*4+j], 2))+"\nBa: "+str(np.round(Ba[i*4+j], 2)))
             # ax[i][j].plot(x, ya, c="red")
-            ax[i][j].set_title("strat: " + str(indxs[i*4+j]) + "\n" + "fit: " + str(fit[i*4+j]))
+            ax[i][j].set_title("strat: " + str(indxs[i*4+j]) + "\n" + key+": " + str(fit[i*4+j]))
             ax[i][j].set_ylim(-param.D - 0.5, 0.5)
             ax[i][j].legend()
-
+    if title:
+        fig.suptitle(title)
     fig.tight_layout()
 
-def allSins(stratData):
+def allStratSins(stratData):
     Aj = stratData['Aj']
     Bj = stratData['Bj']
     Aa = stratData['Aa']

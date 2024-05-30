@@ -135,6 +135,27 @@ gs.chkFLim(_p, _q, _r, _s, _FLim, z1, z2)
 print()
 
 
+gui.mostOptStratSins(stratPopData, 3, 4, key='t', title="Ранжирование по динамике видов")
+
+stratFitData_linsum = gs.calcStratFitData_linsum(stratData, mpData, coefData)
+gui.mostOptStratSins(stratFitData_linsum, 3, 4, title="Ранжирование по лин.свертке фитнеса с восст.лямбда")
+
+stratFitData = gs.calcStratFitData(stratData, pqrsData, F=FLim)
+gui.mostOptStratSins(stratFitData, 3, 4, title="Ранжирование по расчетной формуле фитнеса с исх.параметрами")
+
+rstdPqrsData = gs.calcPqrsData(mpData, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
+stratFitData = gs.calcStratFitData(stratData, rstdPqrsData, F=FLim)
+gui.mostOptStratSins(stratFitData, 3, 4, title="Ранжирование по расчетной формуле фитнеса с восст.параметрами с исх.F*")
+
+stratMinsData, idOptStrat = gs.fitMaxMin(stratData, pqrsData)
+gui.mostOptStratSins(stratMinsData, 3, 4, key='min', title="Ранжирование по максминной задаче с исх.параметрами")
+
+rstdStratMinsData, idOptStrat = gs.fitMaxMin(stratData, rstdPqrsData)
+gui.mostOptStratSins(rstdStratMinsData, 3, 4, key='min', title="Ранжирование по максминной задаче с восст.параметрами")
+
+plt.show()
+
+
 # pqrsRow = pqrsData.loc[[optPntId]]
 # stratRow = stratData.loc[[optPntId]]
 # rawPopData = gs.calcPopDynamics(pqrsRow, tMax=5000, tParts=100000, z0=0.001, F0=0.001)
@@ -148,6 +169,7 @@ print()
 
 # gui.phasePortrait(_p, _q, _r, _s)
 # plt.show()
+
 
 # stratMinsData, idOptStrat = gs.fitMaxMin(stratData, pqrsData)
 # ut.writeData(stratMinsData, "strat_mins_data")
@@ -167,15 +189,15 @@ print()
 # plt.show()
 
 
-# FsolsData = gs.chkFsolsOnSel(stratData, pqrsData, abs=False)
-# ut.writeData(FsolsData, "Fsols_data", subDirsName="Fsols")
+# #FsolsData = gs.chkFsolsOnSel(stratData, pqrsData, abs=False)
+# #ut.writeData(FsolsData, "Fsols_data", subDirsName="Fsols")
 # absFsolsData = gs.chkFsolsOnSel(stratData, pqrsData)
 # ut.writeData(absFsolsData, "Fsols_abs_data", subDirsName="Fsols")
-# complexFsolsData = gs.chkComplexFsolsOnSel(stratData, pqrsData)
-# ut.writeData(complexFsolsData, "Fsols_complex_data", subDirsName="Fsols")
-# rstdFsolsData = gs.chkFsolsOnSel(stratData, rstdPqrsData, abs=False)
-# ut.writeData(rstdFsolsData, "Fsols_rstd_data", subDirsName="Fsols")
-# rstdAbsFsolsData = gs.chkFsolsOnSel(stratData, rstdPqrsData)
-# ut.writeData(rstdAbsFsolsData, "Fsols_abs_rstd_data", subDirsName="Fsols")
-# rstdComplexFsolsData = gs.chkComplexFsolsOnSel(stratData, rstdPqrsData)
-# ut.writeData(rstdComplexFsolsData, "Fsols_complex_rstd_data", subDirsName="Fsols")
+# #complexFsolsData = gs.chkComplexFsolsOnSel(stratData, pqrsData)
+# #ut.writeData(complexFsolsData, "Fsols_complex_data", subDirsName="Fsols")
+# #rstdFsolsData = gs.chkFsolsOnSel(stratData, rstdPqrsData, abs=False)
+# #ut.writeData(rstdFsolsData, "Fsols_rstd_data", subDirsName="Fsols")
+# #rstdAbsFsolsData = gs.chkFsolsOnSel(stratData, rstdPqrsData)
+# #ut.writeData(rstdAbsFsolsData, "Fsols_abs_rstd_data", subDirsName="Fsols")
+# #rstdComplexFsolsData = gs.chkComplexFsolsOnSel(stratData, rstdPqrsData)
+# #ut.writeData(rstdComplexFsolsData, "Fsols_complex_rstd_data", subDirsName="Fsols")

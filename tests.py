@@ -25,7 +25,7 @@ stratData = ut.readData("strat_data", "dynamic_pred")
 # print("strats: ", len(stratFitData.index))
 # #ut.writeData(stratFitData, "strat_fit_data")
 
-# gui.mostOptStratSins_static(stratFitData, 3, 4)
+# gui.mostOptStratSins(stratFitData, 3, 4)
 # plt.show()
 
 
@@ -77,7 +77,7 @@ stratData = ut.readData("strat_data", "dynamic_pred")
 # pqrsRow = pqrsData.loc[[i, 10, 12, 15, 98, 112]]
 # stratRow = stratData.loc[[i, 10, 12, 15, 98, 112]]
 # stratFitRow = gs.calcStratFitData(stratRow, pqrsRow, F = 1)
-# gui.mostOptStratSins_static(stratFitRow, 2, 2)
+# gui.mostOptStratSins(stratFitRow, 2, 2)
 # rawPopData = gs.calcPopDynamics(pqrsRow, tMax=500, tParts=100000, z0=0.001, F0=0.001)
 # stratPopData, FLim = gs.analyzePopDynamics(stratRow, rawPopData, 0.01)
 # print(FLim)
