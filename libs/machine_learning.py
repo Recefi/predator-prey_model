@@ -8,7 +8,6 @@ import pandas as pd
 import time
 import tqdm
 from joblib import Parallel, delayed
-import seaborn as sns
 
 
 def runClfSVM(selData):

@@ -11,7 +11,7 @@ import libs.machine_learning as ml
 import libs.taylor as tr
 
 
-# stratData = gs.genStrats(500, "uniform")
+# stratData = gs.genStrats(500, "beta")
 # stratData.loc[len(stratData.index) - 1] = [-34.58, -3.29, -83.32, -51.57]
 # ut.writeData(stratData, "strat_data")
 stratData = ut.readData("strat_data")
@@ -37,9 +37,9 @@ print("strats: ", len(stratFitData.index))
 
 # gui.allStratSins(stratFitData)
 # gui.optStratSins(stratFitData)
-gui.mostOptStratSins(stratFitData, 3, 4)
-#gui.corrMps(shortMpData)
-plt.show()
+# gui.mostOptStratSins(stratFitData, 3, 4)
+# gui.corrMps(shortMpData)
+# plt.show()
 
 start = time.time()
 selData = gs.calcSelection(stratFitData, shortMpData)
@@ -78,7 +78,7 @@ print("optPnt cosine:", cosines[optPntId], "\n")
 compareCoefData = tr.compareCoefs(coefData, nearPntId, optPntId)
 with pd.option_context('display.max_rows', 10):
     print(compareCoefData)
-
+ut.writeData(compareCoefData, "compare_coef_data")
 
 compareFitsData, fitCosines = tr.compareFits(coefData, stratFitData, shortMpData, pqrsData, nearPntId, optPntId, F=FLim)
 print(compareFitsData)
@@ -92,11 +92,15 @@ print(fitCosines)
 
 # gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M5', 'M4', 25, -130)
 # gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M5', 'M4M8')
-# gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M5', 'M2M6', 25, -130)
+# gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M2M6', 'M5', 25, -130)
+
+# gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M5', 'M1M5', 25, -130)
+# gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M4', 'M1M4', 5, -25)
+# gui.clf3dPlane(norm_selData, norm_mlLams, 'M6', 'M8', 'M6M8')
 
 #gui.clf2dPlane(norm_selData, norm_mlLams, 'M2', 'M4M8')
 
-#plt.show()
+plt.show()
 
 
 

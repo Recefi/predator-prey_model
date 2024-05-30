@@ -80,7 +80,7 @@ optPntId = stratPopData[['z1','z2']].sum(axis="columns").idxmax()
 print(optPntId)
 print("optPnt cosine:", cosines[optPntId], "\n")
 
-compareCoefData = tr.compareCoefs_pres(coefData, nearPntId, optPntId)
+compareCoefData = tr.compareCoefs(coefData, nearPntId, optPntId)
 with pd.option_context('display.max_rows', 10):
     print(compareCoefData)
 ut.writeData(compareCoefData, "compare_coef_data")
@@ -102,6 +102,7 @@ ut.writeData(compareCoefData, "compare_coef_data")
 p, q, r, s = td.restorePQRS_2(FLim, stratPopData, coefData, mpData, optPntId)
 comparePqrsData = td.compareRestoredPQRS(p, q, r, s, pqrsData, optPntId)
 print(comparePqrsData)
+ut.writeData(comparePqrsData, "compare_pqrs_data")
 
 a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = td.restoreParam(p, q, r, s, coefData, mpData, optPntId)
 compareParamData = td.compareRestoredParam(a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
@@ -135,25 +136,25 @@ gs.chkFLim(_p, _q, _r, _s, _FLim, z1, z2)
 print()
 
 
-gui.mostOptStratSins(stratPopData, 3, 4, key='t', title="Ранжирование по динамике видов")
+# gui.mostOptStratSins(stratPopData, 3, 4, key='t', title="Ранжирование по динамике видов")
 
-stratFitData_linsum = gs.calcStratFitData_linsum(stratData, mpData, coefData)
-gui.mostOptStratSins(stratFitData_linsum, 3, 4, title="Ранжирование по лин.свертке фитнеса с восст.лямбда")
+# stratFitData_linsum = gs.calcStratFitData_linsum(stratData, mpData, coefData)
+# gui.mostOptStratSins(stratFitData_linsum, 3, 4, title="Ранжирование по лин.свертке фитнеса с восст.лямбда")
 
-stratFitData = gs.calcStratFitData(stratData, pqrsData, F=FLim)
-gui.mostOptStratSins(stratFitData, 3, 4, title="Ранжирование по расчетной формуле фитнеса с исх.параметрами")
+# stratFitData = gs.calcStratFitData(stratData, pqrsData, F=FLim)
+# gui.mostOptStratSins(stratFitData, 3, 4, title="Ранжирование по расчетной формуле фитнеса с исх.параметрами")
 
-rstdPqrsData = gs.calcPqrsData(mpData, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
-stratFitData = gs.calcStratFitData(stratData, rstdPqrsData, F=FLim)
-gui.mostOptStratSins(stratFitData, 3, 4, title="Ранжирование по расчетной формуле фитнеса с восст.параметрами с исх.F*")
+# rstdPqrsData = gs.calcPqrsData(mpData, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
+# stratFitData = gs.calcStratFitData(stratData, rstdPqrsData, F=FLim)
+# gui.mostOptStratSins(stratFitData, 3, 4, title="Ранжирование по расчетной формуле фитнеса с восст.параметрами с исх.F*")
 
-stratMinsData, idOptStrat = gs.fitMaxMin(stratData, pqrsData)
-gui.mostOptStratSins(stratMinsData, 3, 4, key='min', title="Ранжирование по максминной задаче с исх.параметрами")
+# stratMinsData, idOptStrat = gs.fitMaxMin(stratData, pqrsData)
+# gui.mostOptStratSins(stratMinsData, 3, 4, key='min', title="Ранжирование по максминной задаче с исх.параметрами")
 
-rstdStratMinsData, idOptStrat = gs.fitMaxMin(stratData, rstdPqrsData)
-gui.mostOptStratSins(rstdStratMinsData, 3, 4, key='min', title="Ранжирование по максминной задаче с восст.параметрами")
+# rstdStratMinsData, idOptStrat = gs.fitMaxMin(stratData, rstdPqrsData)
+# gui.mostOptStratSins(rstdStratMinsData, 3, 4, key='min', title="Ранжирование по максминной задаче с восст.параметрами")
 
-plt.show()
+# plt.show()
 
 
 # pqrsRow = pqrsData.loc[[optPntId]]

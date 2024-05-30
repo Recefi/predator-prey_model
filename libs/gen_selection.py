@@ -4,7 +4,6 @@ import scipy.integrate as integrate
 import time
 from scipy.optimize import fsolve
 import tqdm
-import gc
 from numba import jit, njit, prange
 from joblib import Parallel, delayed
 import itertools
@@ -451,10 +450,8 @@ def genGenlStrats(a_j=param.alpha_j, b_j=param.beta_j, g_j=param.gamma_j, d_j=pa
                     Ba.append(B_a)
     return Aj, Bj, Aa, Ba
 
-def genGenlStratsAll(a_j=param.alpha_j, b_j=param.beta_j, g_j=param.gamma_j, d_j=param.delta_j,
-                        a_a=param.alpha_a, b_a=param.beta_a, g_a=param.gamma_a, d_a=param.delta_a,
-                            Aj_left=-param.D+1, Aj_right=0, Aj_step=2, Bj_step=1,
-                                Aa_left=-param.D+1, Aa_right=0, Aa_step=2, Ba_step=1):
+def genGenlStratsAll(Aj_left=-param.D+1, Aj_right=0, Aj_step=2, Bj_step=1,
+                        Aa_left=-param.D+1, Aa_right=0, Aa_step=2, Ba_step=1):
     Aj = []
     Bj = []
     Aa = []

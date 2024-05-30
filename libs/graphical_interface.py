@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy import stats
 import time
 
 import libs.utility as ut
