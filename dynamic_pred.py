@@ -13,11 +13,8 @@ import libs.test_dynamic as td
 import libs.param as param
 
 
-# stratData = gs.genStrats(500, "beta", ab=5)
-# #stratData = gs.genStrats(500, "uniform")
-# #gs.filterStratsByBa(stratData, eps=0.25)
+# stratData = gs.genStrats(100, "beta", ab=5)
 # stratData.loc[len(stratData.index) - 1] = [-34.58, -3.29, -83.32, -51.57]
-# #stratData.loc[len(stratData.index) - 1] = [-20.73, -3.93, -51.10, -39.16]
 # ut.writeData(stratData, "strat_data")
 stratData = ut.readData("strat_data")
 
@@ -104,7 +101,7 @@ comparePqrsData = td.compareRestoredPQRS(p, q, r, s, pqrsData, optPntId)
 print(comparePqrsData)
 ut.writeData(comparePqrsData, "compare_pqrs_data")
 
-a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = td.restoreParam(p, q, r, s, coefData, mpData, optPntId)
+a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = td.restoreParam_4(p, q, r, s, coefData, mpData, optPntId)
 compareParamData = td.compareRestoredParam(a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
 print(compareParamData)
 ut.writeData(compareParamData, "compare_param_data")
@@ -148,13 +145,14 @@ print()
 # stratFitData = gs.calcStratFitData(stratData, rstdPqrsData, F=FLim)
 # gui.mostOptStratSins(stratFitData, 3, 4, title="Ранжирование по расчетной формуле фитнеса с восст.параметрами с исх.F*")
 
-# stratMinsData, idOptStrat = gs.fitMaxMin(stratData, pqrsData)
-# gui.mostOptStratSins(stratMinsData, 3, 4, key='min', title="Ранжирование по максминной задаче с исх.параметрами")
+stratMinsData, idOptStrat = gs.fitMaxMin(stratData, pqrsData)
+gui.mostOptStratSins(stratMinsData, 3, 4, key='min', title="Ранжирование по максминной задаче с исх.параметрами")
 
-# rstdStratMinsData, idOptStrat = gs.fitMaxMin(stratData, rstdPqrsData)
-# gui.mostOptStratSins(rstdStratMinsData, 3, 4, key='min', title="Ранжирование по максминной задаче с восст.параметрами")
+rstdPqrsData = gs.calcPqrsData(mpData, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
+rstdStratMinsData, idOptStrat = gs.fitMaxMin(stratData, rstdPqrsData)
+gui.mostOptStratSins(rstdStratMinsData, 3, 4, key='min', title="Ранжирование по максминной задаче с восст.параметрами")
 
-# plt.show()
+plt.show()
 
 
 # pqrsRow = pqrsData.loc[[optPntId]]
