@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import libs.graphical_interface as gui
 import libs.gen_selection as gs
 import libs.utility as ut
+import libs.research as rs
 
 
 #gui.stratSins(-35, 3.93, -83, 49.32)
@@ -55,10 +56,10 @@ stratData = ut.readData("strat_data", "dynamic_pred")
 
 # rstdPqrsData = ut.readData("pqrs_rstd_data", "dynamic_pred")
 # _p, _q, _r, _s = rstdPqrsData.loc[132, ['p','q','r','s']]
-# #Fsols = gs.findFsols(_p, _q, _r, _s)
-# Fsols = gs.findComplexFsols(_p, _q, _r, _s)
+# #Fsols = rs.findFsols(_p, _q, _r, _s)
+# Fsols = rs.findComplexFsols(_p, _q, _r, _s)
 # print(Fsols)
-# FLams, errs = gs.chkFsols(_p, _q, _r, _s, Fsols)
+# FLams, errs = rs.chkFsols(_p, _q, _r, _s, Fsols)
 # print(FLams)
 
 
@@ -67,11 +68,11 @@ stratData = ut.readData("strat_data", "dynamic_pred")
 # i = 491
 # pqrsData = ut.readData("pqrs_data", "dynamic_pred")
 # _p, _q, _r, _s = pqrsData.loc[i, ['p','q','r','s']]
-# #Fsols = gs.findFsols(_p, _q, _r, _s, abs=False)
-# Fsols = gs.findFsols(_p, _q, _r, _s)
-# #Fsols = gs.findComplexFsols(_p, _q, _r, _s)
+# #Fsols = rs.findFsols(_p, _q, _r, _s, abs=False)
+# Fsols = rs.findFsols(_p, _q, _r, _s)
+# #Fsols = rs.findComplexFsols(_p, _q, _r, _s)
 # print(Fsols)
-# FLams, errs = gs.chkFsols(_p, _q, _r, _s, Fsols)
+# FLams, errs = rs.chkFsols(_p, _q, _r, _s, Fsols)
 # print(FLams)
 
 # pqrsRow = pqrsData.loc[[i, 10, 12, 15, 98, 112]]

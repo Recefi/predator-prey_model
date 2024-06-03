@@ -11,6 +11,7 @@ import libs.machine_learning as ml
 import libs.taylor as tr
 import libs.test_dynamic as td
 import libs.param as param
+import libs.research as rs
 
 
 # stratData = gs.genStrats(100, "beta", ab=5)
@@ -133,23 +134,23 @@ gs.chkFLim(_p, _q, _r, _s, _FLim, z1, z2)
 print()
 
 
-# gui.mostOptStratSins(stratPopData, 3, 4, key='t', title="Ранжирование по динамике видов")
+gui.mostOptStratSins(stratPopData, 3, 4, key='t', title="Ранжирование по динамике видов")
 
-# stratFitData_linsum = gs.calcStratFitData_linsum(stratData, mpData, coefData)
-# gui.mostOptStratSins(stratFitData_linsum, 3, 4, title="Ранжирование по лин.свертке фитнеса с восст.лямбда")
+stratFitData_linsum = gs.calcStratFitData_linsum(stratPopData, mpData.loc[stratPopData.index], coefData)
+gui.mostOptStratSins(stratFitData_linsum, 3, 4, title="Ранжирование по лин.свертке фитнеса с восст.лямбда")
 
-# stratFitData = gs.calcStratFitData(stratData, pqrsData, F=FLim)
-# gui.mostOptStratSins(stratFitData, 3, 4, title="Ранжирование по расчетной формуле фитнеса с исх.параметрами")
+stratFitData = gs.calcStratFitData(stratPopData, pqrsData.loc[stratPopData.index], F=FLim)
+gui.mostOptStratSins(stratFitData, 3, 4, title="Ранжирование по расчетной формуле фитнеса с исх.параметрами")
 
-# rstdPqrsData = gs.calcPqrsData(mpData, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
-# stratFitData = gs.calcStratFitData(stratData, rstdPqrsData, F=FLim)
+# rstdPqrsData = gs.calcPqrsData(mpData.loc[stratPopData.index], a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
+# stratFitData = gs.calcStratFitData(stratPopData, rstdPqrsData, F=FLim)
 # gui.mostOptStratSins(stratFitData, 3, 4, title="Ранжирование по расчетной формуле фитнеса с восст.параметрами с исх.F*")
 
-stratMinsData, idOptStrat = gs.fitMaxMin(stratData, pqrsData)
+stratMinsData, idOptStrat = gs.fitMaxMin(stratPopData, pqrsData.loc[stratPopData.index])
 gui.mostOptStratSins(stratMinsData, 3, 4, key='min', title="Ранжирование по максминной задаче с исх.параметрами")
 
-rstdPqrsData = gs.calcPqrsData(mpData, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
-rstdStratMinsData, idOptStrat = gs.fitMaxMin(stratData, rstdPqrsData)
+rstdPqrsData = gs.calcPqrsData(mpData.loc[stratPopData.index], a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
+rstdStratMinsData, idOptStrat = gs.fitMaxMin(stratPopData, rstdPqrsData)
 gui.mostOptStratSins(rstdStratMinsData, 3, 4, key='min', title="Ранжирование по максминной задаче с восст.параметрами")
 
 plt.show()
@@ -162,7 +163,7 @@ plt.show()
 # rawPopData = gs.calcPopDynamics(pqrsRow, tMax=5000, tParts=100000, z0=0.001, F0=1000)
 # stratPopData, FLim = gs.analyzePopDynamics(stratRow, rawPopData, 0.01)
 
-# compareSearchFsolsData = gs.compareSearchFsols(stratData, pqrsData)
+# compareSearchFsolsData = rs.compareSearchFsols(stratData, pqrsData)
 # ut.writeData(compareSearchFsolsData, "compare_search_Fsols", subDirsName="Fsols")
 
 
@@ -188,15 +189,15 @@ plt.show()
 # plt.show()
 
 
-# #FsolsData = gs.chkFsolsOnSel(stratData, pqrsData, abs=False)
+# #FsolsData = rs.chkFsolsOnSel(stratData, pqrsData, abs=False)
 # #ut.writeData(FsolsData, "Fsols_data", subDirsName="Fsols")
-# absFsolsData = gs.chkFsolsOnSel(stratData, pqrsData)
+# absFsolsData = rs.chkFsolsOnSel(stratData, pqrsData)
 # ut.writeData(absFsolsData, "Fsols_abs_data", subDirsName="Fsols")
-# #complexFsolsData = gs.chkComplexFsolsOnSel(stratData, pqrsData)
+# #complexFsolsData = rs.chkComplexFsolsOnSel(stratData, pqrsData)
 # #ut.writeData(complexFsolsData, "Fsols_complex_data", subDirsName="Fsols")
-# #rstdFsolsData = gs.chkFsolsOnSel(stratData, rstdPqrsData, abs=False)
+# #rstdFsolsData = rs.chkFsolsOnSel(stratData, rstdPqrsData, abs=False)
 # #ut.writeData(rstdFsolsData, "Fsols_rstd_data", subDirsName="Fsols")
-# #rstdAbsFsolsData = gs.chkFsolsOnSel(stratData, rstdPqrsData)
+# #rstdAbsFsolsData = rs.chkFsolsOnSel(stratData, rstdPqrsData)
 # #ut.writeData(rstdAbsFsolsData, "Fsols_abs_rstd_data", subDirsName="Fsols")
-# #rstdComplexFsolsData = gs.chkComplexFsolsOnSel(stratData, rstdPqrsData)
+# #rstdComplexFsolsData = rs.chkComplexFsolsOnSel(stratData, rstdPqrsData)
 # #ut.writeData(rstdComplexFsolsData, "Fsols_complex_rstd_data", subDirsName="Fsols")
