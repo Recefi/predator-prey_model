@@ -34,6 +34,34 @@ def restorePQRS_2(FLim, stratPopData, coefData, mpData, optPntId):
 
     return p, q, r, s
 
+def restorePQRS_3(FLim, stratPopData, coefData, mpData, optPntId):
+    z1Lim = stratPopData.loc[optPntId, 'z1']
+    z2Lim = stratPopData.loc[optPntId, 'z2']
+    M2 = mpData.loc[optPntId, 'M2']
+    M6 = mpData.loc[optPntId, 'M6']
+    lam22 = coefData.loc[-1, 'lam22']
+    lam26 = coefData.loc[-1, 'lam26']
+    lam66 = coefData.loc[-1, 'lam66']
+
+    r = (FLim + (z1Lim+z2Lim)**2)/z2Lim
+
+    q1 = (r*z2Lim - (z1Lim + z2Lim)**2)/(FLim*(z1Lim-(lam66*M6*z2Lim)/(lam26*M2)))
+    s1 = -(lam66*M6*q1)/(lam26*M2)
+    p1 = (-q1*FLim*z1Lim + r*z2Lim - z1Lim*(z1Lim + z2Lim))/z1Lim
+    #p1_2 = (s1*FLim*z2Lim + z2Lim*(z1Lim + z2Lim))/z1Lim
+
+    s2 = (r*z2Lim - (z1Lim + z2Lim)**2)/(FLim*(z2Lim-(lam22*M2*z1Lim)/(lam26*M6)))
+    q2 = -(lam22*M2*s2)/(lam26*M6)
+    p2 = (-q2*FLim*z1Lim + r*z2Lim - z1Lim*(z1Lim + z2Lim))/z1Lim
+    #p2_2 = (s2*FLim*z2Lim + z2Lim*(z1Lim + z2Lim))/z1Lim
+
+    p = (p1 + p2)/2
+    #print(p1, p2, p1_2, p2_2)
+    q = (q1 + q2)/2
+    s = (s1 + s2)/2
+
+    return p, q, r, s
+
 def restoreParam(p, q, r, s, coefData, mpData, optPntId):
     M1, M2, M3, M4, M5, M6, M7, M8 = mpData.loc[optPntId, 'M1':'M8']
     lam1, lam2, lam3, lam4, lam5, lam6, lam7, lam8 = coefData.loc[-1, 'lam1':'lam8']
@@ -153,25 +181,25 @@ def restoreParam_4(p, q, r, s, coefData, mpData, optPntId):
 
     _g_a = []
     _g_a.append(-s/M6) #
-    # _g_a.append(lam56*r*s/(a_a*(lam56*M5*M6 + lam67*M6*M7 + lam68*M6*M8)))
-    # _g_a.append(lam16*p*s/(a_j*(lam16*M1*M6 + lam36*M3*M6 + lam46*M4*M6)))
-    # _g_a.append(lam68*r*s/(d_a*(lam56*M5*M6 + lam67*M6*M7 + lam68*M6*M8))) #
-    # _g_a.append(lam46*p*s/(d_j*(lam16*M1*M6 + lam36*M3*M6 + lam46*M4*M6)))
-    # _g_a.append(lam67*r*s/(b_a*(lam56*M5*M6 + lam67*M6*M7 + lam68*M6*M8)))
-    # _g_a.append(lam36*p*s/(b_j*(lam16*M1*M6 + lam36*M3*M6 + lam46*M4*M6)))
-    g_a = np.mean(_g_a)
+    _g_a.append(lam56*r*s/(a_a*(lam56*M5*M6 + lam67*M6*M7 + lam68*M6*M8)))
+    _g_a.append(lam16*p*s/(a_j*(lam16*M1*M6 + lam36*M3*M6 + lam46*M4*M6)))
+    _g_a.append(lam68*r*s/(d_a*(lam56*M5*M6 + lam67*M6*M7 + lam68*M6*M8))) #
+    _g_a.append(lam46*p*s/(d_j*(lam16*M1*M6 + lam36*M3*M6 + lam46*M4*M6)))
+    _g_a.append(lam67*r*s/(b_a*(lam56*M5*M6 + lam67*M6*M7 + lam68*M6*M8)))
+    _g_a.append(lam36*p*s/(b_j*(lam16*M1*M6 + lam36*M3*M6 + lam46*M4*M6)))
+    g_a = np.mean(_g_a[0])
     print(_g_a)
 
     _g_j = []
     _g_j.append(-q/M2) #
-    # _g_j.append(lam25*q*r/(a_a*(lam25*M2*M5 + lam27*M2*M7 + lam28*M2*M8)))
-    # _g_j.append(lam12*p*q/(a_j*(lam12*M1*M2 + lam23*M2*M3 + lam24*M2*M4)))
-    # _g_j.append(lam28*q*r/(d_a*(lam25*M2*M5 + lam27*M2*M7 + lam28*M2*M8)))
-    # _g_j.append(lam24*p*q/(d_j*(lam12*M1*M2 + lam23*M2*M3 + lam24*M2*M4))) #
-    # _g_j.append(lam27*q*r/(b_a*(lam25*M2*M5 + lam27*M2*M7 + lam28*M2*M8)))
-    # _g_j.append(lam23*p*q/(b_j*(lam12*M1*M2 + lam23*M2*M3 + lam24*M2*M4)))
-    # _g_j.append(q*s/(g_a*M2*M6))
-    g_j = np.mean(_g_j)
+    _g_j.append(lam25*q*r/(a_a*(lam25*M2*M5 + lam27*M2*M7 + lam28*M2*M8)))
+    _g_j.append(lam12*p*q/(a_j*(lam12*M1*M2 + lam23*M2*M3 + lam24*M2*M4)))
+    _g_j.append(lam28*q*r/(d_a*(lam25*M2*M5 + lam27*M2*M7 + lam28*M2*M8)))
+    _g_j.append(lam24*p*q/(d_j*(lam12*M1*M2 + lam23*M2*M3 + lam24*M2*M4))) #
+    _g_j.append(lam27*q*r/(b_a*(lam25*M2*M5 + lam27*M2*M7 + lam28*M2*M8)))
+    _g_j.append(lam23*p*q/(b_j*(lam12*M1*M2 + lam23*M2*M3 + lam24*M2*M4)))
+    _g_j.append(q*s/(g_a*M2*M6))
+    g_j = np.mean(_g_j[0])
     print(_g_j)
 
     return a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a

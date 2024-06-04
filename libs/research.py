@@ -127,3 +127,15 @@ def compareSearchFsols(stratData, pqrsData):
     compareData.loc[:, 'F_res'] = _resF
     compareData.loc[:, 'F_integr'] = _integrF
     return compareData
+
+def findFsols_2(p1,q1,r1,s1, p2,q2,r2,s2, left=-1000, right=1000, step=1, errEps = 1e-15, rndEps = 10, abs=True):
+    Fsols = []
+    for F0 in range(left, right, step):
+        F, err = gs.calcFLim_2(p1,q1,r1,s1, p2,q2,r2,s2, F0, abs)
+        if (err < errEps):
+            F = np.round(F, rndEps)
+            if not Fsols:
+                Fsols.append(F)
+            elif (np.abs(F - Fsols) > 10**(-rndEps)).all():
+                Fsols.append(F)
+    return Fsols

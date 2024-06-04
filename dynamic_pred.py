@@ -134,13 +134,13 @@ gs.chkFLim(_p, _q, _r, _s, _FLim, z1, z2)
 print()
 
 
-gui.mostOptStratSins(stratPopData, 3, 4, key='t', title="Ранжирование по динамике видов")
+# gui.mostOptStratSins(stratPopData, 3, 4, key='t', title="Ранжирование по динамике видов")
 
-stratFitData_linsum = gs.calcStratFitData_linsum(stratPopData, mpData.loc[stratPopData.index], coefData)
-gui.mostOptStratSins(stratFitData_linsum, 3, 4, title="Ранжирование по лин.свертке фитнеса с восст.лямбда")
+# stratFitData_linsum = gs.calcStratFitData_linsum(stratPopData, mpData.loc[stratPopData.index], coefData)
+# gui.mostOptStratSins(stratFitData_linsum, 3, 4, title="Ранжирование по лин.свертке фитнеса с восст.лямбда")
 
-stratFitData = gs.calcStratFitData(stratPopData, pqrsData.loc[stratPopData.index], F=FLim)
-gui.mostOptStratSins(stratFitData, 3, 4, title="Ранжирование по расчетной формуле фитнеса с исх.параметрами")
+# stratFitData = gs.calcStratFitData(stratPopData, pqrsData.loc[stratPopData.index], F=FLim)
+# gui.mostOptStratSins(stratFitData, 3, 4, title="Ранжирование по расчетной формуле фитнеса с исх.параметрами")
 
 # rstdPqrsData = gs.calcPqrsData(mpData.loc[stratPopData.index], a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
 # stratFitData = gs.calcStratFitData(stratPopData, rstdPqrsData, F=FLim)

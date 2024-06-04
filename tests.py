@@ -6,11 +6,11 @@ import libs.utility as ut
 import libs.research as rs
 
 
-#gui.stratSins(-35, 3.93, -83, 49.32)
-#gui.stratSins(-34.58, 3.29, -83.32, 51.57)
-gui.stratSinsPoints(-34.58, 3.29, -83.32, 51.57)
-gui.stratSinsPoints_2(-34.58, -3.29, -83.32, -51.57)
-plt.show()
+# #gui.stratSins(-35, 3.93, -83, 49.32)
+# #gui.stratSins(-34.58, 3.29, -83.32, 51.57)
+# gui.stratSinsPoints(-34.58, 3.29, -83.32, 51.57)
+# gui.stratSinsPoints_2(-34.58, -3.29, -83.32, -51.57)
+# plt.show()
 
 
 # #stratData = gs.genStrats(10000, "beta")
@@ -18,8 +18,8 @@ stratData = ut.readData("strat_data", "dynamic_pred")
 
 # #stratData.loc[len(stratData.index)] = [-34.58, -3.29, -83.32, -51.57]
 
-# mpData = gs.calcMpData(stratData)
-# pqrsData = gs.calcPqrsData(mpData)
+mpData = gs.calcMpData(stratData)
+pqrsData = gs.calcPqrsData(mpData)
 
 # stratFitData = gs.calcStratFitData(stratData, pqrsData, F=0.577304230127284)
 # mpData = mpData.loc[stratFitData.index]
