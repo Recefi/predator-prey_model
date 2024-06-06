@@ -10,7 +10,7 @@ def findFsols(p, q, r, s, left=-1000, right=1000, step=1, errEps = 1e-15, rndEps
     Fsols = []
     for F0 in range(left, right, step):
         F, err = gs.calcFLim(p, q, r, s, F0, abs)
-        if (err < errEps):
+        if (np.abs(err) < errEps):
             F = np.round(F, rndEps)
             if not Fsols:
                 Fsols.append(F)
@@ -69,7 +69,7 @@ def findComplexFsols(p, q, r, s, left=-1000, right=1000, step=1, errEps = 1e-15,
     Fsols = []
     for F0 in range(left, right, step):
         F, err = calcComplexFLim(p, q, r, s, F0, 1)
-        if (err.real < errEps):
+        if (np.abs(err.real) < errEps):
             F = np.round(F, reRndEps)
             if not Fsols:
                 Fsols.append(F)
@@ -132,7 +132,7 @@ def findFsols_2(p1,q1,r1,s1, p2,q2,r2,s2, left=-1000, right=1000, step=1, errEps
     Fsols = []
     for F0 in range(left, right, step):
         F, err = gs.calcFLim_2(p1,q1,r1,s1, p2,q2,r2,s2, F0, abs)
-        if (err < errEps):
+        if (np.abs(err) < errEps):
             F = np.round(F, rndEps)
             if not Fsols:
                 Fsols.append(F)

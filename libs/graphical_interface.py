@@ -123,7 +123,7 @@ def allStratSins(stratData):
         ya = Aa[i] + Ba[i] * np.cos(2 * np.pi * x)
         ax.plot(x, ya, c="red")
 
-def popDynamics(rawData):
+def popDynamics(rawData, leg=False):
     n = int(len(rawData.index)/2)
 
     j_data = rawData.iloc[:n]
@@ -131,17 +131,17 @@ def popDynamics(rawData):
     F_data = rawData.loc['F']
 
     fig1, ax1 = plt.subplots()
-    j_data.T.plot(ax=ax1, title="Молодые особи", xlabel="t", legend=False)
+    j_data.T.plot(ax=ax1, title="Молодые особи", xlabel="t", legend=leg)
     aj_yMax = j_data.max().max()
 
     fig2, ax2 = plt.subplots()
-    a_data.T.plot(ax=ax2, title="Взрослые особи", xlabel="t", legend=False)
+    a_data.T.plot(ax=ax2, title="Взрослые особи", xlabel="t", legend=leg)
     a_yMax = a_data.max().max()
     if (a_yMax > aj_yMax):
         aj_yMax = a_yMax
     
     fig3, ax3 = plt.subplots()
-    F_data.T.plot(ax=ax3, title="Хищник", xlabel="t", legend=False)
+    F_data.T.plot(ax=ax3, title="Хищник", xlabel="t", legend=leg)
 
     ax1.set_ylim([0, aj_yMax*1.1])
     ax2.set_ylim([0, aj_yMax*1.1])

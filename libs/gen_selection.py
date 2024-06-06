@@ -459,7 +459,7 @@ def fitMaxMin(stratData, pqrsData):
 
     return genlFitMaxMin(Aj, Bj, Aa, Ba, p, q, r, s, index=pqrsData.index)
 
-def calcFLim_2(p1,q1,r1,s1, p2,q2,r2,s2, F0=0.1, abs=True):  # в качестве стартовой оценки решения можно исп-ть нач.условие из задачи Коши
+def calcFLim_2(p1,q1,r1,s1, p2,q2,r2,s2, F0=0.1, abs=False):
     def func1(F):
         return -s1*F-p1-q1*F+np.sqrt(4*r1*p1+(p1+q1*F-s1*F)**2) - (-s2*F-p2-q2*F+np.sqrt(4*r2*p2+(p2+q2*F-s2*F)**2))
 
@@ -478,17 +478,17 @@ def calcFLim_2(p1,q1,r1,s1, p2,q2,r2,s2, F0=0.1, abs=True):  # в качеств
     return root[0], err
 
 def findF_2(p, q, r, s, j, w, errEps = 1e-15):
-    if (w == j):
+    if (j == w):
         return [0]
     _p, _q, _r, _s = p[j], q[j], r[j], s[j]
     __p, __q, __r, __s = p[w], q[w], r[w], s[w]
     F, err = calcFLim_2(_p, _q, _r, _s, __p, __q, __r, __s, F0=0.1)
-    if (4*_r*_p+(_p+_q*F-_s*F)**2 < 0 or 4*__r*__p+(__p+__q*F-__s*F)**2 < 0 or err > errEps):
+    if (4*_r*_p+(_p+_q*F-_s*F)**2 < 0 or 4*__r*__p+(__p+__q*F-__s*F)**2 < 0 or F < 0):
         #return [1, [j,w]]  # use this strat as i
         return [0]
     return [2, [j,w], F]
 
-@njit(parallel=True)
+#@njit(parallel=True)
 def findMins_2(p, q, r, s, Fs, Fsj, Fsi):
     mins = np.empty(len(Fs))
     for _j in prange(len(Fs)):
@@ -502,6 +502,7 @@ def findMins_2(p, q, r, s, Fs, Fsj, Fsi):
             tmp = 4*r[i]*p[i]+(p[i]+q[i]*F-s[i]*F)**2
             if(tmp >= 0):
                 fit = fitj - (-s[i]*F-p[i]-q[i]*F+np.sqrt(tmp))
+                print(j, F, fit, i)
                 if (fit < min):
                     min = fit
         mins[_j] = min
