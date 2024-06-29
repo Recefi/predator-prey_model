@@ -4,13 +4,14 @@ import copy
 
 import libs.param as param
 
-def restorePQRS(FLim, stratPopData, coefData, mpData, optPntId):
+
+def restorePQRS(FLim, stratPopData, coefData, mpData, optPntId, lamsKey=-1):
     z1Lim = stratPopData.loc[optPntId, 'z1']
     z2Lim = stratPopData.loc[optPntId, 'z2']
     M2 = mpData.loc[optPntId, 'M2']
     M6 = mpData.loc[optPntId, 'M6']
-    lam26 = coefData.loc[-1, 'lam26']
-    lam66 = coefData.loc[-1, 'lam66']
+    lam26 = coefData.loc[lamsKey, 'lam26']
+    lam66 = coefData.loc[lamsKey, 'lam66']
     
     r = (FLim + (z1Lim+z2Lim)**2)/z2Lim
     q = (r*z2Lim - (z1Lim + z2Lim)**2)/(FLim*(z1Lim-(lam66*M6*z2Lim)/(lam26*M2)))
@@ -19,13 +20,13 @@ def restorePQRS(FLim, stratPopData, coefData, mpData, optPntId):
 
     return p, q, r, s
 
-def restorePQRS_2(FLim, stratPopData, coefData, mpData, optPntId):
+def restorePQRS_2(FLim, stratPopData, coefData, mpData, optPntId, lamsKey=-1):
     z1Lim = stratPopData.loc[optPntId, 'z1']
     z2Lim = stratPopData.loc[optPntId, 'z2']
     M2 = mpData.loc[optPntId, 'M2']
     M6 = mpData.loc[optPntId, 'M6']
-    lam26 = coefData.loc[-1, 'lam26']
-    lam22 = coefData.loc[-1, 'lam22']
+    lam26 = coefData.loc[lamsKey, 'lam26']
+    lam22 = coefData.loc[lamsKey, 'lam22']
     
     r = (FLim + (z1Lim+z2Lim)**2)/z2Lim
     s = (r*z2Lim - (z1Lim + z2Lim)**2)/(FLim*(z2Lim-(lam22*M2*z1Lim)/(lam26*M6)))
@@ -34,14 +35,14 @@ def restorePQRS_2(FLim, stratPopData, coefData, mpData, optPntId):
 
     return p, q, r, s
 
-def restorePQRS_3(FLim, stratPopData, coefData, mpData, optPntId):
+def restorePQRS_3(FLim, stratPopData, coefData, mpData, optPntId, lamsKey=-1):
     z1Lim = stratPopData.loc[optPntId, 'z1']
     z2Lim = stratPopData.loc[optPntId, 'z2']
     M2 = mpData.loc[optPntId, 'M2']
     M6 = mpData.loc[optPntId, 'M6']
-    lam22 = coefData.loc[-1, 'lam22']
-    lam26 = coefData.loc[-1, 'lam26']
-    lam66 = coefData.loc[-1, 'lam66']
+    lam22 = coefData.loc[lamsKey, 'lam22']
+    lam26 = coefData.loc[lamsKey, 'lam26']
+    lam66 = coefData.loc[lamsKey, 'lam66']
 
     r = (FLim + (z1Lim+z2Lim)**2)/z2Lim
 
@@ -84,9 +85,9 @@ def qzsz_2(r, FLim, stratPopData, optPntId, z1Lim=None, z2Lim=None):
         z2Lim = stratPopData.loc[optPntId, 'z2']
     return (r*z2Lim - (z1Lim+z2Lim)**2)/FLim
 
-def restoreParam(p, q, r, s, coefData, mpData, optPntId):
+def restoreParam(p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
     M1, M2, M3, M4, M5, M6, M7, M8 = mpData.loc[optPntId, 'M1':'M8']
-    lam1, lam2, lam3, lam4, lam5, lam6, lam7, lam8 = coefData.loc[-1, 'lam1':'lam8']
+    lam1, lam2, lam3, lam4, lam5, lam6, lam7, lam8 = coefData.loc[lamsKey, 'lam1':'lam8']
 
     g_j = -q/M2
     g_a = -s/M6
@@ -106,10 +107,10 @@ def restoreParam(p, q, r, s, coefData, mpData, optPntId):
 
     return a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a
 
-def restoreParam_2(p, q, r, s, coefData, mpData, optPntId):
+def restoreParam_2(p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
     M1, M2, M3, M4, M5, M6, M7, M8 = mpData.loc[optPntId, 'M1':'M8']
     (lam1,lam3,lam4,lam11,lam12,lam13,lam14,lam15,lam16,lam17,lam18,lam23,lam24,lam33,lam34,lam35,lam36,lam37,lam38,
-    lam44,lam45,lam46,lam47,lam48) = coefData.loc[-1, ['lam1','lam3','lam4','lam11','lam12','lam13','lam14','lam15',
+    lam44,lam45,lam46,lam47,lam48) = coefData.loc[lamsKey, ['lam1','lam3','lam4','lam11','lam12','lam13','lam14','lam15',
     'lam16','lam17','lam18','lam23','lam24','lam33','lam34','lam35','lam36','lam37','lam38',
     'lam44','lam45','lam46','lam47','lam48']]
 
@@ -125,28 +126,28 @@ def restoreParam_2(p, q, r, s, coefData, mpData, optPntId):
     d_a = lam18*p*r/(a_j*(lam15*M1*M5 + lam17*M1*M7 + lam18*M1*M8 + lam35*M3*M5 + lam37*M3*M7 + lam38*M3*M8
                                                                         + lam45*M4*M5 + lam47*M4*M7 + lam48*M4*M8))
 
-    g_j = lam12*p*q/(a_j*(lam12*M1*M2 + lam23*M2*M3 + lam24*M2*M4))
-    g_a = lam16*p*s/(a_j*(lam16*M1*M6 + lam36*M3*M6 + lam46*M4*M6))
+    g_j = -lam12*p*q/(a_j*(lam12*M1*M2 + lam23*M2*M3 + lam24*M2*M4))
+    g_a = -lam16*p*s/(a_j*(lam16*M1*M6 + lam36*M3*M6 + lam46*M4*M6))
 
     return a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a
 
-def restoreParam_4(p, q, r, s, coefData, mpData, optPntId):
+def restoreParam_4(p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
     M1, M2, M3, M4, M5, M6, M7, M8 = mpData.loc[optPntId, 'M1':'M8']
-    (lam1, lam2, lam3, lam4, lam5, lam6, lam7, lam8) = coefData.loc[-1,
+    (lam1, lam2, lam3, lam4, lam5, lam6, lam7, lam8) = coefData.loc[lamsKey,
     ['lam1','lam2','lam3','lam4','lam5','lam6','lam7','lam8']]
-    (lam11, lam12, lam13, lam14, lam15, lam16, lam17, lam18) = coefData.loc[-1,
+    (lam11, lam12, lam13, lam14, lam15, lam16, lam17, lam18) = coefData.loc[lamsKey,
     ['lam11','lam12','lam13','lam14','lam15','lam16','lam17','lam18']]
-    (lam22, lam23, lam24, lam25, lam26, lam27, lam28) = coefData.loc[-1,
+    (lam22, lam23, lam24, lam25, lam26, lam27, lam28) = coefData.loc[lamsKey,
     ['lam22','lam23','lam24','lam25','lam26','lam27','lam28']]
-    (lam33, lam34, lam35, lam36, lam37, lam38) = coefData.loc[-1,
+    (lam33, lam34, lam35, lam36, lam37, lam38) = coefData.loc[lamsKey,
     ['lam33','lam34','lam35','lam36','lam37','lam38']]
-    (lam44, lam45, lam46, lam47, lam48) = coefData.loc[-1,
+    (lam44, lam45, lam46, lam47, lam48) = coefData.loc[lamsKey,
     ['lam44','lam45','lam46','lam47','lam48']]
-    (lam55, lam56, lam57, lam58) = coefData.loc[-1,
+    (lam55, lam56, lam57, lam58) = coefData.loc[lamsKey,
     ['lam55','lam56','lam57','lam58']]
-    (lam66, lam67, lam68) = coefData.loc[-1,
+    (lam66, lam67, lam68) = coefData.loc[lamsKey,
     ['lam66','lam67','lam68']]
-    (lam77, lam78, lam88) = coefData.loc[-1,
+    (lam77, lam78, lam88) = coefData.loc[lamsKey,
     ['lam77','lam78','lam88']]
 
     a_a = lam5*r/(lam5*M5+lam7*M7+lam8*M8)
@@ -203,46 +204,46 @@ def restoreParam_4(p, q, r, s, coefData, mpData, optPntId):
 
     _g_a = []
     _g_a.append(-s/M6) #
-    _g_a.append(lam56*r*s/(a_a*(lam56*M5*M6 + lam67*M6*M7 + lam68*M6*M8)))
-    _g_a.append(lam16*p*s/(a_j*(lam16*M1*M6 + lam36*M3*M6 + lam46*M4*M6)))
-    _g_a.append(lam68*r*s/(d_a*(lam56*M5*M6 + lam67*M6*M7 + lam68*M6*M8))) #
-    _g_a.append(lam46*p*s/(d_j*(lam16*M1*M6 + lam36*M3*M6 + lam46*M4*M6)))
-    _g_a.append(lam67*r*s/(b_a*(lam56*M5*M6 + lam67*M6*M7 + lam68*M6*M8)))
-    _g_a.append(lam36*p*s/(b_j*(lam16*M1*M6 + lam36*M3*M6 + lam46*M4*M6)))
+    _g_a.append(-lam56*r*s/(a_a*(lam56*M5*M6 + lam67*M6*M7 + lam68*M6*M8)))
+    _g_a.append(-lam16*p*s/(a_j*(lam16*M1*M6 + lam36*M3*M6 + lam46*M4*M6)))
+    _g_a.append(-lam68*r*s/(d_a*(lam56*M5*M6 + lam67*M6*M7 + lam68*M6*M8))) #
+    _g_a.append(-lam46*p*s/(d_j*(lam16*M1*M6 + lam36*M3*M6 + lam46*M4*M6)))
+    _g_a.append(-lam67*r*s/(b_a*(lam56*M5*M6 + lam67*M6*M7 + lam68*M6*M8)))
+    _g_a.append(-lam36*p*s/(b_j*(lam16*M1*M6 + lam36*M3*M6 + lam46*M4*M6)))
     g_a = np.mean(_g_a[0])
     print(_g_a)
 
     _g_j = []
     _g_j.append(-q/M2) #
-    _g_j.append(lam25*q*r/(a_a*(lam25*M2*M5 + lam27*M2*M7 + lam28*M2*M8)))
-    _g_j.append(lam12*p*q/(a_j*(lam12*M1*M2 + lam23*M2*M3 + lam24*M2*M4)))
-    _g_j.append(lam28*q*r/(d_a*(lam25*M2*M5 + lam27*M2*M7 + lam28*M2*M8)))
-    _g_j.append(lam24*p*q/(d_j*(lam12*M1*M2 + lam23*M2*M3 + lam24*M2*M4))) #
-    _g_j.append(lam27*q*r/(b_a*(lam25*M2*M5 + lam27*M2*M7 + lam28*M2*M8)))
-    _g_j.append(lam23*p*q/(b_j*(lam12*M1*M2 + lam23*M2*M3 + lam24*M2*M4)))
+    _g_j.append(-lam25*q*r/(a_a*(lam25*M2*M5 + lam27*M2*M7 + lam28*M2*M8)))
+    _g_j.append(-lam12*p*q/(a_j*(lam12*M1*M2 + lam23*M2*M3 + lam24*M2*M4)))
+    _g_j.append(-lam28*q*r/(d_a*(lam25*M2*M5 + lam27*M2*M7 + lam28*M2*M8)))
+    _g_j.append(-lam24*p*q/(d_j*(lam12*M1*M2 + lam23*M2*M3 + lam24*M2*M4))) #
+    _g_j.append(-lam27*q*r/(b_a*(lam25*M2*M5 + lam27*M2*M7 + lam28*M2*M8)))
+    _g_j.append(-lam23*p*q/(b_j*(lam12*M1*M2 + lam23*M2*M3 + lam24*M2*M4)))
     _g_j.append(q*s/(g_a*M2*M6))
-    g_j = np.mean(_g_j[0])
+    g_j = np.mean(_g_j[1])
     print(_g_j)
 
     return a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a
 
-def restoreParam_5(p, q, r, s, coefData, mpData, optPntId):
+def restoreParam_5(p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
     M1, M2, M3, M4, M5, M6, M7, M8 = mpData.loc[optPntId, 'M1':'M8']
-    (lam1, lam2, lam3, lam4, lam5, lam6, lam7, lam8) = coefData.loc[-1,
+    (lam1, lam2, lam3, lam4, lam5, lam6, lam7, lam8) = coefData.loc[lamsKey,
     ['lam1','lam2','lam3','lam4','lam5','lam6','lam7','lam8']]
-    (lam11, lam12, lam13, lam14, lam15, lam16, lam17, lam18) = coefData.loc[-1,
+    (lam11, lam12, lam13, lam14, lam15, lam16, lam17, lam18) = coefData.loc[lamsKey,
     ['lam11','lam12','lam13','lam14','lam15','lam16','lam17','lam18']]
-    (lam22, lam23, lam24, lam25, lam26, lam27, lam28) = coefData.loc[-1,
+    (lam22, lam23, lam24, lam25, lam26, lam27, lam28) = coefData.loc[lamsKey,
     ['lam22','lam23','lam24','lam25','lam26','lam27','lam28']]
-    (lam33, lam34, lam35, lam36, lam37, lam38) = coefData.loc[-1,
+    (lam33, lam34, lam35, lam36, lam37, lam38) = coefData.loc[lamsKey,
     ['lam33','lam34','lam35','lam36','lam37','lam38']]
-    (lam44, lam45, lam46, lam47, lam48) = coefData.loc[-1,
+    (lam44, lam45, lam46, lam47, lam48) = coefData.loc[lamsKey,
     ['lam44','lam45','lam46','lam47','lam48']]
-    (lam55, lam56, lam57, lam58) = coefData.loc[-1,
+    (lam55, lam56, lam57, lam58) = coefData.loc[lamsKey,
     ['lam55','lam56','lam57','lam58']]
-    (lam66, lam67, lam68) = coefData.loc[-1,
+    (lam66, lam67, lam68) = coefData.loc[lamsKey,
     ['lam66','lam67','lam68']]
-    (lam77, lam78, lam88) = coefData.loc[-1,
+    (lam77, lam78, lam88) = coefData.loc[lamsKey,
     ['lam77','lam78','lam88']]
 
     a_a = lam5*r/(lam5*M5+lam7*M7+lam8*M8)
@@ -271,18 +272,18 @@ def restoreParam_5(p, q, r, s, coefData, mpData, optPntId):
     print(d_j1, d_j2, d_j3, d_j4)
 
     g_a1 = -s/M6 #
-    g_a2 = lam56*r*s/(a_a*(lam56*M5*M6 + lam67*M6*M7 + lam68*M6*M8))
-    g_a3 = lam16*p*s/(a_j*(lam16*M1*M6 + lam36*M3*M6 + lam46*M4*M6))
-    g_a4 = lam68*r*s/(d_a*(lam56*M5*M6 + lam67*M6*M7 + lam68*M6*M8)) #
-    g_a5 = lam46*p*s/(d_j*(lam16*M1*M6 + lam36*M3*M6 + lam46*M4*M6))
+    g_a2 = -lam56*r*s/(a_a*(lam56*M5*M6 + lam67*M6*M7 + lam68*M6*M8))
+    g_a3 = -lam16*p*s/(a_j*(lam16*M1*M6 + lam36*M3*M6 + lam46*M4*M6))
+    g_a4 = -lam68*r*s/(d_a*(lam56*M5*M6 + lam67*M6*M7 + lam68*M6*M8)) #
+    g_a5 = -lam46*p*s/(d_j*(lam16*M1*M6 + lam36*M3*M6 + lam46*M4*M6))
     g_a = (g_a1 + g_a2 + g_a3 + g_a4 + g_a5)/5
     print(g_a1, g_a2, g_a3, g_a4, g_a5)
 
     g_j1 = -q/M2 #
-    g_j2 = lam25*q*r/(a_a*(lam25*M2*M5 + lam27*M2*M7 + lam28*M2*M8))
-    g_j3 = lam12*p*q/(a_j*(lam12*M1*M2 + lam23*M2*M3 + lam24*M2*M4))
-    g_j4 = lam28*q*r/(d_a*(lam25*M2*M5 + lam27*M2*M7 + lam28*M2*M8))
-    g_j5 = lam24*p*q/(d_j*(lam12*M1*M2 + lam23*M2*M3 + lam24*M2*M4)) #
+    g_j2 = -lam25*q*r/(a_a*(lam25*M2*M5 + lam27*M2*M7 + lam28*M2*M8))
+    g_j3 = -lam12*p*q/(a_j*(lam12*M1*M2 + lam23*M2*M3 + lam24*M2*M4))
+    g_j4 = -lam28*q*r/(d_a*(lam25*M2*M5 + lam27*M2*M7 + lam28*M2*M8))
+    g_j5 = -lam24*p*q/(d_j*(lam12*M1*M2 + lam23*M2*M3 + lam24*M2*M4)) #
     g_j6 = q*s/(g_a*M2*M6)
     g_j = (g_j1 + g_j2 + g_j3 + g_j4 + g_j5 + g_j6)/6
     print(g_j1, g_j2, g_j3, g_j4, g_j5, g_j6)
@@ -294,8 +295,8 @@ def restoreParam_5(p, q, r, s, coefData, mpData, optPntId):
     b_a4 = lam78*r*r/(2*d_a*(lam55*M5**2 + lam77*M7**2 + lam88*M8**2 + lam57*M5*M7 + lam58*M5*M8 + lam78*M7*M8))
     b_a5 = lam47*p*r/(d_j*(lam15*M1*M5 + lam17*M1*M7 + lam18*M1*M8 + lam35*M3*M5 + lam37*M3*M7 + lam38*M3*M8
                                                                         + lam45*M4*M5 + lam47*M4*M7 + lam48*M4*M8))
-    b_a6 = lam67*r*s/(g_a*(lam56*M5*M6 + lam67*M6*M7 + lam68*M6*M8))
-    b_a7 = lam27*q*r/(g_j*(lam25*M2*M5 + lam27*M2*M7 + lam28*M2*M8))
+    b_a6 = -lam67*r*s/(g_a*(lam56*M5*M6 + lam67*M6*M7 + lam68*M6*M8))
+    b_a7 = -lam27*q*r/(g_j*(lam25*M2*M5 + lam27*M2*M7 + lam28*M2*M8))
     b_a = (b_a1 + b_a2 + b_a3 + b_a4 + b_a5 + b_a6 + b_a7)/7
     print(b_a1, b_a2, b_a3, b_a4, b_a5, b_a6, b_a7)
 
@@ -308,30 +309,30 @@ def restoreParam_5(p, q, r, s, coefData, mpData, optPntId):
     b_j5 = lam34*p*p/(2*d_j*(lam11*M1**2 + lam33*M3**2 + lam44*M4**2 + lam13*M1*M3 + lam14*M1*M4 + lam34*M3*M4))
     b_j6 = lam37*p*r/(b_a*(lam15*M1*M5 + lam17*M1*M7 + lam18*M1*M8 + lam35*M3*M5 + lam37*M3*M7 + lam38*M3*M8
                                                                         + lam45*M4*M5 + lam47*M4*M7 + lam48*M4*M8))
-    b_j7 = lam36*p*s/(g_a*(lam16*M1*M6 + lam36*M3*M6 + lam46*M4*M6))
-    b_j8 = lam23*p*q/(g_j*(lam12*M1*M2 + lam23*M2*M3 + lam24*M2*M4))
+    b_j7 = -lam36*p*s/(g_a*(lam16*M1*M6 + lam36*M3*M6 + lam46*M4*M6))
+    b_j8 = -lam23*p*q/(g_j*(lam12*M1*M2 + lam23*M2*M3 + lam24*M2*M4))
     b_j = (b_j1 + b_j2 + b_j3 + b_j4 + b_j5 + b_j6 + b_j7 + b_j8)/8
     print(b_j1, b_j2, b_j3, b_j4, b_j5, b_j6, b_j7, b_j8)
 
     return a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a
 
-def restoreParam_6(p, q, r, s, coefData, mpData, optPntId):
+def restoreParam_6(p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
     M1, M2, M3, M4, M5, M6, M7, M8 = mpData.loc[optPntId, 'M1':'M8']
-    (lam1, lam2, lam3, lam4, lam5, lam6, lam7, lam8) = coefData.loc[-1,
+    (lam1, lam2, lam3, lam4, lam5, lam6, lam7, lam8) = coefData.loc[lamsKey,
     ['lam1','lam2','lam3','lam4','lam5','lam6','lam7','lam8']]
-    (lam11, lam12, lam13, lam14, lam15, lam16, lam17, lam18) = coefData.loc[-1,
+    (lam11, lam12, lam13, lam14, lam15, lam16, lam17, lam18) = coefData.loc[lamsKey,
     ['lam11','lam12','lam13','lam14','lam15','lam16','lam17','lam18']]
-    (lam22, lam23, lam24, lam25, lam26, lam27, lam28) = coefData.loc[-1,
+    (lam22, lam23, lam24, lam25, lam26, lam27, lam28) = coefData.loc[lamsKey,
     ['lam22','lam23','lam24','lam25','lam26','lam27','lam28']]
-    (lam33, lam34, lam35, lam36, lam37, lam38) = coefData.loc[-1,
+    (lam33, lam34, lam35, lam36, lam37, lam38) = coefData.loc[lamsKey,
     ['lam33','lam34','lam35','lam36','lam37','lam38']]
-    (lam44, lam45, lam46, lam47, lam48) = coefData.loc[-1,
+    (lam44, lam45, lam46, lam47, lam48) = coefData.loc[lamsKey,
     ['lam44','lam45','lam46','lam47','lam48']]
-    (lam55, lam56, lam57, lam58) = coefData.loc[-1,
+    (lam55, lam56, lam57, lam58) = coefData.loc[lamsKey,
     ['lam55','lam56','lam57','lam58']]
-    (lam66, lam67, lam68) = coefData.loc[-1,
+    (lam66, lam67, lam68) = coefData.loc[lamsKey,
     ['lam66','lam67','lam68']]
-    (lam77, lam78, lam88) = coefData.loc[-1,
+    (lam77, lam78, lam88) = coefData.loc[lamsKey,
     ['lam77','lam78','lam88']]
 
     a_a = lam5*r/(lam5*M5+lam7*M7+lam8*M8)
@@ -393,24 +394,24 @@ def restoreParam_6(p, q, r, s, coefData, mpData, optPntId):
 
     _g_a = []
     _g_a.append(-s/M6) #
-    _g_a.append(lam56*r*s/(a_a*(lam56*M5*M6 + lam67*M6*M7 + lam68*M6*M8)))
-    _g_a.append(lam16*p*s/(a_j*(lam16*M1*M6 + lam36*M3*M6 + lam46*M4*M6)))
-    _g_a.append(lam68*r*s/(d_a*(lam56*M5*M6 + lam67*M6*M7 + lam68*M6*M8))) #
-    _g_a.append(lam46*p*s/(d_j*(lam16*M1*M6 + lam36*M3*M6 + lam46*M4*M6)))
-    _g_a.append(lam67*r*s/(b_a*(lam56*M5*M6 + lam67*M6*M7 + lam68*M6*M8)))
-    _g_a.append(lam36*p*s/(b_j*(lam16*M1*M6 + lam36*M3*M6 + lam46*M4*M6)))
+    _g_a.append(-lam56*r*s/(a_a*(lam56*M5*M6 + lam67*M6*M7 + lam68*M6*M8)))
+    _g_a.append(-lam16*p*s/(a_j*(lam16*M1*M6 + lam36*M3*M6 + lam46*M4*M6)))
+    _g_a.append(-lam68*r*s/(d_a*(lam56*M5*M6 + lam67*M6*M7 + lam68*M6*M8))) #
+    _g_a.append(-lam46*p*s/(d_j*(lam16*M1*M6 + lam36*M3*M6 + lam46*M4*M6)))
+    _g_a.append(-lam67*r*s/(b_a*(lam56*M5*M6 + lam67*M6*M7 + lam68*M6*M8)))
+    _g_a.append(-lam36*p*s/(b_j*(lam16*M1*M6 + lam36*M3*M6 + lam46*M4*M6)))
     _g_a = [elem for elem in _g_a if elem > 0]
     g_a = np.mean(_g_a)
     print(_g_a)
 
     _g_j = []
     _g_j.append(-q/M2) #
-    _g_j.append(lam25*q*r/(a_a*(lam25*M2*M5 + lam27*M2*M7 + lam28*M2*M8)))
-    _g_j.append(lam12*p*q/(a_j*(lam12*M1*M2 + lam23*M2*M3 + lam24*M2*M4)))
-    _g_j.append(lam28*q*r/(d_a*(lam25*M2*M5 + lam27*M2*M7 + lam28*M2*M8)))
-    _g_j.append(lam24*p*q/(d_j*(lam12*M1*M2 + lam23*M2*M3 + lam24*M2*M4))) #
-    _g_j.append(lam27*q*r/(b_a*(lam25*M2*M5 + lam27*M2*M7 + lam28*M2*M8)))
-    _g_j.append(lam23*p*q/(b_j*(lam12*M1*M2 + lam23*M2*M3 + lam24*M2*M4)))
+    _g_j.append(-lam25*q*r/(a_a*(lam25*M2*M5 + lam27*M2*M7 + lam28*M2*M8)))
+    _g_j.append(-lam12*p*q/(a_j*(lam12*M1*M2 + lam23*M2*M3 + lam24*M2*M4)))
+    _g_j.append(-lam28*q*r/(d_a*(lam25*M2*M5 + lam27*M2*M7 + lam28*M2*M8)))
+    _g_j.append(-lam24*p*q/(d_j*(lam12*M1*M2 + lam23*M2*M3 + lam24*M2*M4))) #
+    _g_j.append(-lam27*q*r/(b_a*(lam25*M2*M5 + lam27*M2*M7 + lam28*M2*M8)))
+    _g_j.append(-lam23*p*q/(b_j*(lam12*M1*M2 + lam23*M2*M3 + lam24*M2*M4)))
     _g_j.append(q*s/(g_a*M2*M6))
     _g_j = [elem for elem in _g_j if elem > 0]
     g_j = np.mean(_g_j)
@@ -418,25 +419,25 @@ def restoreParam_6(p, q, r, s, coefData, mpData, optPntId):
 
     return a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a
 
-def restoreParam_7(p, q, r, s, coefData, mpData, optPntId):
+def restoreParam_7(p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
     M1, M2, M3, M4, M5, M6, M7, M8 = mpData.loc[optPntId, 'M1':'M8']
-    (lam1, lam2, lam3, lam4, lam5, lam6, lam7, lam8) = coefData.loc[-1,
+    (lam1, lam2, lam3, lam4, lam5, lam6, lam7, lam8) = coefData.loc[lamsKey,
     ['lam1','lam2','lam3','lam4','lam5','lam6','lam7','lam8']]
-    (lam11, lam12, lam13, lam14, lam15, lam16, lam17, lam18) = coefData.loc[-1,
+    (lam11, lam12, lam13, lam14, lam15, lam16, lam17, lam18) = coefData.loc[lamsKey,
     ['lam11','lam12','lam13','lam14','lam15','lam16','lam17','lam18']]
-    (lam22, lam23, lam24, lam25, lam26, lam27, lam28) = coefData.loc[-1,
+    (lam22, lam23, lam24, lam25, lam26, lam27, lam28) = coefData.loc[lamsKey,
     ['lam22','lam23','lam24','lam25','lam26','lam27','lam28']]
-    (lam33, lam34, lam35, lam36, lam37, lam38) = coefData.loc[-1,
+    (lam33, lam34, lam35, lam36, lam37, lam38) = coefData.loc[lamsKey,
     ['lam33','lam34','lam35','lam36','lam37','lam38']]
-    (lam44, lam45, lam46, lam47, lam48) = coefData.loc[-1,
+    (lam44, lam45, lam46, lam47, lam48) = coefData.loc[lamsKey,
     ['lam44','lam45','lam46','lam47','lam48']]
-    (lam55, lam56, lam57, lam58) = coefData.loc[-1,
+    (lam55, lam56, lam57, lam58) = coefData.loc[lamsKey,
     ['lam55','lam56','lam57','lam58']]
-    (lam66, lam67, lam68) = coefData.loc[-1,
+    (lam66, lam67, lam68) = coefData.loc[lamsKey,
     ['lam66','lam67','lam68']]
-    (lam77, lam78, lam88) = coefData.loc[-1,
+    (lam77, lam78, lam88) = coefData.loc[lamsKey,
     ['lam77','lam78','lam88']]
-    lam = coefData.loc[-1].values
+    lam = coefData.loc[lamsKey].values
 
     def formulas_0(curPar):
         if (curPar == 0 or curPar == 2 or curPar == 3):
@@ -474,16 +475,16 @@ def restoreParam_7(p, q, r, s, coefData, mpData, optPntId):
                                                             + lam38*M3*M8 + lam45*M4*M5 + lam47*M4*M7 + lam48*M4*M8))
         if (((curPar == 0 or curPar == 2 or curPar == 3) and prevPar == 1)
         or ((prevPar == 0 or prevPar == 2 or prevPar == 3) and curPar == 1)):
-            return lam[calcLam]*p*q/(res[prevPar]*(lam12*M1*M2 + lam23*M2*M3 + lam24*M2*M4))
+            return -lam[calcLam]*p*q/(res[prevPar]*(lam12*M1*M2 + lam23*M2*M3 + lam24*M2*M4))
         if (((curPar == 0 or curPar == 2 or curPar == 3) and prevPar == 5)
         or ((prevPar == 0 or prevPar == 2 or prevPar == 3) and curPar == 5)):
-            return lam[calcLam]*p*s/(res[prevPar]*(lam16*M1*M6 + lam36*M3*M6 + lam46*M4*M6))
+            return -lam[calcLam]*p*s/(res[prevPar]*(lam16*M1*M6 + lam36*M3*M6 + lam46*M4*M6))
         if (((curPar == 4 or curPar == 6 or curPar == 7) and prevPar == 1)
         or ((prevPar == 4 or prevPar == 6 or prevPar == 7) and curPar == 1)):
-            return lam[calcLam]*q*r/(res[prevPar]*(lam25*M2*M5 + lam27*M2*M7 + lam28*M2*M8))
+            return -lam[calcLam]*q*r/(res[prevPar]*(lam25*M2*M5 + lam27*M2*M7 + lam28*M2*M8))
         if (((curPar == 4 or curPar == 6 or curPar == 7) and prevPar == 5)
         or ((prevPar == 4 or prevPar == 6 or prevPar == 7) and curPar == 5)):
-            return lam[calcLam]*r*s/(res[prevPar]*(lam56*M5*M6 + lam67*M6*M7 + lam68*M6*M8))
+            return -lam[calcLam]*r*s/(res[prevPar]*(lam56*M5*M6 + lam67*M6*M7 + lam68*M6*M8))
         if ((curPar == 1 and prevPar == 5) or (curPar == 5 and prevPar == 1)):
             return q*s/(res[prevPar]*M2*M6)
 
