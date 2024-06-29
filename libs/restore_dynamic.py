@@ -62,6 +62,28 @@ def restorePQRS_3(FLim, stratPopData, coefData, mpData, optPntId):
 
     return p, q, r, s
 
+def checkPqrs(mpData, optPntId, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a):
+    M1, M2, M3, M4, M5, M6, M7, M8 = mpData.loc[optPntId, 'M1':'M8']
+    p = a_j*M1 + b_j*M3 + d_j*M4
+    r = a_a*M5 + b_a*M7 + d_a*M8
+    q = -g_j*M2
+    s = -g_a*M6
+    return p,q,r,s
+
+def qzsz_1(q, s, stratPopData, optPntId, z1Lim=None, z2Lim=None):
+    if(z1Lim is None):
+        z1Lim = stratPopData.loc[optPntId, 'z1']
+    if(z2Lim is None):
+        z2Lim = stratPopData.loc[optPntId, 'z2']
+    return q*z1Lim+s*z2Lim
+
+def qzsz_2(r, FLim, stratPopData, optPntId, z1Lim=None, z2Lim=None):
+    if(z1Lim is None):
+        z1Lim = stratPopData.loc[optPntId, 'z1']
+    if(z2Lim is None):
+        z2Lim = stratPopData.loc[optPntId, 'z2']
+    return (r*z2Lim - (z1Lim+z2Lim)**2)/FLim
+
 def restoreParam(p, q, r, s, coefData, mpData, optPntId):
     M1, M2, M3, M4, M5, M6, M7, M8 = mpData.loc[optPntId, 'M1':'M8']
     lam1, lam2, lam3, lam4, lam5, lam6, lam7, lam8 = coefData.loc[-1, 'lam1':'lam8']

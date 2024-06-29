@@ -1,8 +1,7 @@
 import numpy as np
 import pandas as pd
-import scipy.integrate as integrate
+import scipy as sp
 import time
-from scipy.optimize import fsolve
 import tqdm
 from numba import jit, njit, prange
 from joblib import Parallel, delayed
@@ -121,9 +120,9 @@ def calcStratFitData(stratData, pqrsData, F=1):
     stratFitData = pd.concat([stratData.loc[fitData.index], fitData], axis=1)
     return stratFitData
 
-def calcStratFitData_linsum(stratData, mpData, coefData):
+def calcStratFitData_linsum(stratData, mpData, coefData, idx=-1):
     mpMatr = mpData.values
-    lams = coefData.iloc[-1].values
+    lams = coefData.iloc[idx].values
 
     fitness = []
     for i in range(len(mpMatr)):
@@ -169,7 +168,7 @@ def calcPopDynamics(pqrsData, tMax=1000, tParts=10000, z0=0.01, F0=0.1):
     z_0 = np.append(z_0, F0)
 
     t = np.linspace(0, tMax, tParts)
-    pop = integrate.solve_ivp(integrateIter, args=(n, p, q, r, s), t_span=[0, tMax], t_eval=t, y0=z_0, method='Radau')
+    pop = sp.integrate.solve_ivp(integrateIter, args=(n, p, q, r, s), t_span=[0, tMax], t_eval=t, y0=z_0, method='Radau')
 
     indxs = []
     for i in range(n):
@@ -217,8 +216,8 @@ def analyzePopDynamics(stratData, rawPopData, eps):
     popData = pd.DataFrame(strats, columns=['t', 'z1', 'z2'], index=tmpStratData.index)
     stratPopData = pd.concat([tmpStratData, popData], axis=1)
 
-    arrF = rawPopData.iloc[2*n].tail(10).round(4).values
-    with np.printoptions(precision=4):
+    arrF = rawPopData.iloc[2*n].tail(10).round(10).values
+    with np.printoptions(precision=10):
         print("F*: ", arrF)
     FLim = arrF[0]
     if (arrF == FLim).sum() != arrF.size:
@@ -344,7 +343,7 @@ def calcFLim(p,q,r,s, F0=0.1, abs=True):  # в качестве стартово
         # the modulus(euclidean norm) is the euclidean distance from 0 to the number, including complex number.
         # |a + bi| = sqrt(a^2 + b^2), the distance between the origin (0, 0) and the point (a, b) in the complex plane.
 
-    root = fsolve(func, F0) if abs else fsolve(func1, F0)
+    root = sp.optimize.fsolve(func, F0) if abs else sp.optimize.fsolve(func1, F0)
     #err1 = func1(root[0])
     err = func(root[0])
     # print(root[0])
@@ -357,12 +356,23 @@ def calcZLim(p, q, r, s, F):
     z1 = (s*F - (p+q*F) + np.sqrt(4*r*p+(p+q*F-s*F)**2))/(2*p) * z2
     return z1, z2
 
+def calcZLim_auto(p, q, r, s, F):
+    def func(z):
+        res = []
+        res.append(z[0]*(-p-q*F-z[0]-z[1]) + r*z[1])
+        res.append(z[1]*(-s*F-z[0]-z[1]) + p*z[0])
+        res.append(F*(q*z[0] + s*z[1] - 1))
+        return res
+
+    roots = sp.optimize.fsolve(func, [0.1, 0.1, 0])
+    # errs = func(roots)
+    # print(errs)
+    return roots[0], roots[1]
+
 def chkFLim(p, q, r, s, F, z1, z2):
     a11, a12, a13 = (-p - q*F - z1 - z2, -z1 + r, -q*z1)
     a21, a22, a23 = (p-z2, -s*F - z1 - z2, -s*z2)
     a31, a32, a33 = (q*F, s*F, q*z1 + s*z2 - 1)
-
-    #print("!!!test!!!", -q*z1, a13)
 
     pows = [1, -(a11 + a22 + a33), (a11*a22 + a11*a33 + a22*a33 - a31*a13 - a32*a23 - a12*a21),
             -(a11*a22*a33 + a21*a32*a13 + a12*a23*a31 - a31*a13*a22 - a32*a23*a11 - a12*a21*a33)]
@@ -374,6 +384,17 @@ def chkFLim(p, q, r, s, F, z1, z2):
     # print("roots: ", L)
     # print("errs: ", errs)
     return L, errs
+
+def chkFLim_auto(p, q, r, s, F, z1, z2):
+    A = np.array([
+    [-p - q*F - z1 - z2, -z1 + r, -q*z1],
+    [p-z2, -s*F - z1 - z2, -s*z2],
+    [q*F, s*F, q*z1 + s*z2 - 1]
+    ])
+    L = np.linalg.eig(A).eigenvalues
+
+    # print("roots: ", L)
+    return L
 
 def findF(p, q, r, s, j):
     p, q, r, s = p[j], q[j], r[j], s[j]
@@ -459,7 +480,7 @@ def fitMaxMin(stratData, pqrsData):
 
     return genlFitMaxMin(Aj, Bj, Aa, Ba, p, q, r, s, index=pqrsData.index)
 
-def calcFLim_2(p1,q1,r1,s1, p2,q2,r2,s2, F0=0.1, abs=False):
+def calcFLim_2(p1,q1,r1,s1, p2,q2,r2,s2, F0=0.1, abs=True):
     def func1(F):
         return -s1*F-p1-q1*F+np.sqrt(4*r1*p1+(p1+q1*F-s1*F)**2) - (-s2*F-p2-q2*F+np.sqrt(4*r2*p2+(p2+q2*F-s2*F)**2))
 
@@ -469,7 +490,7 @@ def calcFLim_2(p1,q1,r1,s1, p2,q2,r2,s2, F0=0.1, abs=False):
         # the modulus(euclidean norm) is the euclidean distance from 0 to the number, including complex number.
         # |a + bi| = sqrt(a^2 + b^2), the distance between the origin (0, 0) and the point (a, b) in the complex plane.
 
-    root = fsolve(func, F0) if abs else fsolve(func1, F0)
+    root = sp.optimize.fsolve(func, F0) if abs else sp.optimize.fsolve(func1, F0)
     # err1 = func1(root[0])
     err = func(root[0])
     # print(root[0])
@@ -477,13 +498,42 @@ def calcFLim_2(p1,q1,r1,s1, p2,q2,r2,s2, F0=0.1, abs=False):
     # print("err:", err)
     return root[0], err
 
-def findF_2(p, q, r, s, j, w, errEps = 1e-15):
+def calcZLim_2(p1, q1, r1, s1, p2, q2, r2, s2, F):
+    def func(z):
+        res = []
+        res.append(z[0]*(-p1-q1*F-z[0]-z[1]-z[2]-z[3]) + r1*z[1])
+        res.append(z[1]*(-s1*F-z[0]-z[1]-z[2]-z[3]) + p1*z[0])
+        res.append(z[2]*(-p2-q2*F-z[0]-z[1]-z[2]-z[3]) + r2*z[3])
+        res.append(z[3]*(-s2*F-z[0]-z[1]-z[2]-z[3]) + p2*z[2])
+        res.append(F*(q1*z[0] + s1*z[1] + q2*z[2] + s2*z[3] - 1))
+        return res
+
+    roots = sp.optimize.fsolve(func, [0.1, 0.1, 0.1, 0.1, 0])
+    # errs = func(roots)
+    # print(errs)
+    return roots[0], roots[1], roots[2], roots[3]
+
+def chkFLim_2(p1, q1, r1, s1, p2, q2, r2, s2, F, z11, z12, z21, z22):
+    A = np.array([
+    [-p1-q1*F-z11-z12-z21-z22,  -z11+r1,                -z11,                       -z11,                   -q1*z11],
+    [p1-z12,                    -s1*F-z11-z12-z21-z22,  -z12,                       -z12,                   -s1*z12],
+    [-z21,                      -z21,                   -p2-q2*F-z11-z12-z21-z22,   -z21+r2,                -q2*z21],
+    [-z22,                      -z22,                   p2-z22,                     -s2*F-z11-z12-z21-z22,  -s2*z22],
+    [q1*F,                      s1*F,                   q2*F,                       s2*F, q1*z11+s1*z12+q2*z21+s2*z22-1]
+    ])
+    L = np.linalg.eig(A).eigenvalues
+    #L = sp.linalg.eigvals(A)
+
+    # print("roots: ", L)
+    return L
+
+def findF_2(p, q, r, s, j, w):
     if (j == w):
         return [0]
     _p, _q, _r, _s = p[j], q[j], r[j], s[j]
     __p, __q, __r, __s = p[w], q[w], r[w], s[w]
     F, err = calcFLim_2(_p, _q, _r, _s, __p, __q, __r, __s, F0=0.1)
-    if (4*_r*_p+(_p+_q*F-_s*F)**2 < 0 or 4*__r*__p+(__p+__q*F-__s*F)**2 < 0 or F < 0):
+    if (4*_r*_p+(_p+_q*F-_s*F)**2 < 0 or 4*__r*__p+(__p+__q*F-__s*F)**2 < 0):
         #return [1, [j,w]]  # use this strat as i
         return [0]
     return [2, [j,w], F]
@@ -502,7 +552,7 @@ def findMins_2(p, q, r, s, Fs, Fsj, Fsi):
             tmp = 4*r[i]*p[i]+(p[i]+q[i]*F-s[i]*F)**2
             if(tmp >= 0):
                 fit = fitj - (-s[i]*F-p[i]-q[i]*F+np.sqrt(tmp))
-                print(j, F, fit, i)
+                print('j:',j,' F:',F,' fit:',fit,' fitj:',fitj,' fiti:',-s[i]*F-p[i]-q[i]*F+np.sqrt(tmp),' i:',i,sep='')
                 if (fit < min):
                     min = fit
         mins[_j] = min

@@ -22,8 +22,8 @@ def chkFsols(p, q, r, s, Fsols):
     Flams = []
     lamsErrs = []
     for i in range(len(Fsols)):
-        z1, z2 = calcZLim(p, q, r, s, Fsols[i])
-        roots, errs = chkFLim(p, q, r, s, Fsols[i], z1, z2)
+        z1, z2 = gs.calcZLim(p, q, r, s, Fsols[i])
+        roots, errs = gs.chkFLim(p, q, r, s, Fsols[i], z1, z2)
         if (roots.real > 0).any():
             Flams.append('+')
         else:
@@ -31,15 +31,28 @@ def chkFsols(p, q, r, s, Fsols):
         lamsErrs.append(errs)
     return Flams, lamsErrs
 
+def chkFsols_auto(p, q, r, s, Fsols):
+    Flams = []
+    for i in range(len(Fsols)):
+        z1, z2 = gs.calcZLim(p, q, r, s, Fsols[i])
+        roots = gs.chkFLim_auto(p, q, r, s, Fsols[i], z1, z2)
+        if (roots.real > 0).any():
+            Flams.append('+')
+        else:
+            Flams.append('-')
+    return Flams
+
 def chkFsolsOnSel(stratData, pqrsData, abs=True):
+    p, q, r, s = (pqrsData[col] for col in pqrsData[['p','q','r','s']])
+
     res = []
     for i in tqdm.tqdm(pqrsData.index):
         resStr = []
-        p, q, r, s = pqrsData.loc[i, ['p', 'q', 'r', 's']]
-        Fsols = findFsols(p, q, r, s,
+        Fsols = findFsols(p[i], q[i], r[i], s[i],
                         left = -100, right=100,
                         step=1, abs=abs)
-        Flams, lamsErrs = chkFsols(p, q, r, s, Fsols)
+        Flams, lamsErrs = chkFsols(p[i], q[i], r[i], s[i], Fsols)
+        lamsErrs = chkFsols_auto(p[i], q[i], r[i], s[i], Fsols)
         #resStr.append(Fsols)
         resStr.append(Flams)
         resStr.append(lamsErrs)
@@ -79,14 +92,15 @@ def findComplexFsols(p, q, r, s, left=-1000, right=1000, step=1, errEps = 1e-15,
     return Fsols
 
 def chkComplexFsolsOnSel(stratData, pqrsData):
+    p, q, r, s = (pqrsData[col] for col in pqrsData[['p','q','r','s']])
+
     res = []
     for i in tqdm.tqdm(pqrsData.index):
         resStr = []
-        p, q, r, s = pqrsData.loc[i, ['p', 'q', 'r', 's']]
-        Fsols = findComplexFsols(p, q, r, s,
+        Fsols = findComplexFsols(p[i], q[i], r[i], s[i],
                                 left = -100, right=100,
                                 step=1)
-        Flams, lamsErrs = chkFsols(p, q, r, s, Fsols)
+        Flams, lamsErrs = chkFsols(p[i], q[i], r[i], s[i], Fsols)
         #resStr.append(Fsols)
         resStr.append(Flams)
         resStr.append(lamsErrs)
@@ -139,3 +153,38 @@ def findFsols_2(p1,q1,r1,s1, p2,q2,r2,s2, left=-1000, right=1000, step=1, errEps
             elif (np.abs(F - Fsols) > 10**(-rndEps)).all():
                 Fsols.append(F)
     return Fsols
+
+def chkFsols_2(p1,q1,r1,s1, p2,q2,r2,s2, Fsols):
+    FlamsSign = []
+    Flams = []
+    for i in range(len(Fsols)):
+        z1, z2, z3, z4 = gs.calcZLim_2(p1,q1,r1,s1, p2,q2,r2,s2, Fsols[i])
+        roots = gs.chkFLim_2(p1,q1,r1,s1, p2,q2,r2,s2, Fsols[i], z1, z2, z3, z4)
+        if (roots.real > 0).any():
+            FlamsSign.append('+')
+        else:
+            FlamsSign.append('-')
+        Flams.append(roots.tolist())
+    return FlamsSign, Flams
+
+def chkFsolsOnSel_2(stratData, pqrsData, abs=True):
+    p, q, r, s = (pqrsData[col] for col in pqrsData[['p','q','r','s']])
+
+    res = []
+    idxs = []
+    for i in tqdm.tqdm(pqrsData.index):
+        for j in pqrsData.index:
+            if i == j:
+                continue
+            resStr = []
+            Fsols = findFsols_2(p[i], q[i], r[i], s[i], p[j], q[j], r[j], s[j],
+                                                        left = -100, right=100,
+                                                        step=1, abs=abs)
+            FlamsSign, Flams = chkFsols_2(p[i], q[i], r[i], s[i], p[j], q[j], r[j], s[j], Fsols)
+            resStr.append(Fsols)
+            resStr.append(FlamsSign)
+            resStr.append(Flams)
+            idxs.append('('+str(i)+','+str(j)+')')
+            res.append(resStr)
+    FsolsData = pd.DataFrame(res, columns=['Fsols', 'FlamsSign', 'Flams'], index=idxs)
+    return FsolsData

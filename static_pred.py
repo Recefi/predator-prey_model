@@ -38,7 +38,7 @@ print("strats: ", len(stratFitData.index))
 # gui.allStratSins(stratFitData)
 # gui.optStratSins(stratFitData)
 # gui.mostOptStratSins(stratFitData, 3, 4)
-# gui.corrMps(shortMpData)
+# gui.corrMps_2(shortMpData)
 # plt.show()
 
 start = time.time()

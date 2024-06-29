@@ -8,8 +8,10 @@ import libs.research as rs
 
 # #gui.stratSins(-35, 3.93, -83, 49.32)
 # #gui.stratSins(-34.58, 3.29, -83.32, 51.57)
-# gui.stratSinsPoints(-34.58, 3.29, -83.32, 51.57)
-# gui.stratSinsPoints_2(-34.58, -3.29, -83.32, -51.57)
+# ax = gui.pointsCalanus_1()
+# gui.stratSins(-34.58, 3.29, -83.32, 51.57, ax)
+# ax = gui.pointsCalanus_2()
+# gui.stratSins(-34.58, -3.29, -83.32, -51.57, ax)
 # plt.show()
 
 

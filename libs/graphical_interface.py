@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import seaborn as sns
 import numpy as np
 import time
 
@@ -9,8 +10,9 @@ import libs.param as param
 from matplotlib.colors import ListedColormap
 cMap = ListedColormap(["xkcd:tomato", "deepskyblue"])
 
-def stratSins(Aj, Bj, Aa, Ba):
-    fig, ax = plt.subplots()
+def stratSins(Aj, Bj, Aa, Ba, ax=None):
+    if ax is None:
+        fig, ax = plt.subplots()
 
     x = np.linspace(0, 1)
     yj = Aj + Bj * np.cos(2 * np.pi * x)
@@ -20,40 +22,29 @@ def stratSins(Aj, Bj, Aa, Ba):
 
     ax.legend()
 
-def stratSinsPoints(Aj, Bj, Aa, Ba):
+def pointsCalanus_1():
     fig, ax = plt.subplots()
-
-    x = np.linspace(0, 1)
-    yj = Aj + Bj * np.cos(2 * np.pi * x)
-    ax.plot(x, yj, c="blue", label="Молодые особи")
-    ya = Aa + Ba * np.cos(2 * np.pi * x)
-    ax.plot(x, ya, c="red", label="Взрослые особи")
 
     t = [[0.06, 0.19, 0.27, 0.38, 0.55, 0.7, 0.82, 0.98], [0.06, 0.19, 0.27, 0.38, 0.55, 0.7, 0.82, 0.98]]
     d = [[-35, -39.5, -34, -33, -41, -40, -32.5, -33.8], [-43, -34.5, -110, -124, -125, -105, -39.5, -32.8]]
 
     ax.scatter(t[0], d[0], color="blue")
     ax.scatter(t[1], d[1], color="red")
-    ax.legend()
+    return ax
 
-def stratSinsPoints_2(Aj, Bj, Aa, Ba):
+def pointsCalanus_2():
     fig, ax = plt.subplots()
-
-    x = np.linspace(0, 1)
-    yj = Aj + Bj * np.cos(2 * np.pi * x)
-    ax.plot(x, yj, c="blue", label="Молодые особи")
-    ya = Aa + Ba * np.cos(2 * np.pi * x)
-    ax.plot(x, ya, c="red", label="Взрослые особи")
 
     t = [[0.56, 0.69, 0.77, 0.88, 0.05, 0.2, 0.32, 0.48], [0.56, 0.69, 0.77, 0.88, 0.05, 0.2, 0.32, 0.48]]
     d = [[-35, -39.5, -34, -33, -41, -40, -32.5, -33.8], [-43, -34.5, -110, -124, -125, -105, -39.5, -32.8]]
 
     ax.scatter(t[0], d[0], color="blue")
     ax.scatter(t[1], d[1], color="red")
-    ax.legend()
+    return ax
 
-def compareStratSins(Aj_1, Bj_1, Aa_1, Ba_1, Aj_2, Bj_2, Aa_2, Ba_2):
-    fig, ax = plt.subplots()
+def compareStratSins(Aj_1, Bj_1, Aa_1, Ba_1, Aj_2, Bj_2, Aa_2, Ba_2, ax=None):
+    if ax is None:
+        fig, ax = plt.subplots()
 
     x = np.linspace(0, 1)
     y = Aj_1 + Bj_1 * np.cos(2 * np.pi * x)
@@ -67,17 +58,17 @@ def compareStratSins(Aj_1, Bj_1, Aa_1, Ba_1, Aj_2, Bj_2, Aa_2, Ba_2):
 
     ax.legend()
 
-def stratSinsById(stratData, id):
+def stratSinsById(stratData, id, ax=None):
     Aj = stratData.loc[id, 'Aj']
     Bj = stratData.loc[id, 'Bj']
     Aa = stratData.loc[id, 'Aa']
     Ba = stratData.loc[id, 'Ba']
-    stratSins(Aj, Bj, Aa, Ba)
+    stratSins(Aj, Bj, Aa, Ba, ax)
 
-def compareStratSinsById(stratData, id_1, id_2):
+def compareStratSinsById(stratData, id_1, id_2, ax=None):
     Aj_1, Bj_1, Aa_1, Ba_1 = stratData.loc[id_1, 'Aj':'Ba']
     Aj_2, Bj_2, Aa_2, Ba_2 = stratData.loc[id_2, 'Aj':'Ba']
-    compareStratSins(Aj_1, Bj_1, Aa_1, Ba_1, Aj_2, Bj_2, Aa_2, Ba_2)
+    compareStratSins(Aj_1, Bj_1, Aa_1, Ba_1, Aj_2, Bj_2, Aa_2, Ba_2, ax)
 
 def optStratSins(stratFitData, key='fit'):
     optPntId = stratFitData[key].idxmax()
@@ -170,6 +161,13 @@ def corrMps(mpData):
         for j in range(8):
             ax.text(j, i, corrMatr[i, j], ha="center", va="center", color="r")
 
+    fig.tight_layout()
+
+def corrMps_2(mpData):
+    corrMatr=mpData.loc[:,'M1':'M8'].corr()
+
+    fig, ax = plt.subplots()
+    sns.heatmap(corrMatr, square=True, annot=True, fmt='.2f', vmin=-1, vmax=1, cmap="coolwarm", ax=ax)
     fig.tight_layout()
 
 def clf2dPlane(selData, lams, M1, M2):

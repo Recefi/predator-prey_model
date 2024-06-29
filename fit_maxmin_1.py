@@ -42,5 +42,6 @@ print(genlStratMinsData.loc[idOptStrat])
 ut.writeData(genlStratMinsData, "general_strat_mins_rstd_data")
 
 _Aj, _Bj, _Aa, _Ba = genlStratData.loc[idOptStrat, 'Aj':'Ba']
-gui.compareStratSins(-34.58, -3.29, -83.32, -51.57, _Aj, _Bj, _Aa, _Ba)
+ax = gui.pointsCalanus_2()
+gui.compareStratSins(-34.58, -3.29, -83.32, -51.57, _Aj, _Bj, _Aa, _Ba, ax)
 plt.show()

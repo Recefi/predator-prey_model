@@ -9,7 +9,7 @@ import libs.graphical_interface as gui
 import libs.utility as ut
 import libs.machine_learning as ml
 import libs.taylor as tr
-import libs.test_dynamic as td
+import libs.restore_dynamic as rd
 import libs.param as param
 import libs.research as rs
 
@@ -39,7 +39,7 @@ shortMpData = mpData.loc[stratPopData.index]
 print("strats: ", len(stratPopData.index))
 
 #gui.popDynamics(rawPopData)
-#gui.corrMps(shortMpData)
+#gui.corrMps_2(shortMpData)
 #gui.histStrats(stratData)
 #plt.show()
 
@@ -97,15 +97,33 @@ ut.writeData(compareCoefData, "compare_coef_data")
 #plt.show()
 
 
-p, q, r, s = td.restorePQRS_2(FLim, stratPopData, coefData, mpData, optPntId)
-comparePqrsData = td.compareRestoredPQRS(p, q, r, s, pqrsData, optPntId)
+# p, q, r, s = pqrsData.loc[optPntId, ['p','q','r','s']]
+# print(rd.qzsz_1(q, s, stratPopData, optPntId))
+# print(rd.qzsz_2(r, FLim, stratPopData, optPntId))
+
+p, q, r, s = rd.restorePQRS_2(FLim, stratPopData, coefData, mpData, optPntId)
+comparePqrsData = rd.compareRestoredPQRS(p, q, r, s, pqrsData, optPntId)
 print(comparePqrsData)
 ut.writeData(comparePqrsData, "compare_pqrs_data")
 
-a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = td.restoreParam_4(p, q, r, s, coefData, mpData, optPntId)
-compareParamData = td.compareRestoredParam(a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
+a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = rd.restoreParam_4(p, q, r, s, coefData, mpData, optPntId)
+compareParamData = rd.compareRestoredParam(a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
 print(compareParamData)
 ut.writeData(compareParamData, "compare_param_data")
+
+# p, q, r, s = rd.checkPqrs(mpData, optPntId, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
+# print(p, q, r, s)
+
+# rstdPqrsData = gs.calcPqrsData(mpData, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
+# rawPopData = gs.calcPopDynamics(rstdPqrsData, tMax=5000, tParts=100000, z0=0.001, F0=0.001)
+# stratPopData, FLim = gs.analyzePopDynamics(stratData, rawPopData, 0.01)
+# print(stratPopData.loc[optPntId])
+# print(gs.calcZLim(p, q, r, s, FLim))
+
+# print(rd.qzsz_1(q, s, stratPopData, optPntId))
+# print(rd.qzsz_2(r, FLim, stratPopData, optPntId))
+
+# print()
 
 # _compareParamData = ut.readData("_compare_param_data")
 # _compareParamData = pd.concat([_compareParamData, compareParamData], axis=0)
@@ -139,6 +157,9 @@ print()
 # stratFitData_linsum = gs.calcStratFitData_linsum(stratPopData, mpData.loc[stratPopData.index], coefData)
 # gui.mostOptStratSins(stratFitData_linsum, 3, 4, title="Ранжирование по лин.свертке фитнеса с восст.лямбда")
 
+# stratFitData_linsum = gs.calcStratFitData_linsum(stratPopData, mpData.loc[stratPopData.index], coefData, idx=optPntId)
+# gui.mostOptStratSins(stratFitData_linsum, 3, 4, title="Ранжирование по Тейлору для оптимальной")
+
 # stratFitData = gs.calcStratFitData(stratPopData, pqrsData.loc[stratPopData.index], F=FLim)
 # gui.mostOptStratSins(stratFitData, 3, 4, title="Ранжирование по расчетной формуле фитнеса с исх.параметрами")
 
@@ -146,14 +167,14 @@ print()
 # stratFitData = gs.calcStratFitData(stratPopData, rstdPqrsData, F=FLim)
 # gui.mostOptStratSins(stratFitData, 3, 4, title="Ранжирование по расчетной формуле фитнеса с восст.параметрами с исх.F*")
 
-stratMinsData, idOptStrat = gs.fitMaxMin(stratPopData, pqrsData.loc[stratPopData.index])
-gui.mostOptStratSins(stratMinsData, 3, 4, key='min', title="Ранжирование по максминной задаче с исх.параметрами")
+# stratMinsData, idOptStrat = gs.fitMaxMin(stratPopData, pqrsData.loc[stratPopData.index])
+# gui.mostOptStratSins(stratMinsData, 3, 4, key='min', title="Ранжирование по максминной задаче с исх.параметрами")
 
-rstdPqrsData = gs.calcPqrsData(mpData.loc[stratPopData.index], a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
-rstdStratMinsData, idOptStrat = gs.fitMaxMin(stratPopData, rstdPqrsData)
-gui.mostOptStratSins(rstdStratMinsData, 3, 4, key='min', title="Ранжирование по максминной задаче с восст.параметрами")
+# rstdPqrsData = gs.calcPqrsData(mpData.loc[stratPopData.index], a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
+# rstdStratMinsData, idOptStrat = gs.fitMaxMin(stratPopData, rstdPqrsData)
+# gui.mostOptStratSins(rstdStratMinsData, 3, 4, key='min', title="Ранжирование по максминной задаче с восст.параметрами")
 
-plt.show()
+# plt.show()
 
 
 # pqrsRow = pqrsData.loc[[optPntId]]
