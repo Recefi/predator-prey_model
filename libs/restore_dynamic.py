@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import copy
+import sys
 
 import libs.param as param
 
@@ -492,8 +493,8 @@ def restoreParam_7(p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
         tmp = []
         for prevPar in prevPars:
             tmp.append(formulas(res, prevPar, curPar))
-        print(prevPars)
-        print(tmp)
+        #print(prevPars)
+        #print(tmp)
         return np.mean(tmp)
 
     params = [0, 1, 2, 3, 4, 5, 6, 7]  # a_j, g_j, b_j, d_j, a_a, g_a, b_a, d_a
@@ -538,7 +539,8 @@ def restoreParam_7(p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
                                 #par8 = _pars8[0]
                                 for par8 in _pars8:
                                     res[par8] = calcRes(res, prevPars, par8)
-                                    resList.append(res)
+                                    _res = copy.deepcopy(res)
+                                    resList.append(_res)
                                 prevPars.pop()  # pop par7
                             prevPars.pop()  # pop par6
                         prevPars.pop()  # pop par5
@@ -547,6 +549,7 @@ def restoreParam_7(p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
             prevPars.pop()  # pop par2
     result = np.array(resList)
     print(result)
+
     resParam = []
     for j in range(8):
         resParam.append(result[:, j].mean())
