@@ -66,12 +66,12 @@ def getCoefData(pqrsData, norm_mlLams, mlLams, F=1):
             continue
         hp, hq, hr, hs, hpp, hpq, hpr, hps, hqq, hqr, hqs, hrr, hrs, hss = getDerivatives(p, q, r, s, F)
 
-        _p = hp-hpp*p-1/2*hpq*q-1/2*hpr*r-1/2*hps*s
-        _q = hq-hqq*q-1/2*hpq*p-1/2*hqr*r-1/2*hqs*s
-        _r = hr-hrr*r-1/2*hpr*p-1/2*hqr*q-1/2*hrs*s
-        _s = hs-hss*s-1/2*hps*p-1/2*hqs*q-1/2*hrs*r
+        _p = hp-hpp*p-hpq*q-hpr*r-hps*s
+        _q = hq-hqq*q-hpq*p-hqr*r-hqs*s
+        _r = hr-hrr*r-hpr*p-hqr*q-hrs*s
+        _s = hs-hss*s-hps*p-hqs*q-hrs*r
         _pp, _qq, _rr, _ss = 1/2*hpp, 1/2*hqq, 1/2*hrr, 1/2*hss
-        _pq, _pr, _ps, _qr, _qs, _rs = 1/2*hpq, 1/2*hpr, 1/2*hps, 1/2*hqr, 1/2*hqs, 1/2*hrs
+        _pq, _pr, _ps, _qr, _qs, _rs = hpq, hpr, hps, hqr, hqs, hrs
 
         # Считаем коэффициенты разложения в данной точке (по строкам: при M1-M8, M11-M18, M22-M28, M33-M38, ..., M88)
         calcCoefs = [
