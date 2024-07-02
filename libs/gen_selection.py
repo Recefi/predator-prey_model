@@ -168,7 +168,7 @@ def calcPopDynamics(pqrsData, tMax=1000, tParts=10000, z0=0.01, F0=0.1):
     z_0 = np.append(z_0, F0)
 
     t = np.linspace(0, tMax, tParts)
-    pop = sp.integrate.solve_ivp(integrateIter, args=(n, p, q, r, s), t_span=[0, tMax], t_eval=t, y0=z_0, method='Radau')
+    pop = sp.integrate.solve_ivp(integrateIter,args=(n, p, q, r, s), t_span=[0, tMax], t_eval=t, y0=z_0, method='Radau')
 
     indxs = []
     for i in range(n):

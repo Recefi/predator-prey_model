@@ -75,7 +75,7 @@ def optStratSins(stratFitData, key='fit'):
     stratSinsById(stratFitData, optPntId)
 
 def mostOptStratSins(stratFitData, rows, cols, key='fit', title=""):
-    optStratData = stratFitData.sort_values(by=[key], ascending=False).head(12)
+    optStratData = stratFitData.sort_values(by=[key], ascending=False).head(rows*cols)
     indxs = optStratData.index
     fit = optStratData[key].values
     Aj = optStratData['Aj'].values
@@ -87,13 +87,14 @@ def mostOptStratSins(stratFitData, rows, cols, key='fit', title=""):
     x = np.linspace(0, 1)
     for i in range(rows):
         for j in range(cols):
-            yj = Aj[i*4+j] + Bj[i*4+j] * np.cos(2 * np.pi * x)
-            ax[i][j].plot(x,yj, c="blue", label="Aj: "+str(np.round(Aj[i*4+j], 2))+"\nBj: "+str(np.round(Bj[i*4+j], 2)))
+            k = i*cols+j
+            yj = Aj[k] + Bj[k] * np.cos(2 * np.pi * x)
+            ax[i][j].plot(x,yj, c="blue", label="Aj: "+str(np.round(Aj[k], 2))+"\nBj: "+str(np.round(Bj[k], 2)))
             # ax[i][j].plot(x, yj, c="blue")
-            ya = Aa[i*4+j] + Ba[i*4+j] * np.cos(2 * np.pi * x)
-            ax[i][j].plot(x,ya, c="red", label="Aa: "+str(np.round(Aa[i*4+j], 2))+"\nBa: "+str(np.round(Ba[i*4+j], 2)))
+            ya = Aa[k] + Ba[k] * np.cos(2 * np.pi * x)
+            ax[i][j].plot(x,ya, c="red", label="Aa: "+str(np.round(Aa[k], 2))+"\nBa: "+str(np.round(Ba[k], 2)))
             # ax[i][j].plot(x, ya, c="red")
-            ax[i][j].set_title("strat: " + str(indxs[i*4+j]) + "\n" + key+": " + str(fit[i*4+j]))
+            ax[i][j].set_title("strat: " + str(indxs[k]) + "\n" + key+": " + str(fit[k]))
             ax[i][j].set_ylim(-param.D - 0.5, 0.5)
             ax[i][j].legend()
     if title:

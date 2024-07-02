@@ -38,6 +38,9 @@ ut.writeData(stratPopData, "strat_pop_data")
 shortMpData = mpData.loc[stratPopData.index]
 print("strats: ", len(stratPopData.index))
 
+stratPopFitData = gs.calcStratFitData(stratPopData, pqrsData.loc[stratPopData.index], F=FLim)
+ut.writeData(stratPopFitData, "strat_pop_fit_data")
+
 #gui.popDynamics(rawPopData)
 #gui.corrMps_2(shortMpData)
 #gui.histStrats(stratData)
@@ -101,12 +104,12 @@ ut.writeData(compareCoefData, "compare_coef_data")
 # print(rd.qzsz_1(q, s, stratPopData, optPntId))
 # print(rd.qzsz_2(r, FLim, stratPopData, optPntId))
 
-p, q, r, s = rd.restorePQRS_2(FLim, stratPopData, coefData, mpData, optPntId, lamsKey=99)
+p, q, r, s = rd.restorePQRS_2(FLim, stratPopData, coefData, mpData, optPntId, lamsKey=-1)
 comparePqrsData = rd.compareRestoredPQRS(p, q, r, s, pqrsData, optPntId)
 print(comparePqrsData)
 ut.writeData(comparePqrsData, "compare_pqrs_data")
 
-a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = rd.restoreParam_4(p, q, r, s, coefData, mpData, optPntId, lamsKey=99)
+a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = rd.restoreParam_4(p, q, r, s, coefData, mpData, optPntId, lamsKey=-1)
 compareParamData = rd.compareRestoredParam(a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
 print(compareParamData)
 ut.writeData(compareParamData, "compare_param_data")

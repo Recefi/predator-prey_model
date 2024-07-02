@@ -211,7 +211,7 @@ def restoreParam_4(p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
     _g_a.append(-lam46*p*s/(d_j*(lam16*M1*M6 + lam36*M3*M6 + lam46*M4*M6)))
     _g_a.append(-lam67*r*s/(b_a*(lam56*M5*M6 + lam67*M6*M7 + lam68*M6*M8)))
     _g_a.append(-lam36*p*s/(b_j*(lam16*M1*M6 + lam36*M3*M6 + lam46*M4*M6)))
-    g_a = np.mean(_g_a[0])
+    g_a = np.mean(_g_a)
     print(_g_a)
 
     _g_j = []
@@ -223,7 +223,7 @@ def restoreParam_4(p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
     _g_j.append(-lam27*q*r/(b_a*(lam25*M2*M5 + lam27*M2*M7 + lam28*M2*M8)))
     _g_j.append(-lam23*p*q/(b_j*(lam12*M1*M2 + lam23*M2*M3 + lam24*M2*M4)))
     _g_j.append(q*s/(g_a*M2*M6))
-    g_j = np.mean(_g_j[1])
+    g_j = np.mean(_g_j)
     print(_g_j)
 
     return a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a
