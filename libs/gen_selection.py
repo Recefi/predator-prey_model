@@ -103,6 +103,16 @@ def calcPqrsData(mpData, a_j=param.alpha_j, b_j=param.beta_j, g_j=param.gamma_j,
     pqrsData = pd.DataFrame(pqrs, columns=["p", "q", "r", "s"], index=mpData.index)
     return pqrsData
 
+def calcLinsum(mpMatr, lams):
+    """lams = [lam1,...]"""
+    fitness = []
+    for i in range(len(mpMatr)):
+        fit = 0
+        for j in range(len(mpMatr[i])):
+            fit += lams[j]*mpMatr[i, j]
+        fitness.append(fit)
+    return fitness
+
 def calcStratFitData(stratData, pqrsData, F=1):
     p = pqrsData['p']
     q = pqrsData['q']
@@ -123,13 +133,8 @@ def calcStratFitData(stratData, pqrsData, F=1):
 def calcStratFitData_linsum(stratData, mpData, coefData, idx=-1):
     mpMatr = mpData.values
     lams = coefData.iloc[idx].values
+    fitness = calcLinsum(mpMatr, lams)
 
-    fitness = []
-    for i in range(len(mpMatr)):
-        fit = 0
-        for j in range(len(mpMatr[i])):
-            fit += lams[j]*mpMatr[i, j]
-        fitness.append(fit)
     fitData = pd.DataFrame(fitness, columns=['fit'], index=mpData.index)
     stratFitData = pd.concat([stratData.loc[fitData.index], fitData], axis=1)
     return stratFitData
@@ -611,3 +616,34 @@ def fitMaxMin_2(stratData, pqrsData):
     s = pqrsData['s'].values
 
     return genlFitMaxMin_2(Aj, Bj, Aa, Ba, p, q, r, s, index=pqrsData.index)
+
+def checkRanking(stratPopFitData):
+    tIdxs = stratPopFitData.sort_values(by=['t'], ascending=False).index.values
+    fitIdxs = stratPopFitData.sort_values(by=['fit'], ascending=False).index.values
+
+    count = 0
+    _range = range(len(tIdxs))
+    for i in _range:
+        for j in _range:
+            if (tIdxs[i] == fitIdxs[j]):
+                count += np.abs(i-j)
+                break
+
+    return count
+
+def checkMl(selData, coefData, idx=-1):
+    y = selData['class']
+    mpMatr = selData.loc[:, 'M1':'M8M8'].values
+    lams = coefData.loc[idx].values
+
+    fits = calcLinsum(mpMatr, lams)
+    _y = []
+    for fit in fits:
+        if fit > 0:
+            _y.append(1)
+        elif fit < 0:
+            _y.append(-1)
+        else:
+            print("WARNING: fits are equal?!")
+
+    return (y == _y).mean()*100

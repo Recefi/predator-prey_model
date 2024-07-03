@@ -38,10 +38,10 @@ def runClfSVM(selData):
     # plt.show()
 
     # Нормирование
-    mpMaxsSeries = X_train.loc[:,'M1':'M8M8'].abs().max()
-    #mpMaxsSeries = X_train.loc[:,'M1':'M8M8'].std()  # или стандартизация
-    X_train.loc[:,'M1':'M8M8'] = X_train.loc[:,'M1':'M8M8'] / mpMaxsSeries
-    X_test.loc[:,'M1':'M8M8'] = X_test.loc[:,'M1':'M8M8'] / mpMaxsSeries
+    mpMaxsSeries = X_train.abs().max()
+    #mpMaxsSeries = X_train.std()  # или стандартизация
+    X_train = X_train / mpMaxsSeries
+    X_test = X_test / mpMaxsSeries
 
     # проверка, что выборка действительно центрирована как по значениям фетчей,
     #                                                   так и по меткам класса, чтобы использовать fit_intercept=False
@@ -91,6 +91,7 @@ def runClfSVM(selData):
     print(confusion_matrix(y_test, clf.predict(X_test)))
     print("Точность классификатора на обучающей выборке:", (clf.predict(X_train) == y_train).mean()*100)
     print("Точность классификатора на тестовой выборке:", (clf.predict(X_test) == y_test).mean()*100)
+    print("Точность классификатора на всей выборке:", (clf.predict(X / mpMaxsSeries) == y).mean()*100)
 
     if (clf.intercept_): lams = np.concatenate([clf.intercept_, lams])
     else: lams = np.concatenate([[clf.intercept_], lams])

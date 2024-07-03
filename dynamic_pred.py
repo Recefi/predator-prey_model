@@ -40,6 +40,7 @@ print("strats: ", len(stratPopData.index))
 
 stratPopFitData = gs.calcStratFitData(stratPopData, pqrsData.loc[stratPopData.index], F=FLim)
 ut.writeData(stratPopFitData, "strat_pop_fit_data")
+print("checkRanking: ", gs.checkRanking(stratPopFitData))
 
 #gui.popDynamics(rawPopData)
 #gui.corrMps_2(shortMpData)
@@ -67,6 +68,8 @@ norm_selData.loc[:,'M1':'M8M8'] = norm_selData.loc[:,'M1':'M8M8'] / mpMaxs
 
 coefData = tr.getCoefData(pqrsData, norm_mlLams[1:], mlLams[1:], FLim)
 ut.writeData(coefData, "coef_data")
+
+print("checkMl: ", gs.checkMl(selData, coefData, idx=-1))
 
 
 #subprocess.Popen("python clfPlanes.py dynamic_pred --lam0="+str(norm_mlLams[0])+" --show", shell=True)
