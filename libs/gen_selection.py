@@ -162,7 +162,7 @@ def integrateIter(t, z, n, p, q, r, s):
     result[2*n] = sumDeath*F - F
     return result
 
-def calcPopDynamics(pqrsData, tMax=1000, tParts=10000, z0=0.01, F0=0.1):
+def calcPopDynamics(pqrsData, tMax=1000, tParts=10001, z0=0.01, F0=0.1):
     n = len(pqrsData.index)
     p = pqrsData['p'].values
     q = pqrsData['q'].values

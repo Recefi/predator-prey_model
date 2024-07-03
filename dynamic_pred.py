@@ -38,7 +38,7 @@ ut.writeData(stratPopData, "strat_pop_data")
 shortMpData = mpData.loc[stratPopData.index]
 print("strats: ", len(stratPopData.index))
 
-stratPopFitData = gs.calcStratFitData(stratPopData, pqrsData.loc[stratPopData.index], F=FLim)
+stratPopFitData = gs.calcStratFitData(stratPopData, pqrsData.loc[stratPopData.index], F=0.3383)
 ut.writeData(stratPopFitData, "strat_pop_fit_data")
 print("checkRanking: ", gs.checkRanking(stratPopFitData))
 
