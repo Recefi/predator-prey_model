@@ -144,7 +144,8 @@ def integrateIter(t, z, n, p, q, r, s):
     sumComp = 0
     sumDeath = 0
     for i in range(n):
-        if (z[i] > 0 and z[i+n] > 0):
+        if (z[i] > 0 and z[i+n] > 0):  # otherwise: Radau,BDF,LSODA time is more(x1.1), number of strats is indifferent,
+                                          # (only!)Radau error is less, but still more than BDF error and less LSODA.
             sumComp += (z[i] + z[i+n])
             sumDeath += (q[i]*z[i] + s[i]*z[i+n])
         else:
@@ -162,7 +163,7 @@ def integrateIter(t, z, n, p, q, r, s):
     result[2*n] = sumDeath*F - F
     return result
 
-def calcPopDynamics(pqrsData, tMax=1000, tParts=10001, z0=0.01, F0=0.1):
+def calcPopDynamics(pqrsData, tMax=1000, tParts=10001, z0=0.01, F0=0.1, _method='BDF'):
     n = len(pqrsData.index)
     p = pqrsData['p'].values
     q = pqrsData['q'].values
@@ -173,7 +174,7 @@ def calcPopDynamics(pqrsData, tMax=1000, tParts=10001, z0=0.01, F0=0.1):
     z_0 = np.append(z_0, F0)
 
     t = np.linspace(0, tMax, tParts)
-    pop = sp.integrate.solve_ivp(integrateIter,args=(n, p, q, r, s), t_span=[0, tMax], t_eval=t, y0=z_0, method='Radau')
+    pop = sp.integrate.solve_ivp(integrateIter,args=(n, p, q, r, s), t_span=[0, tMax], t_eval=t, y0=z_0, method=_method)
 
     indxs = []
     for i in range(n):

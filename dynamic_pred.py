@@ -28,7 +28,7 @@ pqrsData = gs.calcPqrsData(mpData)
 ut.writeData(pqrsData, "pqrs_data")
 
 start = time.time()
-rawPopData = gs.calcPopDynamics(pqrsData, tMax=5000, tParts=100000, z0=0.001, F0=0.001)
+rawPopData = gs.calcPopDynamics(pqrsData, tMax=5000, tParts=100000, z0=0.001, F0=0.001, _method='Radau')
 print ("calc pop dynamics: ", time.time() - start)
 
 start = time.time()
@@ -37,6 +37,11 @@ print ("analyze pop dynamics: ", time.time() - start)
 ut.writeData(stratPopData, "strat_pop_data")
 shortMpData = mpData.loc[stratPopData.index]
 print("strats: ", len(stratPopData.index))
+
+# stratFitData = gs.calcStratFitData(stratData, pqrsData, F=FLim)
+# ut.writeData(stratFitData, "strat_fit_data")
+# shortMpData = mpData.loc[stratFitData.index]
+# print("strats: ", len(stratFitData.index))
 
 stratPopFitData = gs.calcStratFitData(stratPopData, pqrsData.loc[stratPopData.index], F=0.3383)
 ut.writeData(stratPopFitData, "strat_pop_fit_data")
