@@ -1,9 +1,11 @@
 import numpy as np
 import pandas as pd
 import copy
+import tqdm
 import sys
 
 import libs.param as param
+import libs.gen_selection as gs
 
 
 def restorePQRS(FLim, stratPopData, coefData, mpData, optPntId, lamsKey=-1):
@@ -420,7 +422,8 @@ def restoreParam_6(p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
 
     return a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a
 
-def restoreParam_7(p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
+def factParam(p, q, r, s, coefData, mpData, optPntId, lamsKey):
+    """return order: a_j, g_j, b_j, d_j, a_a, g_a, b_a, d_a"""
     M1, M2, M3, M4, M5, M6, M7, M8 = mpData.loc[optPntId, 'M1':'M8']
     (lam1, lam2, lam3, lam4, lam5, lam6, lam7, lam8) = coefData.loc[lamsKey,
     ['lam1','lam2','lam3','lam4','lam5','lam6','lam7','lam8']]
@@ -491,18 +494,17 @@ def restoreParam_7(p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
 
     def calcRes(res, prevPars, curPar):
         tmp = []
+        tmp.append(formulas_0(curPar))
         for prevPar in prevPars:
             tmp.append(formulas(res, prevPar, curPar))
-        #print(prevPars)
-        #print(tmp)
         return np.mean(tmp)
 
     params = [0, 1, 2, 3, 4, 5, 6, 7]  # a_j, g_j, b_j, d_j, a_a, g_a, b_a, d_a
     resList = []
     for par1 in range(8):
-        res = np.empty(8)
+        res = np.empty(9, dtype=object)  # dtype=object is less precise than dtype=float64, but need for element-list
         prevPars = []
-        res[par1] = formulas_0(par1)
+        res[par1] = calcRes(res, prevPars, par1)
         prevPars.append(par1)
         _pars2 = copy.deepcopy(params)
         _pars2.remove(par1)
@@ -536,11 +538,12 @@ def restoreParam_7(p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
                                 prevPars.append(par7)
                                 _pars8 = copy.deepcopy(_pars7)
                                 _pars8.remove(par7)
-                                #par8 = _pars8[0]
-                                for par8 in _pars8:
+                                for par8 in _pars8:  #par8 = _pars8[0]
                                     res[par8] = calcRes(res, prevPars, par8)
-                                    _res = copy.deepcopy(res)
-                                    resList.append(_res)
+                                    prevPars.append(par8)
+                                    res[8] = copy.deepcopy(prevPars)
+                                    resList.append(np.copy(res))
+                                    prevPars.pop()  # pop par8
                                 prevPars.pop()  # pop par7
                             prevPars.pop()  # pop par6
                         prevPars.pop()  # pop par5
@@ -548,7 +551,10 @@ def restoreParam_7(p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
                 prevPars.pop()  # pop par3
             prevPars.pop()  # pop par2
     result = np.array(resList)
+    return result
 
+def restoreParam_7(p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
+    result = factParam(p, q, r, s, coefData, mpData, optPntId, lamsKey)
     g_j = np.copy(result[:, 1])
     g_a = np.copy(result[:, 5])
     b_j = result[:, 2]
@@ -557,11 +563,38 @@ def restoreParam_7(p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
     result[:, 5] = b_a
     result[:, 2] = g_j
     result[:, 6] = g_a
-    print(result)
 
     resParam = [result[:, j].mean() for j in range(8)]
     print(resParam)
     return resParam
+
+def calcResData(p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
+    result = factParam(p, q, r, s, coefData, mpData, optPntId, lamsKey)
+    resData = pd.DataFrame(result, columns=['a_j', 'g_j', 'b_j', 'd_j', 'a_a', 'g_a', 'b_a', 'd_a', 'order'])
+    print(resData)
+    return resData
+
+def checkParam(stratData, p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
+    resData = calcResData(p, q, r, s, coefData, mpData, optPntId, lamsKey)
+    result = resData.loc[:, :'d_a'].values
+    odeRes = np.empty(len(result))
+    for i in tqdm.tqdm(range(len(result))):
+        a_j, g_j, b_j, d_j, a_a, g_a, b_a, d_a = result[i]
+        print(a_j, g_j, b_j, d_j, a_a, g_a, b_a, d_a)
+        if any(elem < 0 for elem in (a_j, g_j, b_j, d_j, a_a, g_a, b_a, d_a)):
+            odeRes[i] = -1
+            continue
+        pqrsData = gs.calcPqrsData(mpData, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
+        try:
+            rawPopData = gs.calcPopDynamics(pqrsData, tMax=5000, tParts=5001, z0=0.001, F0=0.001, _method='BDF')
+            popData, FLim = gs.analyzePopDynamics(stratData, rawPopData, eps=0.01)
+            res = popData['t'].idxmax()
+            odeRes[i] = res if (popData.loc[res, 't'] == 5000) else -3  # TODO: process return
+        except ValueError as exc:
+            print(exc)
+            odeRes[i] = -2
+    resData.loc[:, 'odeRes'] = odeRes
+    return resData
 
 def compareRestoredPQRS(p, q, r, s, pqrsData, optPntId):
     comparePqrsData = pd.DataFrame(columns=['p','q','r','s'])

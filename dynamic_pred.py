@@ -95,7 +95,7 @@ with pd.option_context('display.max_rows', 10):
 ut.writeData(compareCoefData, "compare_coef_data")
 
 
-#gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M3', 'M4', 25, -130, a=0.2)
+#gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M3', 'M4', 6, -36, a=0.2)
 #gui.clf3dPlane(norm_selData, norm_mlLams, 'M5', 'M7', 'M8', 25, -130, a=0.2)
 
 # gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M2', 'M4', 25, -130)
@@ -103,7 +103,7 @@ ut.writeData(compareCoefData, "compare_coef_data")
 
 #gui.clf2dPlane(norm_selData, norm_mlLams, 'M2', 'M4M8')
 
-#gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M5', 'M2M6', 25, -130, a=0.2)
+#gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M5', 'M2M6', 6, -36, a=0.2)  # 5 -35  # 6 -40  # 6 -36
 
 #plt.show()
 
@@ -117,10 +117,13 @@ comparePqrsData = rd.compareRestoredPQRS(p, q, r, s, pqrsData, optPntId)
 print(comparePqrsData)
 ut.writeData(comparePqrsData, "compare_pqrs_data")
 
-a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = rd.restoreParam_7(p, q, r, s, coefData, mpData, optPntId, lamsKey=-1)
+a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = rd.restoreParam_4(p, q, r, s, coefData, mpData, optPntId, lamsKey=-1)
 compareParamData = rd.compareRestoredParam(a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
 print(compareParamData)
 ut.writeData(compareParamData, "compare_param_data")
+
+checkParamData = rd.checkParam(stratData, p, q, r, s, coefData, mpData, optPntId, lamsKey=-1)
+ut.writeData(checkParamData, "check_param_data")
 
 # p, q, r, s = rd.checkPqrs(mpData, optPntId, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
 # print(p, q, r, s)
