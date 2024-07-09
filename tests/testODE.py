@@ -17,7 +17,7 @@ def test1():
     resODE1 = []
     resODE2 = []
     resODE3 = []
-    for i in range(200):
+    for i in range(1000):
         print("#"+str(i))
         print("-----------------------------------------------------------")
         stratData = gs.genStrats(100, "beta", ab=5)

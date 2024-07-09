@@ -229,7 +229,7 @@ def clfPlanes(selData, lams):
     fig, ax = plt.subplots(nrows=8, ncols=8, figsize=(8, 8))
     for i in range(8):
         for j in range(8):  # (i,j)<->(y,x), тогда: по строкам - i, по столбцам - j
-            ax[i][j].set(xlim=(-1, 1), ylim=(-1, 1))
+            ax[i][j].set(xlim=(-1, 1), ylim=(-1, 1))  # TODO: [i][j] ---> [i, j] more efficient (estimate it)
             if j==0:
                 ax[i][j].set_ylabel('M'+str(i+1))
             if i==7:

@@ -570,7 +570,7 @@ def genlFitMaxMin_2(Aj, Bj, Aa, Ba, p, q, r, s, index=None):
         res.extend(Parallel(n_jobs=-1)(delayed(findF_2)(p, q, r, s, j, w) for w in range(len(p))))
     start = time.time()
     Fs = [item[2] for item in res if (item[0] == 2)]
-    Fsj = [item[1][0] for item in res if (item[0] == 2)]
+    Fsj = [item[1][0] for item in res if (item[0] == 2)]  # TODO: [1][0] ---> [1, 0], and other
     Fsjw = [item[1] for item in res if (item[0] == 2)]
     Fsi = []
     tmp = -1

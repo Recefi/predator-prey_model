@@ -548,20 +548,18 @@ def restoreParam_7(p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
                 prevPars.pop()  # pop par3
             prevPars.pop()  # pop par2
     result = np.array(resList)
+
+    g_j = np.copy(result[:, 1])
+    g_a = np.copy(result[:, 5])
+    b_j = result[:, 2]
+    b_a = result[:, 6]
+    result[:, 1] = b_j
+    result[:, 5] = b_a
+    result[:, 2] = g_j
+    result[:, 6] = g_a
     print(result)
 
-    resParam = []
-    for j in range(8):
-        resParam.append(result[:, j].mean())
-    print(resParam)
-    g_j = resParam[1]
-    g_a = resParam[5]
-    b_j = resParam[2]
-    b_a = resParam[6]
-    resParam[1] = b_j
-    resParam[5] = b_a
-    resParam[2] = g_j
-    resParam[6] = g_a
+    resParam = [result[:, j].mean() for j in range(8)]
     print(resParam)
     return resParam
 
