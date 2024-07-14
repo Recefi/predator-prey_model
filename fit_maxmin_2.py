@@ -7,7 +7,6 @@ import libs.graphical_interface as gui
 import libs.utility as ut
 import libs.machine_learning as ml
 import libs.taylor as tr
-import libs.test_dynamic as td
 import libs.param as param
 import libs.research as rs
 
@@ -29,6 +28,7 @@ pqrsData = gs.calcPqrsData(mpData)
 # ut.writeData(pqrsData, "pqrs_data")
 
 stratMinsData, idOptStrat = gs.fitMaxMin(stratData, pqrsData)
+#stratMinsData.to_excel("csv/fit_maxmin_2/strat_mins_data.xlsx")
 print(stratMinsData)
 
 # _p, _q, _r, _s = (pqrsData[col].values for col in pqrsData[['p','q','r','s']])
@@ -37,19 +37,19 @@ print(stratMinsData)
 #         if (i != j):
 #             print(i, j, rs.findFsols_2(_p[i],_q[i],_r[i],_s[i],_p[j],_q[j],_r[j],_s[j], abs=True, errEps=1e-15))
 
-pqrsRow = pqrsData.loc[[8, 9]]
-stratRow = stratData.loc[[8, 9]]
-rawPopData = gs.calcPopDynamics(pqrsRow, tMax=1000000, tParts=100000, z0=0.001, F0=0.001)
-stratPopData, FLim = gs.analyzePopDynamics(stratRow, rawPopData, 0.01)
+# pqrsRow = pqrsData.loc[[8, 9]]
+# stratRow = stratData.loc[[8, 9]]
+# rawPopData = gs.calcPopDynamics(pqrsRow, tMax=1000000, tParts=100000, z0=0.001, F0=0.001)
+# stratPopData, FLim = gs.analyzePopDynamics(stratRow, rawPopData, 0.01)
+# print(FLim)
+# gui.popDynamics(rawPopData, leg=True)
+# plt.show()
+
+rawPopData = gs.calcPopDynamics(pqrsData, tMax=50000, tParts=100000, z0=0.001, F0=0.001)
+stratPopData, FLim = gs.analyzePopDynamics(stratData, rawPopData, 0.01)
 print(FLim)
 gui.popDynamics(rawPopData, leg=True)
 plt.show()
-
-# rawPopData = gs.calcPopDynamics(pqrsData, tMax=50000, tParts=100000, z0=0.001, F0=0.001)
-# stratPopData, FLim = gs.analyzePopDynamics(stratData, rawPopData, 0.01)
-# print(FLim)
-# gui.popDynamics(rawPopData, leg=True)
-# # plt.show()
 
 stratMinsData_2, idOptStrat_2 = gs.fitMaxMin_2(stratData, pqrsData)
 ut.writeData(stratMinsData_2, "strat_mins_2_data")

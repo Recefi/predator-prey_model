@@ -211,14 +211,24 @@ def clf3dPlane(selData, lams, M1, M2, M3, elevation=30, azimuth=-60, a=0.02):
     ax.set_ylabel(M2)
     ax.set_zlabel(M3)
     s = ax.scatter(x_x, x_y, x_z, c=y, cmap=cMap, alpha=a)
+    #s = ax.scatter(x_x, x_y, x_z, c=y, cmap=cMap, alpha=0.5, s=1)
 
     tmp = np.linspace(-1,1)
     x_visual, y_visual = np.meshgrid(tmp,tmp)
     z_visual = lambda x_vis,y_vis: -(lam1/lam3)*x_vis - (lam2/lam3)*y_vis - lam0/lam3
     ax.plot_surface(x_visual, y_visual, z_visual(x_visual, y_visual), color="navy", alpha=0.5)
+    ##ax.plot_wireframe(x_visual, y_visual, z_visual(x_visual, y_visual), rstride=5, cstride=5, color="navy", alpha=0.5)
+
+    # xticks = ax.xaxis.get_major_ticks()
+    # for i in range(len(xticks)):
+    #     if (i%2 == 0):
+    #         xticks[i].set_visible(False)
+    # yticks = ax.yaxis.get_major_ticks()
+    # for i in range(len(yticks)):
+    #     if (i%2 == 0):
+    #         yticks[i].set_visible(False)
 
     ax.view_init(elevation, azimuth)
-
     ax.legend(*s.legend_elements(alpha=1), title="Class")
     fig.tight_layout()
 

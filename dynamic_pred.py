@@ -103,7 +103,7 @@ ut.writeData(compareCoefData, "compare_coef_data")
 
 #gui.clf2dPlane(norm_selData, norm_mlLams, 'M2', 'M4M8')
 
-#gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M5', 'M2M6', 6, -36, a=0.2)  # 5 -35  # 6 -40  # 6 -36
+#gui.clf3dPlane(norm_selData, norm_mlLams, 'M1', 'M5', 'M2M6', 6, -36, a=0.2)  # 5, -35  # 6, -40  # 6, -36
 
 #plt.show()
 
