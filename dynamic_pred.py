@@ -122,8 +122,8 @@ compareParamData = rd.compareRestoredParam(a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_
 print(compareParamData)
 ut.writeData(compareParamData, "compare_param_data")
 
-checkParamData = rd.checkParam(stratData, p, q, r, s, coefData, mpData, optPntId, lamsKey=-1)
-ut.writeData(checkParamData, "check_param_data")
+# checkParamData = rd.checkParam(stratData, p, q, r, s, coefData, mpData, optPntId, lamsKey=-1)
+# ut.writeData(checkParamData, "check_param_data")
 
 # p, q, r, s = rd.checkPqrs(mpData, optPntId, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
 # print(p, q, r, s)

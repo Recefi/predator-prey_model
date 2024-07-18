@@ -13,8 +13,8 @@ import libs.research as rs
 # stratData = gs.genStrats(10, "beta", ab=5)
 # stratData.loc[len(stratData.index) - 1] = [-35.9, -3.6, -85.1, -52.5]
 # stratData.loc[len(stratData.index) - 2] = [-32.7, -4.1, -81.2, -53.8]
-# # stratData.loc[len(stratData.index) - 1] = [-30.4, -7.1, -84.1, -53.2]
-# # stratData.loc[len(stratData.index) - 2] = [-32.9, -8.2, -87.2, -51.1]
+# # stratData.loc[len(stratData.index) - 1] = [-31.4, -8.7, -79.1, -53.2]
+# # stratData.loc[len(stratData.index) - 2] = [-31.9, -7.5, -80.2, -54.2]
 # ut.writeData(stratData, "strat_data")
 stratData = ut.readData("strat_data")
 
@@ -28,7 +28,7 @@ pqrsData = gs.calcPqrsData(mpData)
 # ut.writeData(pqrsData, "pqrs_data")
 
 stratMinsData, idOptStrat = gs.fitMaxMin(stratData, pqrsData)
-#stratMinsData.to_excel("csv/fit_maxmin_2/strat_mins_data.xlsx")
+# stratMinsData.to_excel("csv/fit_maxmin_2/strat_mins_data.xlsx")
 print(stratMinsData)
 
 # _p, _q, _r, _s = (pqrsData[col].values for col in pqrsData[['p','q','r','s']])

@@ -55,7 +55,7 @@ def getCoefData(pqrsData, norm_mlLams, mlLams, F=1):
     for i in range(1,9):
         for j in range(i,9):
             lamCol.append('lam'+str(i)+str(j))
-    
+
     indexes = [-2, -1]
     coefTable = []
     coefTable.append(norm_mlLams)
@@ -66,10 +66,10 @@ def getCoefData(pqrsData, norm_mlLams, mlLams, F=1):
             continue
         hp, hq, hr, hs, hpp, hpq, hpr, hps, hqq, hqr, hqs, hrr, hrs, hss = getDerivatives(p, q, r, s, F)
 
-        _p = hp-hpp*p-hpq*q-hpr*r-hps*s
-        _q = hq-hqq*q-hpq*p-hqr*r-hqs*s
-        _r = hr-hrr*r-hpr*p-hqr*q-hrs*s
-        _s = hs-hss*s-hps*p-hqs*q-hrs*r
+        _p = hp
+        _q = hq
+        _r = hr
+        _s = hs
         _pp, _qq, _rr, _ss = 1/2*hpp, 1/2*hqq, 1/2*hrr, 1/2*hss
         _pq, _pr, _ps, _qr, _qs, _rs = hpq, hpr, hps, hqr, hqs, hrs
 

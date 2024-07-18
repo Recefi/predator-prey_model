@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import seaborn as sns
 import numpy as np
 import time
@@ -131,16 +132,50 @@ def popDynamics(rawData, leg=False):
     a_yMax = a_data.max().max()
     if (a_yMax > aj_yMax):
         aj_yMax = a_yMax
-    
+
     fig3, ax3 = plt.subplots()
     F_data.T.plot(ax=ax3, title="Хищник", xlabel="t", legend=leg)
 
     ax1.set_ylim([0, aj_yMax*1.1])
     ax2.set_ylim([0, aj_yMax*1.1])
     ax3.set_ylim([0, F_data.max()*1.1])
-    # ax1.set_xlim([-5, 400])
-    # ax2.set_xlim([-5, 400])
-    # ax3.set_xlim([-5, 400])
+    # # # ax1.set_xlim([-5, 400])
+    # # # ax2.set_xlim([-5, 400])
+    # # # ax3.set_xlim([-5, 400])
+    # ax1.set_xscale('log')
+    # ax2.set_xscale('log')
+    # ax3.set_xscale('log')
+    # # ax1.set_xlim([0.2, ax1.get_xlim()[1]])
+    # # ax2.set_xlim([0.2, ax2.get_xlim()[1]])
+    # # ax3.set_xlim([0.2, ax3.get_xlim()[1]])
+    # # # ax1.set_xscale('log', base=2.71828)
+    # # # ax2.set_xscale('log', base=2.71828)
+    # # # ax3.set_xscale('log', base=2.71828)
+    # # #     for ax in [ax1, ax2, ax3]:
+    # # #         ticks = ax.get_xticks()
+    # # #         print(ticks)
+    # # #         _ticks = []
+    # # #         for tick in ticks:
+    # # #             tmp = tick
+    # # #             _tick = 0
+    # # #             while (tmp != 1.0):
+    # # #                 tmp /= np.e
+    # # #                 _tick += 1
+    # # #                 if (_tick > 100):
+    # # #                     break
+    # # #             if (_tick > 100):
+    # # #                 tmp = tick
+    # # #                 _tick = 0
+    # # #                 while (tmp != 1.0):
+    # # #                     tmp *= np.e
+    # # #                     _tick -= 1
+    # # #                     if (_tick < -100):
+    # # #                         break
+    # # #             _ticks.append(_tick)
+    # # #         print(_ticks)
+    # # #         ax.set_xticks(_ticks)
+    # # #         ax.get_xaxis().set_major_formatter(mpl.ticker.ScalarFormatter())
+    # # #         ax.get_xaxis().set_minor_formatter(mpl.ticker.NullFormatter())
 
 def histStrats(stratData):
     ax = stratData[['Aj','Bj','Aa','Ba']].hist(layout=(2, 2), figsize=(12, 6), bins=200)
