@@ -11,36 +11,49 @@ import libs.param as param
 from matplotlib.colors import ListedColormap
 cMap = ListedColormap(["xkcd:tomato", "deepskyblue"])
 
-def stratSins(Aj, Bj, Aa, Ba, ax=None):
+def stratSins(Aj, Bj, Aa, Ba, ax=None, c_j="blue", c_a="red", l_j="Молодые особи", l_a="Взрослые особи"):
     if ax is None:
         fig, ax = plt.subplots()
 
     x = np.linspace(0, 1)
     yj = Aj + Bj * np.cos(2 * np.pi * x)
-    ax.plot(x, yj, c="blue", label="Молодые особи")
+    ax.plot(x, yj, c=c_j, label=l_j)
     ya = Aa + Ba * np.cos(2 * np.pi * x)
-    ax.plot(x, ya, c="red", label="Взрослые особи")
+    ax.plot(x, ya, c=c_a, label=l_a)
 
     ax.legend()
 
-def pointsCalanus_1():
-    fig, ax = plt.subplots()
+def pointsCalanus_1(ax=None, c_j="blue", c_a="red", m='o'):
+    if ax is None:
+        fig, ax = plt.subplots()
 
     t = [[0.06, 0.19, 0.27, 0.38, 0.55, 0.7, 0.82, 0.98], [0.06, 0.19, 0.27, 0.38, 0.55, 0.7, 0.82, 0.98]]
-    d = [[-35, -39.5, -34, -33, -41, -40, -32.5, -33.8], [-43, -34.5, -110, -124, -125, -105, -39.5, -32.8]]
+    d = [[-33.5, -39, -33, -31, -41, -40, -31, -34], [-45, -32.75, -111, -125, -128, -105, -39.5, -32.5]]
 
-    ax.scatter(t[0], d[0], color="blue")
-    ax.scatter(t[1], d[1], color="red")
+    ax.scatter(t[0], d[0], color=c_j, marker=m, label="Молодые(Calanus)")
+    ax.scatter(t[1], d[1], color=c_a, marker=m, label="Взрослые(Calanus)")
     return ax
 
-def pointsCalanus_2():
-    fig, ax = plt.subplots()
+def pointsCalanus_2(ax=None, c_j="blue", c_a="red", m='o'):
+    if ax is None:
+        fig, ax = plt.subplots()
 
     t = [[0.56, 0.69, 0.77, 0.88, 0.05, 0.2, 0.32, 0.48], [0.56, 0.69, 0.77, 0.88, 0.05, 0.2, 0.32, 0.48]]
-    d = [[-35, -39.5, -34, -33, -41, -40, -32.5, -33.8], [-43, -34.5, -110, -124, -125, -105, -39.5, -32.8]]
+    d = [[-33.5, -39, -33, -31, -41, -40, -31, -34], [-45, -32.75, -111, -125, -128, -105, -39.5, -32.5]]
 
-    ax.scatter(t[0], d[0], color="blue")
-    ax.scatter(t[1], d[1], color="red")
+    ax.scatter(t[0], d[0], color=c_j, marker=m, label="Молодые(Calanus)")
+    ax.scatter(t[1], d[1], color=c_a, marker=m, label="Взрослые(Calanus)")
+    return ax
+
+def pointsPseudocalanus(ax=None, c_j="blue", c_a="red", m='o'):
+    if ax is None:
+        fig, ax = plt.subplots()
+
+    t = [[0.06, 0.19, 0.27, 0.38, 0.55, 0.7, 0.82, 0.98], [0.06, 0.19, 0.27, 0.38, 0.55, 0.7, 0.82, 0.98]]
+    d = [[-29, -37, -32.5, -36.5, -35, -34, -40, -33.5], [-33, -40, -105, -113, -119, -91, -60, -34.5]]
+
+    ax.scatter(t[0], d[0], color=c_j, marker=m, label="Молодые(Pseudocalanus)")
+    ax.scatter(t[1], d[1], color=c_a, marker=m, label="Взрослые(Pseudocalanus)")
     return ax
 
 def compareStratSins(Aj_1, Bj_1, Aa_1, Ba_1, Aj_2, Bj_2, Aa_2, Ba_2, ax=None):
