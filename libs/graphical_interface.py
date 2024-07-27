@@ -23,37 +23,37 @@ def stratSins(Aj, Bj, Aa, Ba, ax=None, c_j="blue", c_a="red", l_j="Молоды�
 
     ax.legend()
 
-def pointsCalanus_1(ax=None, c_j="blue", c_a="red", m='o'):
+def pointsCalanus_1(ax=None, c_j="blue", c_a="red", m='o', l_j="", l_a=""):
     if ax is None:
         fig, ax = plt.subplots()
 
     t = [[0.06, 0.19, 0.27, 0.38, 0.55, 0.7, 0.82, 0.98], [0.06, 0.19, 0.27, 0.38, 0.55, 0.7, 0.82, 0.98]]
     d = [[-33.5, -39, -33, -31, -41, -40, -31, -34], [-45, -32.75, -111, -125, -128, -105, -39.5, -32.5]]
 
-    ax.scatter(t[0], d[0], color=c_j, marker=m, label="Молодые(Calanus)")
-    ax.scatter(t[1], d[1], color=c_a, marker=m, label="Взрослые(Calanus)")
+    ax.scatter(t[0], d[0], color=c_j, marker=m, label=l_j)
+    ax.scatter(t[1], d[1], color=c_a, marker=m, label=l_a)
     return ax
 
-def pointsCalanus_2(ax=None, c_j="blue", c_a="red", m='o'):
+def pointsCalanus_2(ax=None, c_j="blue", c_a="red", m='o', l_j="", l_a=""):
     if ax is None:
         fig, ax = plt.subplots()
 
     t = [[0.56, 0.69, 0.77, 0.88, 0.05, 0.2, 0.32, 0.48], [0.56, 0.69, 0.77, 0.88, 0.05, 0.2, 0.32, 0.48]]
     d = [[-33.5, -39, -33, -31, -41, -40, -31, -34], [-45, -32.75, -111, -125, -128, -105, -39.5, -32.5]]
 
-    ax.scatter(t[0], d[0], color=c_j, marker=m, label="Молодые(Calanus)")
-    ax.scatter(t[1], d[1], color=c_a, marker=m, label="Взрослые(Calanus)")
+    ax.scatter(t[0], d[0], color=c_j, marker=m, label=l_j)
+    ax.scatter(t[1], d[1], color=c_a, marker=m, label=l_a)
     return ax
 
-def pointsPseudocalanus(ax=None, c_j="blue", c_a="red", m='o'):
+def pointsPseudocalanus(ax=None, c_j="blue", c_a="red", m='o', l_j="", l_a=""):
     if ax is None:
         fig, ax = plt.subplots()
 
     t = [[0.06, 0.19, 0.27, 0.38, 0.55, 0.7, 0.82, 0.98], [0.06, 0.19, 0.27, 0.38, 0.55, 0.7, 0.82, 0.98]]
     d = [[-29, -37, -32.5, -36.5, -35, -34, -40, -33.5], [-33, -40, -105, -113, -119, -91, -60, -34.5]]
 
-    ax.scatter(t[0], d[0], color=c_j, marker=m, label="Молодые(Pseudocalanus)")
-    ax.scatter(t[1], d[1], color=c_a, marker=m, label="Взрослые(Pseudocalanus)")
+    ax.scatter(t[0], d[0], color=c_j, marker=m, label=l_j)
+    ax.scatter(t[1], d[1], color=c_a, marker=m, label=l_a)
     return ax
 
 def compareStratSins(Aj_1, Bj_1, Aa_1, Ba_1, Aj_2, Bj_2, Aa_2, Ba_2, ax=None):
