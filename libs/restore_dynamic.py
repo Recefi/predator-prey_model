@@ -3,6 +3,7 @@ import pandas as pd
 import copy
 import tqdm
 import sys
+from concurrent.futures import ProcessPoolExecutor
 
 import libs.param as param
 import libs.gen_selection as gs
@@ -574,6 +575,9 @@ def calcResData(p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
     print(resData)
     return resData
 
+def integrate(pqrsData):
+    return gs.calcPopDynamics(pqrsData, tMax=5000, tParts=5001, z0=0.001, F0=0.001, _method='BDF')
+
 def checkParam(stratData, p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
     resData = calcResData(p, q, r, s, coefData, mpData, optPntId, lamsKey)
     result = resData.loc[:, :'d_a'].values
@@ -586,13 +590,17 @@ def checkParam(stratData, p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
             continue
         pqrsData = gs.calcPqrsData(mpData, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
         try:
-            rawPopData = gs.calcPopDynamics(pqrsData, tMax=5000, tParts=5001, z0=0.001, F0=0.001, _method='BDF')
+            future = ProcessPoolExecutor().submit(integrate, pqrsData)
+            rawPopData = future.result()
             popData, FLim = gs.analyzePopDynamics(stratData, rawPopData, eps=0.01)
             res = popData['t'].idxmax()
             odeRes[i] = res if (popData.loc[res, 't'] == 5000) else -3  # TODO: process return
         except ValueError as exc:
             print(exc)
             odeRes[i] = -2
+        except TimeoutError as exc:
+            print(exc)
+            odeRes[i] = -4
     resData.loc[:, 'odeRes'] = odeRes
     return resData
 
