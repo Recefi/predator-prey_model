@@ -592,7 +592,7 @@ def checkParam(stratData, p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
             continue
         pqrsData = gs.calcPqrsData(mpData, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
         try:
-            signal.alarm(60)
+            signal.alarm(5)
             rawPopData = gs.calcPopDynamics(pqrsData, tMax=5000, tParts=5001, z0=0.001, F0=0.001, _method='BDF')
             signal.alarm(0)
             popData, FLim = gs.analyzePopDynamics(stratData, rawPopData, eps=0.01)

@@ -11,6 +11,8 @@ import libs.param as param
 import libs.utility as ut
 
 
+nullEps = 0
+
 def genStrats(n, distrA="uniform", by4=False, ab=5):
     if (distrA == "uniform"):  # r12,r56:~0.96  # r34,r78:~-0.2  # =beta(1,1)
         a_j = np.random.uniform(0, -param.D, size=n)
@@ -132,7 +134,7 @@ def calcStratFitData(stratData, pqrsData, F=1):
 
 def calcStratFitData_linsum(stratData, mpData, coefData, idx=-1):
     mpMatr = mpData.values
-    lams = coefData.iloc[idx].values
+    lams = coefData.loc[idx].values
     fitness = calcLinsum(mpMatr, lams)
 
     fitData = pd.DataFrame(fitness, columns=['fit'], index=mpData.index)
@@ -144,15 +146,15 @@ def integrateIter(t, z, n, p, q, r, s):
     sumComp = 0
     sumDeath = 0
     for i in range(n):
-        if (z[i] > 0 and z[i+n] > 0):  # otherwise: Radau,BDF,LSODA time is more(x1.1), number of strats is indifferent,
+        if (z[i] > nullEps and z[i+n] > nullEps):  # otherwise: Radau,BDF,LSODA time is more(x1.1), number of strats is indifferent,
                                           # (only!)Radau error is less, but still more than BDF error and less LSODA.
             sumComp += (z[i] + z[i+n])
             sumDeath += (q[i]*z[i] + s[i]*z[i+n])
         else:
-            if (z[i] > 0):
+            if (z[i] > nullEps):
                 sumComp += z[i]
                 sumDeath += (q[i]*z[i])
-            if (z[i+n] > 0):
+            if (z[i+n] > nullEps):
                 sumComp += z[i+n]
                 sumDeath += (s[i]*z[i+n])
     F = z[2*n]
@@ -196,7 +198,7 @@ def analyzePopDynamics(stratData, rawPopData, eps):
     for i in range(n):
         strat = []
         for j in range(t):
-            if (rawPopMatr[i,j] < 0 and rawPopMatr[i+n,j] < 0):
+            if (rawPopMatr[i,j] < nullEps and rawPopMatr[i+n,j] < nullEps):
                 if (np.isin(j, timeTicks)):  # drop strat
                     indexes.append(stratData.index[i])
                     strat.append(-1)
@@ -634,17 +636,28 @@ def checkRanking(stratPopFitData):
 
 def checkMl(selData, coefData, idx=-1):
     y = selData['class']
-    mpMatr = selData.loc[:, 'M1':'M8M8'].values
+    diffMpMatr = selData.loc[:, 'M1':'M8M8'].values
     lams = coefData.loc[idx].values
 
-    fits = calcLinsum(mpMatr, lams)
+    diffFits = calcLinsum(diffMpMatr, lams)
     _y = []
-    for fit in fits:
-        if fit > 0:
+    for diffFit in diffFits:
+        if diffFit > 0:
             _y.append(1)
-        elif fit < 0:
+        elif diffFit < 0:
             _y.append(-1)
         else:
             print("WARNING: fits are equal?!")
 
     return (y == _y).mean()*100
+
+def calcPopLinsumData(stratPopData, mpData, coefData, idx=-1):
+    popData = stratPopData[['t']].copy()
+    popIdxs = popData.index
+
+    mpMatr = mpData.loc[popIdxs].values
+    lams = coefData.loc[idx].values
+    fits = calcLinsum(mpMatr, lams)
+    popData.loc[:, 'fit'] = fits
+
+    return popData.sort_values(by=['t'], ascending=False)

@@ -29,6 +29,11 @@ ut.writeData(pqrsData, "pqrs_data")
 
 start = time.time()
 rawPopData = gs.calcPopDynamics(pqrsData, tMax=5000, tParts=100000, z0=0.001, F0=0.001, _method='Radau')
+# with pd.option_context('display.max_rows', None):
+#     print(rawPopData)
+# ut.writeData(rawPopData, "raw_pop_data")
+# ut.writeData(rawPopData.loc['z1_v5'], "z1_v5")
+# ut.writeData(rawPopData.loc['z2_v5'], "z2_v5")
 print ("calc pop dynamics: ", time.time() - start)
 
 start = time.time()
@@ -74,7 +79,16 @@ norm_selData.loc[:,'M1':'M8M8'] = norm_selData.loc[:,'M1':'M8M8'] / mpMaxs
 coefData = tr.getCoefData(pqrsData, norm_mlLams[1:], mlLams[1:], FLim)
 ut.writeData(coefData, "coef_data")
 
+
 print("checkMl: ", gs.checkMl(selData, coefData, idx=-1))
+print("checkTaylor: ", gs.checkMl(selData, coefData, idx=99))
+
+popMlData = gs.calcPopLinsumData(stratPopData, mpData, coefData, idx=-1)
+ut.writeData(popMlData, 'pop_ml_data')
+print("checkMlRanking: ", gs.checkRanking(popMlData))
+popTaylorData = gs.calcPopLinsumData(stratPopData, mpData, coefData, idx=99)
+ut.writeData(popTaylorData, 'pop_taylor_data')
+print("checkTaylorRanking: ", gs.checkRanking(popTaylorData))
 
 
 #subprocess.Popen("python clfPlanes.py dynamic_pred --lam0="+str(norm_mlLams[0])+" --show", shell=True)
@@ -168,11 +182,11 @@ print()
 
 gui.mostOptStratSins(stratPopData,3,4, key='t', title="Ранжирование по динамике видов")
 
-# stratFitData_linsum = gs.calcStratFitData_linsum(stratPopData, mpData.loc[stratPopData.index], coefData)
-# gui.mostOptStratSins(stratFitData_linsum,3,4, title="Ранжирование по лин.свертке фитнеса с восст.лямбда")
+stratFitData_linsum = gs.calcStratFitData_linsum(stratPopData, mpData.loc[stratPopData.index], coefData)
+gui.mostOptStratSins(stratFitData_linsum,3,4, title="Ранжирование по лин.свертке фитнеса с восст.лямбда")
 
-# stratFitData_linsum = gs.calcStratFitData_linsum(stratPopData, mpData.loc[stratPopData.index], coefData, idx=optPntId)
-# gui.mostOptStratSins(stratFitData_linsum,3,4, title="Ранжирование по Тейлору для оптимальной")
+stratFitData_linsum = gs.calcStratFitData_linsum(stratPopData, mpData.loc[stratPopData.index], coefData, idx=optPntId)
+gui.mostOptStratSins(stratFitData_linsum,3,4, title="Ранжирование по Тейлору для оптимальной")
 
 # stratFitData = gs.calcStratFitData(stratPopData, pqrsData.loc[stratPopData.index], F=FLim)
 # gui.mostOptStratSins(stratFitData,3,4, title="Ранжирование по расчетной формуле фитнеса с исх.параметрами")
@@ -188,10 +202,10 @@ gui.mostOptStratSins(stratPopData,3,4, key='t', title="Ранжирование 
 # rstdStratMinsData, idOptStrat = gs.fitMaxMin(stratPopData, rstdPqrsData)
 # gui.mostOptStratSins(rstdStratMinsData,3,4, key='min', title="Ранжирование по максминной задаче с восст.параметрами")
 
-rstdPqrsData = gs.calcPqrsData(mpData.loc[stratPopData.index], a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
-rawPopData = gs.calcPopDynamics(rstdPqrsData, tMax=5000, tParts=100000, z0=0.001, F0=0.001)
-rstdStratPopData, FLim = gs.analyzePopDynamics(stratData.loc[stratPopData.index], rawPopData, 0.01)
-gui.mostOptStratSins(rstdStratPopData,3,4, key='t', title="Ранжирование по динамике видов с восст.параметрами")
+# rstdPqrsData = gs.calcPqrsData(mpData.loc[stratPopData.index], a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
+# rawPopData = gs.calcPopDynamics(rstdPqrsData, tMax=5000, tParts=100000, z0=0.001, F0=0.001)
+# rstdStratPopData, FLim = gs.analyzePopDynamics(stratData.loc[stratPopData.index], rawPopData, 0.01)
+# gui.mostOptStratSins(rstdStratPopData,3,4, key='t', title="Ранжирование по динамике видов с восст.параметрами")
 
 plt.show()
 
