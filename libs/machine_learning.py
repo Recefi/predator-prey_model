@@ -1,13 +1,15 @@
 from sklearn import svm
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import time
 import tqdm
 from joblib import Parallel, delayed
+
+import libs.utility as ut
 
 
 def runClfSVM(selData):
@@ -88,10 +90,31 @@ def runClfSVM(selData):
     #     print(Cs)
 
     # Test
-    print(confusion_matrix(y_test, clf.predict(X_test)))
     print("Точность классификатора на обучающей выборке:", (clf.predict(X_train) == y_train).mean()*100)
     print("Точность классификатора на тестовой выборке:", (clf.predict(X_test) == y_test).mean()*100)
     print("Точность классификатора на всей выборке:", (clf.predict(X / mpMaxsSeries) == y).mean()*100)
+    CM = confusion_matrix(y_train, clf.predict(X_train))
+    ConfusionMatrixDisplay(CM, display_labels=clf.classes_).plot(cmap = 'Reds').ax_.set_title("Train")
+    CM = confusion_matrix(y_test, clf.predict(X_test))
+    ConfusionMatrixDisplay(CM, display_labels=clf.classes_).plot(cmap = 'Reds').ax_.set_title("Test")
+    CM = confusion_matrix(y, clf.predict(X / mpMaxsSeries))
+    ConfusionMatrixDisplay(CM, display_labels=clf.classes_).plot(cmap = 'Reds').ax_.set_title("All")
+    plt.show()
+    trainSelData = X_train.copy()
+    trainSelData.insert(0, column='Actual label', value=y_train)
+    trainSelData.insert(1, column='Predicted label', value=clf.predict(X_train))
+    ut.writeData(trainSelData, "train_sel_data", callerName="dynamic_pred")
+    trainSelData.to_excel("csv/dynamic_pred/train_sel_data.xlsx")
+    testSelData = X_test.copy()
+    testSelData.insert(0, column='Actual label', value=y_test)
+    testSelData.insert(1, column='Predicted label', value=clf.predict(X_test))
+    ut.writeData(testSelData, "test_sel_data", callerName="dynamic_pred")
+    testSelData.to_excel("csv/dynamic_pred/test_sel_data.xlsx")
+    allSelData = (X / mpMaxsSeries).copy()
+    allSelData.insert(0, column='Actual label', value=y)
+    allSelData.insert(1, column='Predicted label', value=clf.predict(X / mpMaxsSeries))
+    ut.writeData(allSelData, "all_sel_data", callerName="dynamic_pred")
+    allSelData.to_excel("csv/dynamic_pred/all_sel_data.xlsx")
 
     if (clf.intercept_): lams = np.concatenate([clf.intercept_, lams])
     else: lams = np.concatenate([[clf.intercept_], lams])
