@@ -145,9 +145,25 @@ def predictByRstdDynamic(initStratPopData, stratPopData):
                 elem = -1
         return elem
 
+    _idxs = []
+    j = 0
+    for i in range(len(idxs)):
+        while(j < n):
+            if (initIdxs[j] == idxs[i]):
+                _idxs.append(idxs[i])
+                j+=1
+                break
+            elif (initIdxs[j] > idxs[i]):
+                break
+            j+=1
+    print(initIdxs)
+    print(idxs)
+    print(_idxs)
+    print("_strats: ", len(_idxs))
+
     dropCount = 0
     for i in range(n):
-        if (initIdxs[i] != idxs[i-dropCount]):
+        if (initIdxs[i] != _idxs[i-dropCount]):
             dropCount+=1
             initIdxs[i] = -1
     print(dropCount)
