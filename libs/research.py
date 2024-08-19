@@ -130,7 +130,7 @@ def compareSearchFsols(stratData, pqrsData):
         _resF.append(gs.findF(p, q, r, s, j))
         pqrsRow = pqrsData.loc[[j]]
         stratRow = stratData.loc[[j]]
-        rawPopData = gs.calcPopDynamics(pqrsRow, tMax=500, tParts=1000, z0=0.001, F0=0.001)
+        rawPopData = gs.calcPopDynamics(pqrsRow, tMax=500, tParts=1000, z0=0.001, F0=0.001, _method="Radau")
         stratPopData, integrF = gs.analyzePopDynamics(stratRow, rawPopData, 0.01)
         _integrF.append(integrF)
 

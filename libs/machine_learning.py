@@ -12,6 +12,21 @@ from joblib import Parallel, delayed
 import libs.utility as ut
 
 
+def checkSelData_1(tmpSelData, act_y, pred_y, name):
+    tmpSelData.insert(0, column='Actual label', value=act_y)
+    tmpSelData.insert(1, column='Predicted label', value=pred_y)
+    ut.writeData(tmpSelData, name+"_sel_data", callerName="dynamic_pred", subDirsName="checkMl")
+    tmpSelData.to_excel("csv/dynamic_pred/checkMl/"+name+"_sel_data.xlsx")
+
+def checkSelData_2(tmpSelData, pred_y, name):
+    tmpSelData['Predicted label'] = pred_y
+    ut.writeData(tmpSelData, name+"_sel_data", callerName="dynamic_pred", subDirsName="checkMl")
+    tmpSelData.to_excel("csv/dynamic_pred/checkMl/"+name+"_sel_data.xlsx")
+
+def drawCM(act_y, pred_y, name, classes):
+    CM = confusion_matrix(act_y, pred_y)
+    ConfusionMatrixDisplay(CM, display_labels=classes).plot(cmap = 'Reds').ax_.set_title(name.title())
+
 def runClfSVM(selData):
     """
     "For the linear case, the algorithm used in LinearSVC by the liblinear implementation is much more efficient
@@ -93,28 +108,16 @@ def runClfSVM(selData):
     print("Точность классификатора на обучающей выборке:", (clf.predict(X_train) == y_train).mean()*100)
     print("Точность классификатора на тестовой выборке:", (clf.predict(X_test) == y_test).mean()*100)
     print("Точность классификатора на всей выборке:", (clf.predict(X / mpMaxsSeries) == y).mean()*100)
-    CM = confusion_matrix(y_train, clf.predict(X_train))
-    ConfusionMatrixDisplay(CM, display_labels=clf.classes_).plot(cmap = 'Reds').ax_.set_title("Train")
-    CM = confusion_matrix(y_test, clf.predict(X_test))
-    ConfusionMatrixDisplay(CM, display_labels=clf.classes_).plot(cmap = 'Reds').ax_.set_title("Test")
-    CM = confusion_matrix(y, clf.predict(X / mpMaxsSeries))
-    ConfusionMatrixDisplay(CM, display_labels=clf.classes_).plot(cmap = 'Reds').ax_.set_title("All")
+    drawCM(y_train, clf.predict(X_train), "train", clf.classes_)
+    drawCM(y_test, clf.predict(X_test), "test", clf.classes_)
+    drawCM(y, clf.predict(X / mpMaxsSeries), "all", clf.classes_)
     plt.show()
-    trainSelData = X_train.copy()
-    trainSelData.insert(0, column='Actual label', value=y_train)
-    trainSelData.insert(1, column='Predicted label', value=clf.predict(X_train))
-    ut.writeData(trainSelData, "train_sel_data", callerName="dynamic_pred")
-    trainSelData.to_excel("csv/dynamic_pred/train_sel_data.xlsx")
-    testSelData = X_test.copy()
-    testSelData.insert(0, column='Actual label', value=y_test)
-    testSelData.insert(1, column='Predicted label', value=clf.predict(X_test))
-    ut.writeData(testSelData, "test_sel_data", callerName="dynamic_pred")
-    testSelData.to_excel("csv/dynamic_pred/test_sel_data.xlsx")
-    allSelData = (X / mpMaxsSeries).copy()
-    allSelData.insert(0, column='Actual label', value=y)
-    allSelData.insert(1, column='Predicted label', value=clf.predict(X / mpMaxsSeries))
-    ut.writeData(allSelData, "all_sel_data", callerName="dynamic_pred")
-    allSelData.to_excel("csv/dynamic_pred/all_sel_data.xlsx")
+    tmpSelData = X_train.copy()
+    checkSelData_1(tmpSelData, y_train, clf.predict(X_train), "train")
+    tmpSelData = X_test.copy()
+    checkSelData_1(tmpSelData, y_test, clf.predict(X_test), "test")
+    tmpSelData = (X / mpMaxsSeries).copy()
+    checkSelData_1(tmpSelData, y, clf.predict(X / mpMaxsSeries), "all")
 
     if (clf.intercept_): lams = np.concatenate([clf.intercept_, lams])
     else: lams = np.concatenate([[clf.intercept_], lams])
@@ -125,3 +128,42 @@ def runClfSVM(selData):
     mpMaxsData = pd.DataFrame(mpMaxsSeries).T
     print ("ml time: ", time.time() - start)
     return lams, mpMaxsData
+
+def predictByRstdDynamic(initStratPopData, stratPopData):
+    initIdxs = initStratPopData.index.to_numpy(copy=True)
+    n = len(initIdxs)
+    idxs = stratPopData.index
+    t = stratPopData['t']
+
+    def assignClass(i, j):
+        if (t[i] == t[j]):
+            raise Exception("nullified at once")
+        else:
+            if (t[i] > t[j]):
+                elem = 1
+            else:
+                elem = -1
+        return elem
+
+    dropCount = 0
+    for i in range(n):
+        if (initIdxs[i] != idxs[i-dropCount]):
+            dropCount+=1
+            initIdxs[i] = -1
+    print(dropCount)
+
+    sel = []
+    selIdxs = []
+    nextSelIdx = 0
+    for i in range(n):
+        for j in range(i+1, n):
+            if not (initIdxs[i] == -1 or initIdxs[j] == -1):
+                elemClass = assignClass(initIdxs[i], initIdxs[j])
+                sel.append(elemClass)
+                sel.append(-elemClass)
+                selIdxs.append(nextSelIdx)
+                selIdxs.append(nextSelIdx+1)
+            nextSelIdx+=2
+    
+    pred_y = pd.Series(sel, index=selIdxs)
+    return pred_y

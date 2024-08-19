@@ -45,7 +45,7 @@ print(stratMinsData)
 # gui.popDynamics(rawPopData, leg=True)
 # plt.show()
 
-rawPopData = gs.calcPopDynamics(pqrsData, tMax=50000, tParts=100000, z0=0.001, F0=0.001)
+rawPopData = gs.calcPopDynamics(pqrsData, tMax=50000, tParts=100000, z0=0.001, F0=0.001, _method="Radau")
 stratPopData, FLim = gs.analyzePopDynamics(stratData, rawPopData, 0.01)
 print(FLim)
 gui.popDynamics(rawPopData, leg=True)
