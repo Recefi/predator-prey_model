@@ -135,8 +135,6 @@ a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = rd.restoreParam_4(p, q, r, s, coefData,
 compareParamData = rd.compareRestoredParam(a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
 print(compareParamData)
 ut.writeData(compareParamData, "compare_param_data")
-compareParamData = ut.readData("compare_param_data")
-a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = compareParamData.loc['restored']
 
 checkParamData = rd.checkParam(stratData, p, q, r, s, coefData, mpData, optPntId, lamsKey=-1)
 ut.writeData(checkParamData, "check_param_data")

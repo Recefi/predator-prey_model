@@ -23,7 +23,7 @@ def readData(fileName, callerName="", subDirsName=""):
         callerName += ("/" + subDirsName)
 
     chkDir("csv/" + callerName)
-    data = pd.read_csv("csv/" + callerName + "/" + fileName + ".csv", index_col=0)
+    data = pd.read_csv("csv/" + callerName + "/" + fileName + ".csv", index_col=0, float_precision="round_trip")
     return data
 
 def writeData(data, fileName, callerName="", subDirsName=""):
