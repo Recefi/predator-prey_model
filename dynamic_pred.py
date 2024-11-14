@@ -122,26 +122,32 @@ ut.writeData(compareCoefData, "compare_coef_data")
 #plt.show()
 
 
+#
 # p, q, r, s = pqrsData.loc[optPntId, ['p','q','r','s']]
 # print(rd.qzsz_1(q, s, stratPopData, optPntId))
 # print(rd.qzsz_2(r, FLim, stratPopData, optPntId))
+#
 
 p, q, r, s = rd.restorePQRS_2(FLim, stratPopData, coefData, mpData, optPntId, lamsKey=-1)
 comparePqrsData = rd.compareRestoredPQRS(p, q, r, s, pqrsData, optPntId)
 print(comparePqrsData)
 ut.writeData(comparePqrsData, "compare_pqrs_data")
 
-a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = rd.restoreParam_4(p, q, r, s, coefData, mpData, optPntId, lamsKey=-1)
+#a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = rd.restoreParam_4(p, q, r, s, coefData, mpData, optPntId, lamsKey=-1)
+a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = rd.restoreParam_k1(FLim, p, q, r, s, coefData, mpData, optPntId, lamsKey=-1)
 compareParamData = rd.compareRestoredParam(a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
 print(compareParamData)
 ut.writeData(compareParamData, "compare_param_data")
 
-checkParamData = rd.checkParam(stratData, p, q, r, s, coefData, mpData, optPntId, lamsKey=-1)
-ut.writeData(checkParamData, "check_param_data")
+# checkParamData = rd.checkParam(stratData, p, q, r, s, coefData, mpData, optPntId, lamsKey=-1)
+# ut.writeData(checkParamData, "check_param_data")
 
+#
 # p, q, r, s = rd.checkPqrs(mpData, optPntId, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
 # print(p, q, r, s)
+#
 
+#
 # rstdPqrsData = gs.calcPqrsData(mpData, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
 # rawPopData = gs.calcPopDynamics(rstdPqrsData, tMax=5000, tParts=100000, z0=0.001, F0=0.001)
 # stratPopData, FLim = gs.analyzePopDynamics(stratData, rawPopData, 0.01)
@@ -156,6 +162,7 @@ ut.writeData(checkParamData, "check_param_data")
 # _compareParamData = ut.readData("_compare_param_data")
 # _compareParamData = pd.concat([_compareParamData, compareParamData], axis=0)
 # ut.writeData(_compareParamData, "_compare_param_data")
+#
 
 _p, _q, _r, _s = pqrsData.loc[optPntId, ['p','q','r','s']]
 _FLim, err = gs.calcFLim(_p, _q, _r, _s, F0=0.1)

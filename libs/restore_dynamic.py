@@ -9,14 +9,27 @@ import libs.param as param
 import libs.gen_selection as gs
 
 
-def restorePQRS(FLim, stratPopData, coefData, mpData, optPntId, lamsKey=-1):
+def compareRestoredPQRS(p, q, r, s, pqrsData, optPntId):
+    comparePqrsData = pd.DataFrame(columns=['p','q','r','s'])
+    comparePqrsData.loc['true'] = pqrsData.loc[optPntId, ['p','q','r','s']]
+    comparePqrsData.loc['restored'] = [p, q, r, s]
+    return comparePqrsData
+
+def compareRestoredParam(a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a):
+    compareParamData = pd.DataFrame(columns=['a_j','b_j','g_j','d_j','a_a','b_a','g_a','d_a'])
+    compareParamData.loc['true'] = [param.alpha_j, param.beta_j, param.gamma_j, param.delta_j,
+                                        param.alpha_a, param.beta_a, param.gamma_a, param.delta_a]
+    compareParamData.loc['restored'] = [a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a]
+    return compareParamData
+
+def restorePQRS_1(FLim, stratPopData, coefData, mpData, optPntId, lamsKey=-1):
     z1Lim = stratPopData.loc[optPntId, 'z1']
     z2Lim = stratPopData.loc[optPntId, 'z2']
     M2 = mpData.loc[optPntId, 'M2']
     M6 = mpData.loc[optPntId, 'M6']
     lam26 = coefData.loc[lamsKey, 'lam26']
     lam66 = coefData.loc[lamsKey, 'lam66']
-    
+
     r = (FLim + (z1Lim+z2Lim)**2)/z2Lim
     q = (r*z2Lim - (z1Lim + z2Lim)**2)/(FLim*(z1Lim-(2*lam66*M6*z2Lim)/(lam26*M2)))
     s = -(2*lam66*M6*q)/(lam26*M2)
@@ -31,7 +44,7 @@ def restorePQRS_2(FLim, stratPopData, coefData, mpData, optPntId, lamsKey=-1):
     M6 = mpData.loc[optPntId, 'M6']
     lam26 = coefData.loc[lamsKey, 'lam26']
     lam22 = coefData.loc[lamsKey, 'lam22']
-    
+
     r = (FLim + (z1Lim+z2Lim)**2)/z2Lim
     s = (r*z2Lim - (z1Lim + z2Lim)**2)/(FLim*(z2Lim-(2*lam22*M2*z1Lim)/(lam26*M6)))
     q = -(2*lam22*M2*s)/(lam26*M6)
@@ -75,6 +88,7 @@ def checkPqrs(mpData, optPntId, a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a):
     s = -g_a*M6
     return p,q,r,s
 
+# TODO: check it out
 def qzsz_1(q, s, stratPopData, optPntId, z1Lim=None, z2Lim=None):
     if(z1Lim is None):
         z1Lim = stratPopData.loc[optPntId, 'z1']
@@ -82,6 +96,7 @@ def qzsz_1(q, s, stratPopData, optPntId, z1Lim=None, z2Lim=None):
         z2Lim = stratPopData.loc[optPntId, 'z2']
     return q*z1Lim+s*z2Lim
 
+# TODO: check it out
 def qzsz_2(r, FLim, stratPopData, optPntId, z1Lim=None, z2Lim=None):
     if(z1Lim is None):
         z1Lim = stratPopData.loc[optPntId, 'z1']
@@ -95,11 +110,6 @@ def restoreParam(p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
 
     g_j = -q/M2
     g_a = -s/M6
-
-    # h2 = -2*FLim/(1-lam6*lam26/(lam2*lam66))
-    # k = lam2*M2/(h2*FLim*q)
-    # h1 = (lam1*M1+lam3*M3+lam4*M4)/(k*p)
-    # h3 = (lam5*M5+lam7*M7+lam8*M8)/(k*r)
 
     a_j = lam1*p/(lam1*M1+lam3*M3+lam4*M4)
     b_j = lam3*p/(lam1*M1+lam3*M3+lam4*M4)
@@ -608,15 +618,39 @@ def checkParam(stratData, p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
     resData.loc[:, 'odeRes'] = odeRes
     return resData
 
-def compareRestoredPQRS(p, q, r, s, pqrsData, optPntId):
-    comparePqrsData = pd.DataFrame(columns=['p','q','r','s'])
-    comparePqrsData.loc['true'] = pqrsData.loc[optPntId, ['p','q','r','s']]
-    comparePqrsData.loc['restored'] = [p, q, r, s]
-    return comparePqrsData
+def restoreParam_k1(FLim, p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
+    M1, M2, M3, M4, M5, M6, M7, M8 = mpData.loc[optPntId, 'M1':'M8']
+    lam1, lam2, lam3, lam4, lam5, lam6, lam7, lam8 = coefData.loc[lamsKey, 'lam1':'lam8']
+    lam26 = coefData.loc[lamsKey, 'lam26']
+    lam66 = coefData.loc[lamsKey, 'lam66']
 
-def compareRestoredParam(a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a):
-    compareParamData = pd.DataFrame(columns=['a_j','b_j','g_j','d_j','a_a','b_a','g_a','d_a'])
-    compareParamData.loc['true'] = [param.alpha_j, param.beta_j, param.gamma_j, param.delta_j,
-                                        param.alpha_a, param.beta_a, param.gamma_a, param.delta_a]
-    compareParamData.loc['restored'] = [a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a]
-    return compareParamData
+    hq = -2/(1 - lam6*lam26/(2*lam2*lam66))
+    k = lam2*M2/(hq*FLim*q)
+    print("k_q:", k)
+    g_j = -lam2/(FLim*k*hq)  # substitute k --> the same: g_j = -q/M2
+
+    hs = -2 - hq  # the same: hs = lam6*lam26/(lam2*lam66*(1 - lam6*lam26/(2*lam2*lam66)))
+    k_s = lam6*M6/(hs*FLim*s)
+    print("k_s:", k_s)  # k_s == k_q only if p,q,r,s = restorePQRS_1, otherwise k_s != k_q
+    g_a = -lam6/(FLim*k_s*hs)  # substitute k_s --> the same: g_a = -s/M6
+
+    hp = (lam1*M1+lam3*M3+lam4*M4)/(k*p)
+    a_j = lam1/(k*hp)
+    b_j = lam3/(k*hp)
+    d_j = lam4/(k*hp)
+
+    hr = (lam5*M5+lam7*M7+lam8*M8)/(k*r)
+    a_a = lam5/(k*hr)
+    b_a = lam7/(k*hr)
+    d_a = lam8/(k*hr)
+
+    return a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a
+
+#TODO: check out q/s
+def restoreParam_k2(FLim, p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
+    M1, M2, M3, M4, M5, M6, M7, M8 = mpData.loc[optPntId, 'M1':'M8']
+    lam1, lam2, lam3, lam4, lam5, lam6, lam7, lam8 = coefData.loc[lamsKey, 'lam1':'lam8']
+    lam26 = coefData.loc[lamsKey, 'lam26']
+    lam22 = coefData.loc[lamsKey, 'lam22']
+
+#TODO: calc all h through p,q,r,s,F, then k in all combinations

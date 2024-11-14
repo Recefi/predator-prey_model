@@ -29,7 +29,12 @@ def normCalcLams(calcLams, maxs):
     return norm_calcLams
 
 def getDerivatives(p, q, r, s, F=1):
-    """Считаем частные производные в конкретной точке (p,q,r,s)"""
+    """
+    Считаем частные производные в конкретной точке (p,q,r,s),
+        при этом здесь hq=der{J}/der{q}, а не hq=der{J}/der{qF}, hqq=der^2{J}/der{q^2}, а не hqq=der^2{J}/der{(qF)^2},
+            hqs=der^2{J}/(der{q}der{s}), а не hqs=der^2{J}/(der{qF}der{sF}), аналогично hs и hss, к сожалению,
+                следовательно применять их можно только в разложении без явного указания F*, т.е. где оно включено в h.
+    """
     hp = -1 + (4*r + 2*(p + q*F - s*F))/(2*sqrt(4*p*r + (p + q*F - s*F)**2))
     hq = -F + F*(p + q*F - s*F)/sqrt(4*p*r + (p + q*F - s*F)**2)
     hr = (2*p)/sqrt(4*p*r + (p + q*F - s*F)**2)
