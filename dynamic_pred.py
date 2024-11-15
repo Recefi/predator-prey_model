@@ -134,7 +134,7 @@ print(comparePqrsData)
 ut.writeData(comparePqrsData, "compare_pqrs_data")
 
 #a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = rd.restoreParam_4(p, q, r, s, coefData, mpData, optPntId, lamsKey=-1)
-a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = rd.restoreParam_k1(FLim, p, q, r, s, coefData, mpData, optPntId, lamsKey=-1)
+a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = rd.restoreParam_k2(FLim, p, q, r, s, coefData, mpData, optPntId, lamsKey=-1)
 compareParamData = rd.compareRestoredParam(a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
 print(compareParamData)
 ut.writeData(compareParamData, "compare_param_data")

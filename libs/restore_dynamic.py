@@ -646,11 +646,32 @@ def restoreParam_k1(FLim, p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
 
     return a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a
 
-#TODO: check out q/s
 def restoreParam_k2(FLim, p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
     M1, M2, M3, M4, M5, M6, M7, M8 = mpData.loc[optPntId, 'M1':'M8']
     lam1, lam2, lam3, lam4, lam5, lam6, lam7, lam8 = coefData.loc[lamsKey, 'lam1':'lam8']
     lam26 = coefData.loc[lamsKey, 'lam26']
     lam22 = coefData.loc[lamsKey, 'lam22']
+
+    hs = -2/(1 - lam2*lam26/(2*lam6*lam22))
+    k = lam6*M6/(hs*FLim*s)
+    print("k_s:", k)
+    g_a = -lam6/(FLim*k*hs)  # substitute k --> the same: g_a = -s/M6
+
+    hq = -2 - hs
+    k_q = lam2*M2/(hq*FLim*q)
+    print("k_q:", k_q)  # k_q == k_s only if p,q,r,s = restorePQRS_2, otherwise k_q != k_s
+    g_j = -lam2/(FLim*k_q*hq)  # substitute k_q --> the same: g_j = -q/M2
+
+    hp = (lam1*M1+lam3*M3+lam4*M4)/(k*p)
+    a_j = lam1/(k*hp)
+    b_j = lam3/(k*hp)
+    d_j = lam4/(k*hp)
+
+    hr = (lam5*M5+lam7*M7+lam8*M8)/(k*r)
+    a_a = lam5/(k*hr)
+    b_a = lam7/(k*hr)
+    d_a = lam8/(k*hr)
+
+    return a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a
 
 #TODO: calc all h through p,q,r,s,F, then k in all combinations
