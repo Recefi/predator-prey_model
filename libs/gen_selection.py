@@ -125,7 +125,7 @@ def calcStratFitData(stratData, pqrsData, F=1):
     indxs = []
     for i in pqrsData.index:
         if(4*r[i]*p[i]+(p[i]+q[i]*F-s[i]*F)**2 >= 0):
-            fit = -s[i]*F-p[i]-q[i]*F+(np.sqrt((4*r[i]*p[i]+(p[i]+q[i]*F-s[i]*F)**2)))
+            fit = -s[i]*F-p[i]-q[i]*F+np.sqrt(4*r[i]*p[i]+(p[i]+q[i]*F-s[i]*F)**2)
             fitness.append(fit)
             indxs.append(i)
     fitData = pd.DataFrame(fitness, columns=['fit'], index=indxs)

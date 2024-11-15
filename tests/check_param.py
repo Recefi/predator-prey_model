@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.insert(0, os.path.abspath(".."))
+
 import libs.utility as ut
 
 #rngLst = list(range(1, 10))

@@ -29,12 +29,7 @@ def normCalcLams(calcLams, maxs):
     return norm_calcLams
 
 def getDerivatives(p, q, r, s, F=1):
-    """
-    Считаем частные производные в конкретной точке (p,q,r,s),
-        при этом здесь hq=der{J}/der{q}, а не hq=der{J}/der{qF}, hqq=der^2{J}/der{q^2}, а не hqq=der^2{J}/der{(qF)^2},
-            hqs=der^2{J}/(der{q}der{s}), а не hqs=der^2{J}/(der{qF}der{sF}), аналогично hs и hss, к сожалению,
-                следовательно применять их можно только в разложении без явного указания F*, т.е. где оно включено в h.
-    """
+    """legacy"""
     hp = -1 + (4*r + 2*(p + q*F - s*F))/(2*sqrt(4*p*r + (p + q*F - s*F)**2))
     hq = -F + F*(p + q*F - s*F)/sqrt(4*p*r + (p + q*F - s*F)**2)
     hr = (2*p)/sqrt(4*p*r + (p + q*F - s*F)**2)
@@ -50,6 +45,37 @@ def getDerivatives(p, q, r, s, F=1):
     hrs = (2*F*p*(p + q*F - s*F))/(4*p*r + (p + q*F - s*F)**2)**(3/2)
     hss = (4*F*F*p*r)/(4*p*r + (p + q*F - s*F)**2)**(3/2)
 
+    return hp, hq, hr, hs, hpp, hpq, hpr, hps, hqq, hqr, hqs, hrr, hrs, hss
+
+def getDerivatives_1(p, q, r, s, F=1):
+    hp = -1 + (4*r + 2*(p + q*F - s*F))/(2*sqrt(4*p*r + (p + q*F - s*F)**2))
+    hq = -1 + (p + q*F - s*F)/sqrt(4*p*r + (p + q*F - s*F)**2)
+    hr = (2*p)/sqrt(4*p*r + (p + q*F - s*F)**2)
+    hs = -1 - (p + q*F - s*F)/sqrt(4*p*r + (p + q*F - s*F)**2)
+    hpp = -(4*r*(q*F + r - s*F))/((4*p*r + (p + q*F - s*F)**2)**(3/2))
+    hpq = (2*r*(p - q*F + s*F))/((4*p*r + (p + q*F - s*F)**2)**(3/2))
+    hpr = (2*(F**2 * (q - s)**2 + p*(q*F + 2*r - s*F)))/((4*p*r + (p + q*F - s*F)**2)**(3/2))
+    hps = -(2*r*(p - q*F + s*F))/((4*p*r + (p + q*F - s*F)**2)**(3/2))
+    hqq = (4*p*r)/((4*p*r + (p + q*F - s*F)**2)**(3/2))
+    hqr = -(2*p*(p + q*F - s*F))/((4*p*r + (p + q*F - s*F)**2)**(3/2))
+    hqs = -(4*p*r)/((4*p*r + (p + q*F - s*F)**2)**(3/2))
+    hrr = -(4 * p**2)/((4*p*r + (p + q*F - s*F)**2)**(3/2))
+    hrs = (2*p*(p + q*F - s*F))/((4*p*r + (p + q*F - s*F)**2)**(3/2))
+    hss = (4*p*r)/((4*p*r + (p + q*F - s*F)**2)**(3/2))
+
+    return hp, hq, hr, hs, hpp, hpq, hpr, hps, hqq, hqr, hqs, hrr, hrs, hss
+
+def getDerivatives_2(p, q, r, s, F=1):
+    hp, hq, hr, hs, hpp, hpq, hpr, hps, hqq, hqr, hqs, hrr, hrs, hss = getDerivatives_1(p, q, r, s, F)
+    hq *= F
+    hs *= F
+    hpq *= F
+    hps *= F
+    hqq *= F*F
+    hqr *= F
+    hqs *= F*F
+    hrs *= F
+    hss *= F*F
     return hp, hq, hr, hs, hpp, hpq, hpr, hps, hqq, hqr, hqs, hrr, hrs, hss
 
 def getCoefData(pqrsData, norm_mlLams, mlLams, F=1):

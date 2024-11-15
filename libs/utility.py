@@ -13,7 +13,7 @@ def chkDir(dirName):
     if not os.path.exists(dirName):
         os.mkdir(dirName)
 
-def readData(fileName, callerName="", subDirsName=""):
+def readData(fileName, callerName="", subDirsName="", csvFolder="csv"):
     if not callerName:
         callerFrame = inspect.stack()[1]
         callerFullFilename = callerFrame.filename
@@ -22,16 +22,16 @@ def readData(fileName, callerName="", subDirsName=""):
     if subDirsName:
         callerName += ("/" + subDirsName)
 
-    chkDir("csv/" + callerName)
-    data = pd.read_csv("csv/" + callerName + "/" + fileName + ".csv", index_col=0, float_precision="round_trip")
+    chkDir(csvFolder + "/" + callerName)
+    data = pd.read_csv(csvFolder + "/" + callerName + "/" + fileName + ".csv", index_col=0, float_precision="round_trip")
     return data
 
-def writeData(data, fileName, callerName="", subDirsName=""):
+def writeData(data, fileName, callerName="", subDirsName="", csvFolder="csv"):
     if not callerName: callerName = getCallerName()
     if subDirsName: callerName += ("/" + subDirsName)
 
-    chkDir("csv/" + callerName)
-    data.to_csv("csv/" + callerName + "/" + fileName + ".csv", index=True)
+    chkDir(csvFolder + "/" + callerName)
+    data.to_csv(csvFolder + "/" + callerName + "/" + fileName + ".csv", index=True)
 
 def writeImage(fig, fileName, callerName="", subDirsName=""):
     if not callerName: callerName = getCallerName()
