@@ -7,6 +7,7 @@ import signal
 
 import libs.param as param
 import libs.gen_selection as gs
+import libs.taylor as tr
 
 
 def compareRestoredPQRS(p, q, r, s, pqrsData, optPntId):
@@ -619,6 +620,7 @@ def checkParam(stratData, p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
     return resData
 
 def restoreParam_k1(FLim, p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
+    """под restorePQRS_1"""
     M1, M2, M3, M4, M5, M6, M7, M8 = mpData.loc[optPntId, 'M1':'M8']
     lam1, lam2, lam3, lam4, lam5, lam6, lam7, lam8 = coefData.loc[lamsKey, 'lam1':'lam8']
     lam26 = coefData.loc[lamsKey, 'lam26']
@@ -647,6 +649,7 @@ def restoreParam_k1(FLim, p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
     return a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a
 
 def restoreParam_k2(FLim, p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
+    """под restorePQRS_2"""
     M1, M2, M3, M4, M5, M6, M7, M8 = mpData.loc[optPntId, 'M1':'M8']
     lam1, lam2, lam3, lam4, lam5, lam6, lam7, lam8 = coefData.loc[lamsKey, 'lam1':'lam8']
     lam26 = coefData.loc[lamsKey, 'lam26']
@@ -674,4 +677,47 @@ def restoreParam_k2(FLim, p, q, r, s, coefData, mpData, optPntId, lamsKey=-1):
 
     return a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a
 
-#TODO: calc all h through p,q,r,s,F, then k in all combinations
+def restoreParam_all_k(FLim, p, q, r, s, coefData, mpData, optPntId, lamsKey=-1, qs_key='qs'):
+    M1, M2, M3, M4, M5, M6, M7, M8 = mpData.loc[optPntId, 'M1':'M8']
+    lam1, lam2, lam3, lam4, lam5, lam6, lam7, lam8 = coefData.loc[lamsKey, 'lam1':'lam8']
+    lam26 = coefData.loc[lamsKey, 'lam26']
+    lam22 = coefData.loc[lamsKey, 'lam22']
+    lam66 = coefData.loc[lamsKey, 'lam66']
+
+    hp, hq, hr, hs, hpp, hpq, hpr, hps, hqq, hqr, hqs, hrr, hrs, hss = tr.getDerivatives_1(p, q, r, s, FLim)
+
+    k_q = (lam2*M2)/(hq*FLim*q)
+    k_s = (lam6*M6)/(hs*FLim*s)
+    k_ss = (2*lam66*M6*M6)/(hss*FLim*FLim*s*s)
+    k_qq = (2*lam22*M2*M2)/(hqq*FLim*FLim*q*q)
+    k_qs = (lam26*M2*M6)/(hqs*FLim*FLim*q*s)
+    print("k_q:", k_q)
+    print("k_s:", k_s)
+    print("k_ss:", k_ss)
+    print("k_qq:", k_qq)
+    print("k_qs:", k_qs)
+
+    if (qs_key == 'q'):
+        k = k_q
+    elif (qs_key == 's'):
+        k = k_s
+    elif (qs_key == 'qs'):
+        k = k_qs  # если restorePQRS_1, то k_qs == kss , если restorePQRS_2, то k_qs == kqq
+    elif (qs_key == 'mean'):
+        k = np.mean([k_q, k_s, k_ss, k_qq, k_qs])
+    else:
+        return None
+    print("--------------")
+    print("k:", k)
+
+    a_j = lam1/(k*hp)
+    b_j = lam3/(k*hp)
+    d_j = lam4/(k*hp)
+    g_j = -lam2/(FLim*k*hq)
+
+    a_a = lam5/(k*hr)
+    b_a = lam7/(k*hr)
+    d_a = lam8/(k*hr)
+    g_a = -lam6/(FLim*k*hs)
+
+    return a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a
