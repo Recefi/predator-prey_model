@@ -341,6 +341,68 @@ def calcGenlPqrsData(Aj, Bj, Aa, Ba, a_j=param.alpha_j, b_j=param.beta_j, g_j=pa
 
     return p, q, r, s
 
+def genGenlStratsMemOpt(Aj_left=-param.D+1, Aj_right=0, Aj_step=2, Bj_step=1,
+                        Aa_left=-param.D+1, Aa_right=0, Aa_step=2, Ba_step=1):
+    """abs B_j, B_a"""
+    Aj = []
+    Bj = []
+    Aa = []
+    Ba = []
+    for A_j in tqdm.tqdm(range(Aj_left, Aj_right, Aj_step)):
+        m_j = min(-A_j, A_j + param.D)
+        for B_j in range(1, m_j+1, Bj_step):
+            for A_a in range(Aa_left, Aa_right, Aa_step):
+                m_a = min(-A_a, A_a + param.D)
+                for B_a in range(1, m_a+1, Ba_step):
+                    Aj.append(A_j)
+                    Bj.append(B_j)
+                    Aa.append(A_a)
+                    Ba.append(B_a)
+    return Aj, Bj, Aa, Ba
+
+@njit
+def calcFitByStrat_nan(Aj, Bj, Aa, Ba, params=(param.alpha_j, param.beta_j, param.gamma_j, param.delta_j,
+                                                param.alpha_a, param.beta_a, param.gamma_a, param.delta_a),
+                                        env_params=(param.D, param.D0, param.sigma1, param.sigma2), F=1):
+
+    a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = params
+    D, D0, sigma1, sigma2 = env_params
+
+    M1 = sigma1 * (Aj + D)
+    M2 = -sigma2 * (Aj + D + Bj/2)
+    M3 = -2*(np.pi*Bj)**2
+    M4 = -((Aj+D0)**2 + (Bj**2)/2)
+
+    M5 = sigma1 * (Aa + D)
+    M6 = -sigma2 * (Aa + D + Ba/2)
+    M7 = -2*(np.pi*Ba)**2
+    M8 = -((Aa+D0)**2 + (Ba**2)/2)
+
+    p = a_j*M1 + b_j*M3 + d_j*M4
+    r = a_a*M5 + b_a*M7 + d_a*M8
+    q = -g_j*M2
+    s = -g_a*M6
+
+    if (4*r*p+(p+q*F-s*F)**2 < 0):
+        return np.nan
+    else:
+        return -s*F-p-q*F+np.sqrt(4*r*p+(p+q*F-s*F)**2)
+
+def calcGenlFitsMemOpt(Aj, Bj, Aa, Ba, params=(param.alpha_j, param.beta_j, param.gamma_j, param.delta_j,
+                                                param.alpha_a, param.beta_a, param.gamma_a, param.delta_a),
+                                        env_params=(param.D, param.D0, param.sigma1, param.sigma2), F=1):
+    fits_pp = np.empty(len(Aj))
+    fits_np = np.empty(len(Aj))
+    fits_pn = np.empty(len(Aj))
+    fits_nn = np.empty(len(Aj))
+    for i in tqdm.tqdm(range(len(Aj))):
+        fits_pp[i] = calcFitByStrat_nan(Aj[i], Bj[i], Aa[i], Ba[i], params, env_params, F=1)
+        fits_np[i] = calcFitByStrat_nan(Aj[i], -Bj[i], Aa[i], Ba[i], params, env_params, F=1)
+        fits_pn[i] = calcFitByStrat_nan(Aj[i], Bj[i], Aa[i], -Ba[i], params, env_params, F=1)
+        fits_nn[i] = calcFitByStrat_nan(Aj[i], -Bj[i], Aa[i], -Ba[i], params, env_params, F=1)
+
+    return fits_pp, fits_np, fits_pn, fits_nn
+
 def calcFLim(p,q,r,s, F0=0.1, abs=True):  # в качестве стартовой оценки решения можно исп-ть нач.условие из задачи Коши
     def func1(F):
         return 2*r*p / (2*p*s + q*(-(p+q*F-s*F) + np.sqrt((p+q*F-s*F)**2 + 4*p*r))) \

@@ -1,91 +1,91 @@
 import numpy as np
+import pandas as pd
 from scipy import optimize
+
+import libs.gen_selection as gs
 
 D = 140  # depth
 D0 = 80  # optimal depth
 sigma1 = 1.4
 sigma2 = 1.2
+env_params = (D, D0, sigma1, sigma2)
 F = 1
 
 
-def stratByParam(a_j, a_a, b_j, b_a, g_j, g_a, d_j, d_a):
-    def fitByParam(x):
+def stratByParam_de(a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a):
+    params = a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a
+    
+    def fitByStrat(x):
         Aj, Bj, Aa, Ba = x
-
-        M1 = sigma1 * (Aj + D)
-        M2 = -sigma2 * (Aj + D + Bj/2)
-        M3 = -2*(np.pi*Bj)**2
-        M4 = -((Aj+D0)**2 + (Bj**2)/2)
-
-        M5 = sigma1 * (Aa + D)
-        M6 = -sigma2 * (Aa + D + Ba/2)
-        M7 = -2*(np.pi*Ba)**2
-        M8 = -((Aa+D0)**2 + (Ba**2)/2)
-
-        p = a_j*M1 + b_j*M3 + d_j*M4
-        r = a_a*M5 + b_a*M7 + d_a*M8
-        q = -g_j*M2
-        s = -g_a*M6
-
-        if (4*r*p+(p+q*F-s*F)**2 < 0):
+        fit = - gs.calcFitByStrat_nan(Aj, Bj, Aa, Ba, params=params, env_params=env_params, F=F)
+        if (np.isnan(fit)):
             fit = 1e9
-        else:
-            fit = -(-s*F-p-q*F+(np.sqrt((4*r*p+(p+q*F-s*F)**2))))
-
         return fit
 
-    constraintBa = lambda x: -(a_a*sigma1 - 2*d_a*(x[2] + D0))/x[3]
-    denominatorBa = (2*(4*np.pi**2 * b_a + d_a))
-    nlc_AaBa = optimize.NonlinearConstraint(constraintBa, denominatorBa - 1e-2, denominatorBa + 1e-2)
-    constraintBj = lambda x: -(a_j*sigma1 - 2*d_j*(x[0] + D0))/x[1]
-    denominatorBj = (2*(4*np.pi**2 * b_j + d_j))
-    nlc_AjBj = optimize.NonlinearConstraint(constraintBj, denominatorBj + 1e-3, denominatorBj + 1e-3)
-    def constraint1(x):
-        return (g_j*sigma2*F)/(2*(4*np.pi**2 * b_j + d_j)*x[1]) - (2*(4*np.pi**2 * b_a + d_a)*x[3])/(g_a*sigma2*F)
-    nlc_BjBa = optimize.NonlinearConstraint(constraint1, 1 - 1e-6, 1 + 1e-6)
+    # constraintBa = lambda x: -(a_a*sigma1 - 2*d_a*(x[2] + D0))/x[3]
+    # denominatorBa = (2*(4*np.pi**2 * b_a + d_a))
+    # nlc_AaBa = optimize.NonlinearConstraint(constraintBa, denominatorBa - 1e-2, denominatorBa + 1e-2)
+    # constraintBj = lambda x: -(a_j*sigma1 - 2*d_j*(x[0] + D0))/x[1]
+    # denominatorBj = (2*(4*np.pi**2 * b_j + d_j))
+    # nlc_AjBj = optimize.NonlinearConstraint(constraintBj, denominatorBj + 1e-3, denominatorBj + 1e-3)
+    # def constraint1(x):
+    #     return (g_j*sigma2*F)/(2*(4*np.pi**2 * b_j + d_j)*x[1]) - (2*(4*np.pi**2 * b_a + d_a)*x[3])/(g_a*sigma2*F)
+    # nlc_BjBa = optimize.NonlinearConstraint(constraint1, 1 - 1e-6, 1 + 1e-6)
 
     lc_j1 = optimize.LinearConstraint([[1, 1, 0, 0]], -D, 0)
     lc_j2 = optimize.LinearConstraint([[1, -1, 0, 0]], -D, 0)
     lc_a1 = optimize.LinearConstraint([[0, 0, 1, 1]], -D, 0)
     lc_a2 = optimize.LinearConstraint([[0, 0, 1, -1]], -D, 0)
-    return optimize.differential_evolution(fitByParam,
+    return optimize.differential_evolution(fitByStrat,
                         bounds=[(-D, 0), (-D, 0), (-D, 0), (-D, 0)], constraints=(lc_j1, lc_j2, lc_a1, lc_a2))
 
-def paramByStrat(Aj, Bj, Aa, Ba):
-    def stratDeviation(x):
-        a_j, a_a, b_j, b_a, g_j, g_a, d_j, d_a = x
+def stratByParam_shgo(a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a):
+    params = a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a
 
-        strat = stratByParam(a_j, a_a, b_j, b_a, g_j, g_a, d_j, d_a)
-        _Aj, _Bj, _Aa, _Ba = strat.x
+    def fitByStrat(x):
+        Aj, Bj, Aa, Ba = x
+        fit = - gs.calcFitByStrat_nan(Aj, Bj, Aa, Ba, params=params, env_params=env_params, F=F)
+        if (np.isnan(fit)):
+            fit = 1e9
+        return fit
 
-        return np.abs(Aj-_Aj) + np.abs(Bj-_Bj) + np.abs(Aa-_Aa) + np.abs(Ba-_Ba)
+    lc_j1 = optimize.LinearConstraint([[1, 1, 0, 0]], -D, 0)
+    lc_j2 = optimize.LinearConstraint([[1, -1, 0, 0]], -D, 0)
+    lc_a1 = optimize.LinearConstraint([[0, 0, 1, 1]], -D, 0)
+    lc_a2 = optimize.LinearConstraint([[0, 0, 1, -1]], -D, 0)
+    return optimize.shgo(fitByStrat,
+                        bounds=[(-D, 0), (-D, 0), (-D, 0), (-D, 0)], constraints=(lc_j1, lc_j2, lc_a1, lc_a2))
 
-    constraintBa = lambda x: -(x[1]*sigma1 - 2*x[7]*(Aa + D0))/(2*(4*np.pi**2 * x[3] + x[7]))
-    nlc_AaBa = optimize.NonlinearConstraint(constraintBa, Ba - 1e-2, Ba + 1e-2)
-    constraintBj = lambda x: -(x[0]*sigma1 - 2*x[6]*(Aj + D0))/(2*(4*np.pi**2 * x[2] + x[6]))
-    nlc_AjBj = optimize.NonlinearConstraint(constraintBj, Bj - 1e-3, Bj + 1e-3)
-    def constraint1(x):
-        return (x[4]*sigma2*F)/(2*(4*np.pi**2 * x[2] + x[6])*Bj) - (2*(4*np.pi**2 * x[3] + x[7])*Ba)/(x[5]*sigma2*F)
-    nlc_BjBa = optimize.NonlinearConstraint(constraint1, 1 - 1e-6, 1 + 1e-6)
+def checkOnGenlSel(a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a):
+    params = a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a
 
-    return optimize.differential_evolution(stratDeviation, constraints=(nlc_AaBa, nlc_AjBj, nlc_BjBa),
-    bounds=[(1e-6, 1), (1e-6, 1), (1e-6, 1), (1e-6, 1), (1e-6, 1), (1e-6, 1), (1e-6, 1), (1e-6, 1)])
+    Aj, Bj, Aa, Ba = gs.genGenlStratsMemOpt(Aj_left=-D, Aj_right=0, Aj_step=1, Bj_step=1,
+                                            Aa_left=-D, Aa_right=0, Aa_step=1, Ba_step=1)
+    Aj.extend([-D, -D+1, -D])
+    Bj.extend([0, 0, 0])
+    Aa.extend([-D, -D, -D+1])
+    Ba.extend([0, 0, 0])
+    fits_pp, fits_np, fits_pn, fits_nn = gs.calcGenlFitsMemOpt(Aj,Bj,Aa,Ba, params=params, env_params=env_params, F=F)
+    df = pd.DataFrame({'Aj': Aj, 'Bj': Bj, 'Aa': Aa, 'Ba': Ba,
+                        'fits(++)': fits_pp, 'fits(-+)': fits_np, 'fits(+-)': fits_pn, 'fits(--)': fits_nn})
+    df['fits(max)'] = df.loc[:, 'fits(++)':'fits(--)'].max(axis=1, skipna=True)
+    df = df.sort_values('fits(max)', ascending=False, na_position='last')
+
+    with pd.option_context('display.max_rows', None):
+        print(df.head(1000))
+        #print(df[((df['Aj'] == -34) | (df['Aj'] == -35)) & ((df['Aa'] == -83) | (df['Aa'] == -84))])
 
 if __name__ == "__main__":
-    #strat = stratByParam(0.00470259, 29089.2, 0.0000055, 0.0098, 1.73809, 36.282, 0.00005, 441)
-    #strat = stratByParam(0.0000000470259, 0.290892, 0.000000000055, 0.000000098, 0.0000173809, 0.00036282, 0.0000000005, 0.00441)
-    #strat = stratByParam(0.000000047,0.290892,0.000000000055,0.000000098,0.0000173809,0.00036282,0.0000000005,0.00441)
-    strat = stratByParam(0.013, 0.042, 0.0000063, 0.0000097, 0.0009, 0.036, 0.00017, 0.0002)
+    strat = stratByParam_de(a_j=0.013, b_j=0.0000063, g_j=0.0009, d_j=0.00017,
+                                a_a=0.042, b_a=0.0000097, g_a=0.036, d_a=0.0002)
     print(strat.x, strat.fun)
+    # [-34.58, -3.29, -83.32, -51.57] ([-34.57773346, -3.29156444, -83.31583613, -51.57157067]) -1.0027498786
+
+    strat = stratByParam_shgo(a_j=0.013, b_j=0.0000063, g_j=0.0009, d_j=0.00017,
+                                a_a=0.042, b_a=0.0000097, g_a=0.036, d_a=0.0002)
+    print(strat.x, strat.fun)
+    # [-140, 0, -140, 0]  -2.073884
 
 
-    # param = paramByStrat(-34.37, -3.24, -82.82, -52.13)
-    # print(param.x)
-
-    # a_j, a_a, b_j, b_a, g_j, g_a, d_j, d_a = param.x
-    # strat = stratByParam(a_j, a_a, b_j, b_a, g_j, g_a, d_j, d_a)
-    # print(strat.x, strat.fun)
-
-    # strat = stratByParam(0.098, 0.29, 0.00037, 0.000022, 0.066, 0.19, 0.00043, 0.0032)
-    # print(strat.x, strat.fun)
-
+    checkOnGenlSel(a_j=0.013, b_j=0.0000063, g_j=0.0009, d_j=0.00017,
+                                a_a=0.042, b_a=0.0000097, g_a=0.036, d_a=0.0002)
