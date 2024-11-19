@@ -218,7 +218,7 @@
 # alpha_a=0.042
 # beta_j=0.0000063
 # beta_a=0.0000097
-# gamma_j=0.0009
+# gamma_j=0.0009  # F=1
 # gamma_a=0.036
 # delta_j=0.00017
 # delta_a=0.0002
@@ -244,11 +244,11 @@ delta_a=0.0002
 # sigma1 = 1.4
 # sigma2 = 1.2
 
-# alpha_j=0.013
-# alpha_a=0.042
+# alpha_j=0.0025
+# alpha_a=0.065
 # beta_j=0.0000063
-# beta_a=0.0000097
-# gamma_j=0.0026  # F=0.3414
-# gamma_a=0.104
-# delta_j=0.00017
-# delta_a=0.0002
+# beta_a=0.000022
+# gamma_j=0.00353  # F=1
+# gamma_a=0.0224
+# delta_j=0.000019
+# delta_a=0.000015
