@@ -8,6 +8,7 @@ from joblib import Parallel, delayed
 import itertools
 
 import libs.param as param
+import libs.machine_learning as ml
 import libs.utility as ut
 
 
@@ -107,13 +108,11 @@ def calcPqrsData(mpData, a_j=param.alpha_j, b_j=param.beta_j, g_j=param.gamma_j,
 
 def calcLinsum(mpMatr, lams):
     """lams = [lam1,...]"""
-    fitness = []
+    fits = np.zeros(len(mpMatr))
     for i in range(len(mpMatr)):
-        fit = 0
         for j in range(len(mpMatr[i])):
-            fit += lams[j]*mpMatr[i, j]
-        fitness.append(fit)
-    return fitness
+            fits[i] += lams[j]*mpMatr[i, j]
+    return fits
 
 def calcStratFitData(stratData, pqrsData, F=1):
     p = pqrsData['p']
@@ -141,6 +140,7 @@ def calcStratFitData_linsum(stratData, mpData, coefData, idx=-1):
     stratFitData = pd.concat([stratData.loc[fitData.index], fitData], axis=1)
     return stratFitData
 
+# TODO: np.empty ---> np.zeros
 @njit
 def integrateIter(t, z, n, p, q, r, s):
     sumComp = 0
@@ -698,20 +698,9 @@ def checkRanking(stratPopFitData):
 
 def checkMl(selData, coefData, idx=-1):
     y = selData['class']
-    diffMpMatr = selData.loc[:, 'M1':'M8M8'].values
     lams = coefData.loc[idx].values
-
-    diffFits = calcLinsum(diffMpMatr, lams)
-    _y = []
-    for diffFit in diffFits:
-        if diffFit > 0:
-            _y.append(1)
-        elif diffFit < 0:
-            _y.append(-1)
-        else:
-            print("WARNING: fits are equal?!")
-
-    return (y == _y).mean()*100
+    y_pred = ml.predictByLams(selData, lams)
+    return (y == y_pred).mean()*100
 
 def calcPopLinsumData(stratPopData, mpData, coefData, idx=-1):
     popData = stratPopData[['t']].copy()

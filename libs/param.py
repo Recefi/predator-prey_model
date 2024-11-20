@@ -1,9 +1,9 @@
 
 # D = 140  # depth
 # D0 = 80  # optimal depth
-
 # sigma1 = 1.4
 # sigma2 = 1
+
 # alpha_j=0.0016
 # alpha_a=0.006
 # beta_j=0.0000007
@@ -16,9 +16,9 @@
 
 # D = 140  # depth
 # D0 = 80  # optimal depth
-
 # sigma1 = 1.4
 # sigma2 = 1
+
 # alpha_j=0.016
 # alpha_a=0.06
 # beta_j=0.000007
@@ -31,9 +31,9 @@
 
 # D = 140  # depth
 # D0 = 80  # optimal depth
-
 # sigma1 = 1.4
 # sigma2 = 1.21
+
 # alpha_j=0.0127
 # alpha_a=0.0417
 # beta_j=0.000007
@@ -46,9 +46,9 @@
 
 # D = 140  # depth
 # D0 = 80  # optimal depth
-
 # sigma1 = 2
 # sigma2 = 1.6
+
 # alpha_j=0.0089
 # alpha_a=0.042
 # beta_j=0.0000069
@@ -61,9 +61,9 @@
 
 # D = 140  # depth
 # D0 = 80  # optimal depth
-
 # sigma1 = 2
 # sigma2 = 1.6
+
 # alpha_j=0.0089
 # alpha_a=0.042
 # beta_j=0.0000069
@@ -76,9 +76,9 @@
 
 # D = 140  # depth
 # D0 = 80  # optimal depth
-
 # sigma1 = 1.4
 # sigma2 = 1.2
+
 # alpha_j=0.013
 # alpha_a=0.042
 # beta_j=0.000007
@@ -91,9 +91,9 @@
 
 # D = 140  # depth
 # D0 = 80  # optimal depth
-
 # sigma1 = 1.4
 # sigma2 = 1.2
+
 # alpha_j=0.013
 # alpha_a=0.042
 # beta_j=0.000007
@@ -106,9 +106,9 @@
 
 # D = 140  # depth
 # D0 = 80  # optimal depth
-
 # sigma1 = 1.4
 # sigma2 = 1.2
+
 # alpha_j=0.013
 # alpha_a=0.042
 # beta_j=0.0000062
@@ -218,7 +218,7 @@
 # alpha_a=0.042
 # beta_j=0.0000063
 # beta_a=0.0000097
-# gamma_j=0.0009  # F=1
+# gamma_j=0.0009  # static
 # gamma_a=0.036
 # delta_j=0.00017
 # delta_a=0.0002
@@ -244,11 +244,26 @@ delta_a=0.0002
 # sigma1 = 1.4
 # sigma2 = 1.2
 
-# alpha_j=0.0025
-# alpha_a=0.065
-# beta_j=0.0000063
-# beta_a=0.000022
-# gamma_j=0.00353  # F=1
-# gamma_a=0.0224
-# delta_j=0.000019
-# delta_a=0.000015
+# alpha_j=0.025
+# alpha_a=0.65
+# beta_j=0.000063
+# beta_a=0.00022
+# gamma_j=0.0353  # static
+# gamma_a=0.224
+# delta_j=0.00019
+# delta_a=0.00015
+
+
+# D = 140  # depth
+# D0 = 80  # optimal depth
+# sigma1 = 1.4
+# sigma2 = 1.2
+
+# alpha_j=0.025
+# alpha_a=0.65
+# beta_j=0.000063
+# beta_a=0.00022
+# gamma_j=0.001951  # F = 18.09
+# gamma_a=0.1238
+# delta_j=0.00019
+# delta_a=0.00015

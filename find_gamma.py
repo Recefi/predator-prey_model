@@ -27,6 +27,10 @@ print("FLim:", _FLim)
 
 i = 0
 while(abs(FLim - _FLim) > 1e-10):
+    if (i > 1000):
+        print("Попробуй увеличить a,b,g,d умножением на константу")
+        break
+
     gamma_j = param.gamma_j / _FLim
     gamma_a = param.gamma_a / _FLim
     print("gamma_j:", gamma_j)

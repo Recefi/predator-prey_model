@@ -101,10 +101,3 @@ print(fitCosines)
 #gui.clf2dPlane(norm_selData, norm_mlLams, 'M2', 'M4M8')
 
 plt.show()
-
-
-
-# _p, _q, _r, _s = pqrsData.loc[optPntId, ['p','q','r','s']]
-# _FLim = gs.calcFLim(_p, _q, _r, _s, F0=0.1)
-# print(_FLim)
-# TODO: попробовать подогнать статическое F* к 1, мб результаты улучшаться...
