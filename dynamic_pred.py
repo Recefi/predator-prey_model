@@ -18,6 +18,7 @@ import libs.research as rs
 # stratData.loc[len(stratData.index) - 1] = [-34.58, -3.29, -83.32, -51.57]
 # ut.writeData(stratData, "strat_data")
 stratData = ut.readData("strat_data")
+#stratData.loc[len(stratData.index) - 1] = [-34.56, -3.31, -83.21, -51.55]
 
 #gui.histStrats(stratData)
 #plt.show()
@@ -29,6 +30,7 @@ ut.writeData(pqrsData, "pqrs_data")
 
 start = time.time()
 rawPopData = gs.calcPopDynamics(pqrsData, tMax=5000, tParts=100000, z0=0.001, F0=0.001, _method='Radau')
+#rawPopData = gs.calcPopDynamics(pqrsData, tMax=5000, tParts=100000, z0=0.01, F0=1)
 # with pd.option_context('display.max_rows', None):
 #     print(rawPopData)
 # ut.writeData(rawPopData, "raw_pop_data")
@@ -49,10 +51,11 @@ print("strats: ", len(stratPopData.index))
 # print("strats: ", len(stratFitData.index))
 
 stratPopFitData = gs.calcStratFitData(stratPopData, pqrsData.loc[stratPopData.index], F=0.3383)
+#stratPopFitData = gs.calcStratFitData(stratPopData, pqrsData.loc[stratPopData.index], F=18.12)
 ut.writeData(stratPopFitData, "strat_pop_fit_data")
 print("checkRanking: ", gs.checkRanking(stratPopFitData))
 
-#gui.popDynamics(rawPopData)
+#gui.popDynamics(rawPopData, log=True, log_xinit=5000/100000)
 #gui.corrMps_2(shortMpData)
 #gui.histStrats(stratData)
 #plt.show()
@@ -80,17 +83,6 @@ coefData = tr.getCoefData(pqrsData, norm_mlLams[1:], mlLams[1:], FLim)
 ut.writeData(coefData, "coef_data")
 
 
-print("checkMl: ", gs.checkMl(selData, coefData, idx=-1))
-print("checkTaylor: ", gs.checkMl(selData, coefData, idx=99))
-
-popMlData = gs.calcPopLinsumData(stratPopData, mpData, coefData, idx=-1)
-ut.writeData(popMlData, 'pop_ml_data')
-print("checkMlRanking: ", gs.checkRanking(popMlData))
-popTaylorData = gs.calcPopLinsumData(stratPopData, mpData, coefData, idx=99)
-ut.writeData(popTaylorData, 'pop_taylor_data')
-print("checkTaylorRanking: ", gs.checkRanking(popTaylorData))
-
-
 #subprocess.Popen("python clfPlanes.py dynamic_pred --lam0="+str(norm_mlLams[0])+" --show", shell=True)
 
 
@@ -102,6 +94,23 @@ print("nearPnt cosine:", cosines[nearPntId])
 optPntId = stratPopData[['z1','z2']].sum(axis="columns").idxmax()
 print(optPntId)
 print("optPnt cosine:", cosines[optPntId], "\n")
+
+print("checkMl: ", gs.checkMl(selData, coefData, idx=-1))
+print("checkTaylor_nearcos: ", gs.checkMl(selData, coefData, idx=nearPntId))
+print("checkTaylor: ", gs.checkMl(selData, coefData, idx=optPntId))
+accuraciesTaylor = gs.calcAccTaylor(selData, coefData, act_or_ml='act')
+print(np.corrcoef(cosines, accuraciesTaylor))
+accuraciesTaylor = gs.calcAccTaylor(selData, coefData, act_or_ml='ml')
+print(np.corrcoef(cosines, accuraciesTaylor))
+print()
+
+popMlData = gs.calcPopLinsumData(stratPopData, mpData, coefData, idx=-1)
+ut.writeData(popMlData, 'pop_ml_data')
+print("checkMlRanking: ", gs.checkRanking(popMlData))
+popTaylorData = gs.calcPopLinsumData(stratPopData, mpData, coefData, idx=optPntId)
+ut.writeData(popTaylorData, 'pop_taylor_data')
+print("checkTaylorRanking: ", gs.checkRanking(popTaylorData))
+print()
 
 compareCoefData = tr.compareCoefs(coefData, nearPntId, optPntId)
 with pd.option_context('display.max_rows', 10):
@@ -134,6 +143,7 @@ print(comparePqrsData)
 ut.writeData(comparePqrsData, "compare_pqrs_data")
 
 a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = rd.restoreParam_4(p, q, r, s, coefData, mpData, optPntId, lamsKey=-1)
+#a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = rd.restoreParam_k2(FLim, p, q, r, s, coefData, mpData, optPntId, lamsKey=-1)
 #a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = rd.restoreParam_all_k(FLim, p, q, r, s, coefData, mpData, optPntId, lamsKey=-1, qs_key='mean')
 compareParamData = rd.compareRestoredParam(a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
 print(compareParamData)

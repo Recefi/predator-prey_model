@@ -263,7 +263,7 @@ delta_a=0.0002
 # alpha_a=0.65
 # beta_j=0.000063
 # beta_a=0.00022
-# gamma_j=0.001951  # F = 18.09
-# gamma_a=0.1238
+# gamma_j=0.001948  # F = 18.12
+# gamma_a=0.01236
 # delta_j=0.00019
 # delta_a=0.00015

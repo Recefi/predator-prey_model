@@ -4,7 +4,8 @@ import libs.param as param
 import libs.gen_selection as gs
 
 
-Aj, Bj, Aa, Ba = (-34.58, -3.29, -83.32, -51.57)
+#Aj, Bj, Aa, Ba = (-34.58, -3.29, -83.32, -51.57)
+Aj, Bj, Aa, Ba = (-34.56, -3.312, -83.21, -51.55)
 
 M1 = param.sigma1 * (Aj + param.D)
 M2 = -param.sigma2 * (Aj + param.D + Bj/2)

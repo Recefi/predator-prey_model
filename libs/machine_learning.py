@@ -8,6 +8,7 @@ import pandas as pd
 import time
 import tqdm
 from joblib import Parallel, delayed
+from numba import jit, njit, prange
 
 import libs.gen_selection as gs
 import libs.utility as ut
@@ -39,7 +40,19 @@ def predictByLams(X_data, lams):
             y_pred[i] = -1
         else:
             print("WARNING: fits are equal?!")
-    #y_pred = pd.Series(y_pred, index=X_data.index)
+    return y_pred
+
+@njit
+def predictByLamsOpt(diffMpMatr, lams):
+    diffFits = gs.calcLinsum(diffMpMatr, lams)
+    y_pred = np.zeros(len(diffFits))
+    for i in range(len(diffFits)):
+        if diffFits[i] > 0:
+            y_pred[i] = 1
+        elif diffFits[i] < 0:
+            y_pred[i] = -1
+        else:
+            print("WARNING: fits are equal?!")
     return y_pred
 
 def predictByRstdDynamic(initStratPopData, stratPopData):
@@ -160,5 +173,5 @@ def runClfSVM(selData):
     print(lams)
 
     mpMaxsData = pd.DataFrame(mpMaxsSeries).T
-    print ("ml time: ", time.time() - start)
+    print("ml time: ", time.time() - start)
     return lams, mpMaxsData

@@ -106,12 +106,15 @@ def calcPqrsData(mpData, a_j=param.alpha_j, b_j=param.beta_j, g_j=param.gamma_j,
     pqrsData = pd.DataFrame(pqrs, columns=["p", "q", "r", "s"], index=mpData.index)
     return pqrsData
 
+@njit
 def calcLinsum(mpMatr, lams):
     """lams = [lam1,...]"""
     fits = np.zeros(len(mpMatr))
     for i in range(len(mpMatr)):
+        fit = 0  # 4.6s ---> 3s
         for j in range(len(mpMatr[i])):
-            fits[i] += lams[j]*mpMatr[i, j]
+            fit += lams[j]*mpMatr[i, j]
+        fits[i] = fit
     return fits
 
 def calcStratFitData(stratData, pqrsData, F=1):
@@ -140,7 +143,6 @@ def calcStratFitData_linsum(stratData, mpData, coefData, idx=-1):
     stratFitData = pd.concat([stratData.loc[fitData.index], fitData], axis=1)
     return stratFitData
 
-# TODO: np.empty ---> np.zeros
 @njit
 def integrateIter(t, z, n, p, q, r, s):
     sumComp = 0
@@ -158,7 +160,7 @@ def integrateIter(t, z, n, p, q, r, s):
                 sumComp += z[i+n]
                 sumDeath += (s[i]*z[i+n])
     F = z[2*n]
-    result = np.empty(2*n + 1)
+    result = np.zeros(2*n + 1)
     for i in range(n):
         result[i] = -p[i]*z[i] - q[i]*z[i]*F + r[i]*z[i+n] - z[i]*sumComp
         result[i+n] = p[i]*z[i] - s[i]*z[i+n]*F - z[i+n]*sumComp
@@ -697,7 +699,8 @@ def checkRanking(stratPopFitData):
     return count
 
 def checkMl(selData, coefData, idx=-1):
-    y = selData['class']
+    """accuracy"""
+    y = selData['class'].values
     lams = coefData.loc[idx].values
     y_pred = ml.predictByLams(selData, lams)
     return (y == y_pred).mean()*100
@@ -712,3 +715,19 @@ def calcPopLinsumData(stratPopData, mpData, coefData, idx=-1):
     popData.loc[:, 'fit'] = fits
 
     return popData.sort_values(by=['t'], ascending=False)
+
+def calcAccTaylor(selData, coefData, act_or_ml='act'):
+    diffMpMatr = selData.loc[:, 'M1':'M8M8'].values
+    coefMatr = coefData.iloc[2:].values
+    if (act_or_ml == 'act'):
+        y = selData['class'].values
+    else:
+        y = ml.predictByLamsOpt(diffMpMatr, coefData.loc[-1].values)
+
+    accs = np.zeros(len(coefMatr))
+    for i in range(len(coefMatr)):
+        y_pred = ml.predictByLamsOpt(diffMpMatr, coefMatr[i])
+        accs[i] = (y == y_pred).mean()
+
+    accs = pd.Series(accs, index=coefData.iloc[2:].index)
+    return accs

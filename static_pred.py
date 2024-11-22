@@ -63,6 +63,7 @@ norm_selData.loc[:,'M1':'M8M8'] = norm_selData.loc[:,'M1':'M8M8'] / mpMaxs
 coefData = tr.getCoefData(pqrsData, norm_mlLams[1:], mlLams[1:], F=FLim)
 ut.writeData(coefData, "coef_data")
 
+
 #subprocess.Popen("python clfPlanes.py static_pred --lam0="+str(norm_mlLams[0])+" --show", shell=True)
 
 
@@ -74,6 +75,15 @@ print("nearPnt cosine:", cosines[nearPntId])
 optPntId = stratFitData['fit'].idxmax()
 print(optPntId)
 print("optPnt cosine:", cosines[optPntId], "\n")
+
+print("checkMl: ", gs.checkMl(selData, coefData, idx=-1))
+print("checkTaylor_nearcos: ", gs.checkMl(selData, coefData, idx=nearPntId))
+print("checkTaylor: ", gs.checkMl(selData, coefData, idx=optPntId))
+accuraciesTaylor = gs.calcAccTaylor(selData, coefData, act_or_ml='act')
+print(np.corrcoef(cosines, accuraciesTaylor))
+accuraciesTaylor = gs.calcAccTaylor(selData, coefData, act_or_ml='ml')
+print(np.corrcoef(cosines, accuraciesTaylor))
+print()
 
 compareCoefData = tr.compareCoefs(coefData, nearPntId, optPntId)
 with pd.option_context('display.max_rows', 10):
