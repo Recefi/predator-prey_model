@@ -12,7 +12,7 @@ import libs.machine_learning as ml
 import libs.utility as ut
 
 
-nullEps = 0  # better use 1e-17, TODO: think over 1e-15
+nullEps = 1e-17  # better use 1e-17, TODO: think over 1e-15
 
 def genStrats(n, distrA="uniform", by4=False, ab=5):
     if (distrA == "uniform"):  # r12,r56:~0.96  # r34,r78:~-0.2  # =beta(1,1)

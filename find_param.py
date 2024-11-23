@@ -3,6 +3,7 @@ import pandas as pd
 from scipy import optimize
 
 import libs.gen_selection as gs
+import libs.utility as ut
 
 D = 140  # depth
 D0 = 80  # optimal depth
@@ -91,6 +92,15 @@ if __name__ == "__main__":
 
     # checkOnGenlSel(a_j=0.0025, b_j=0.0000063, g_j=0.00353, d_j=0.000019,
     #                             a_a=0.065, b_a=0.000022, g_a=0.0224, d_a=0.000015)
+
+
+    # compareParamData = ut.readData("compare_param_data", "dynamic_pred")
+    # a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = compareParamData.loc['restored']
+    # strat = stratByParam_de(a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
+    # print(strat.x, strat.fun)
+    # strat = stratByParam_shgo(a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
+    # print(strat.x, strat.fun)
+    # checkOnGenlSel(a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
 
 
 # _FLim, err = gs.calcFLim(_p, _q, _r, _s, F0=0.1)

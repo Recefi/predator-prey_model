@@ -32,7 +32,7 @@ def restorePQRS_1(FLim, stratPopData, coefData, mpData, optPntId, lamsKey=-1):
     lam66 = coefData.loc[lamsKey, 'lam66']
 
     r = (FLim + (z1Lim+z2Lim)**2)/z2Lim
-    q = (r*z2Lim - (z1Lim + z2Lim)**2)/(FLim*(z1Lim-(2*lam66*M6*z2Lim)/(lam26*M2)))
+    q = lam26*M2/(lam26*M2*z1Lim - 2*lam66*M6*z2Lim)  # (r*z2Lim - (z1Lim + z2Lim)**2)/(FLim*(z1Lim-(2*lam66*M6*z2Lim)/(lam26*M2)))
     s = -(2*lam66*M6*q)/(lam26*M2)
     p = (-q*FLim*z1Lim + r*z2Lim - z1Lim*(z1Lim + z2Lim))/z1Lim
 
@@ -47,7 +47,7 @@ def restorePQRS_2(FLim, stratPopData, coefData, mpData, optPntId, lamsKey=-1):
     lam22 = coefData.loc[lamsKey, 'lam22']
 
     r = (FLim + (z1Lim+z2Lim)**2)/z2Lim
-    s = (r*z2Lim - (z1Lim + z2Lim)**2)/(FLim*(z2Lim-(2*lam22*M2*z1Lim)/(lam26*M6)))
+    s = lam26*M6/(lam26*M6*z2Lim - 2*lam22*M2*z1Lim)  # (r*z2Lim - (z1Lim + z2Lim)**2)/(FLim*(z2Lim-(2*lam22*M2*z1Lim)/(lam26*M6)))
     q = -(2*lam22*M2*s)/(lam26*M6)
     p = (-q*FLim*z1Lim + r*z2Lim - z1Lim*(z1Lim + z2Lim))/z1Lim
 
