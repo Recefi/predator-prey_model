@@ -71,7 +71,8 @@ print ("write sel time: ", time.time() - start)
 # plt.show()
 
 
-norm_mlLams, mpMaxsData = ml.runClfSVM(selData)
+#norm_mlLams, mpMaxsData = ml.runClfTF_tr(selData, epochs=2000)
+norm_mlLams, mpMaxsData = ml.runClfTF_tr_F(selData, FLim, epochs=2000)
 ut.writeData(mpMaxsData, 'mp_maxs_data')
 mpMaxs = mpMaxsData.values[0]
 mlLams = tr.denormMlLams(norm_mlLams, mpMaxs)
@@ -81,6 +82,8 @@ norm_selData.loc[:,'M1':'M8M8'] = norm_selData.loc[:,'M1':'M8M8'] / mpMaxs
 
 coefData = tr.getCoefData(pqrsData, norm_mlLams[1:], mlLams[1:], FLim)
 ut.writeData(coefData, "coef_data")
+
+# coefData = ut.readData("coef_data")
 
 
 #subprocess.Popen("python clfPlanes.py dynamic_pred --lam0="+str(norm_mlLams[0])+" --show", shell=True)
@@ -142,8 +145,8 @@ comparePqrsData = rd.compareRestoredPQRS(p, q, r, s, pqrsData, optPntId)
 print(comparePqrsData)
 ut.writeData(comparePqrsData, "compare_pqrs_data")
 
-a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = rd.restoreParam_4(p, q, r, s, coefData, mpData, optPntId, lamsKey=-1)
-#a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = rd.restoreParam_k2(FLim, p, q, r, s, coefData, mpData, optPntId, lamsKey=-1)
+#a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = rd.restoreParam(p, q, r, s, coefData, mpData, optPntId, lamsKey=-1)
+a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = rd.restoreParam_k2(FLim, p, q, r, s, coefData, mpData, optPntId, lamsKey=-1)
 #a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = rd.restoreParam_all_k(FLim, p, q, r, s, coefData, mpData, optPntId, lamsKey=-1, qs_key='mean')
 compareParamData = rd.compareRestoredParam(a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
 print(compareParamData)
@@ -221,7 +224,16 @@ gui.mostOptStratSins(stratPopData,3,4, key='t', title="Ранжирование 
 
 rstdPqrsData = gs.calcPqrsData(mpData.loc[stratPopData.index], a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a)
 rawPopData = gs.calcPopDynamics(rstdPqrsData, tMax=5000, tParts=100000, z0=0.001, F0=0.001, _method="Radau")
-rstdStratPopData, FLim = gs.analyzePopDynamics(stratData.loc[stratPopData.index], rawPopData, 0.01)
+rstdStratPopData, rd_FLim = gs.analyzePopDynamics(stratData.loc[stratPopData.index], rawPopData, 0.01)
+print(rd_FLim)
+rd_optPntId = rstdStratPopData[['z1','z2']].sum(axis="columns").idxmax()
+rd_z1, rd_z2 = rstdStratPopData.loc[rd_optPntId, ['z1','z2']]
+print(rd_z1, rd_z2)
+rd_p, rd_q, rd_r, rd_s = rstdPqrsData.loc[rd_optPntId, ['p','q','r','s']]
+rd_FLim, err = gs.calcFLim(rd_p, rd_q, rd_r, rd_s, F0=0.1)
+print(rd_FLim)
+rd_z1, rd_z2 = gs.calcZLim(rd_p, rd_q, rd_r, rd_s, rd_FLim)
+print(rd_z1, rd_z2)
 gui.mostOptStratSins(rstdStratPopData,3,4, key='t', title="Ранжирование по динамике видов с восст.параметрами")
 
 plt.show()

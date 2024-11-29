@@ -47,7 +47,8 @@ def getDerivatives(p, q, r, s, F=1):
 
     return hp, hq, hr, hs, hpp, hpq, hpr, hps, hqq, hqr, hqs, hrr, hrs, hss
 
-def getDerivatives_1(p, q, r, s, F=1):
+def calcDers_qFsF(p, q, r, s, F=1):
+    """calc h by qF,sF"""
     hp = -1 + (4*r + 2*(p + q*F - s*F))/(2*sqrt(4*p*r + (p + q*F - s*F)**2))
     hq = -1 + (p + q*F - s*F)/sqrt(4*p*r + (p + q*F - s*F)**2)
     hr = (2*p)/sqrt(4*p*r + (p + q*F - s*F)**2)
@@ -65,8 +66,9 @@ def getDerivatives_1(p, q, r, s, F=1):
 
     return hp, hq, hr, hs, hpp, hpq, hpr, hps, hqq, hqr, hqs, hrr, hrs, hss
 
-def getDerivatives_2(p, q, r, s, F=1):
-    hp, hq, hr, hs, hpp, hpq, hpr, hps, hqq, hqr, hqs, hrr, hrs, hss = getDerivatives_1(p, q, r, s, F)
+def imputeDers_qFsF(h, F):
+    """impute ders of qF,sF to h"""
+    hp, hq, hr, hs, hpp, hpq, hpr, hps, hqq, hqr, hqs, hrr, hrs, hss = h
     hq *= F
     hs *= F
     hpq *= F
@@ -77,6 +79,35 @@ def getDerivatives_2(p, q, r, s, F=1):
     hrs *= F
     hss *= F*F
     return hp, hq, hr, hs, hpp, hpq, hpr, hps, hqq, hqr, hqs, hrr, hrs, hss
+
+def calcDers_qs(p, q, r, s, F=1):
+    """calc h by q,s"""
+    return imputeDers_qFsF(calcDers_qFsF(p, q, r, s, F), F)
+
+def calcCoefs(h, params=(param.alpha_j, param.beta_j, param.gamma_j, param.delta_j,
+                        param.alpha_a, param.beta_a, param.gamma_a, param.delta_a)):
+    hp, hq, hr, hs, hpp, hpq, hpr, hps, hqq, hqr, hqs, hrr, hrs, hss = h
+    a_j, b_j, g_j, d_j, a_a, b_a, g_a, d_a = params
+
+    _p = hp
+    _q = hq
+    _r = hr
+    _s = hs
+    _pp, _qq, _rr, _ss = 1/2*hpp, 1/2*hqq, 1/2*hrr, 1/2*hss
+    _pq, _pr, _ps, _qr, _qs, _rs = hpq, hpr, hps, hqr, hqs, hrs
+
+    # Считаем коэффициенты разложения в данной точке (по строкам: при M1-M8, M11-M18, M22-M28, M33-M38, ..., M88)
+    return (
+    _p*a_j, _q*(-g_j), _p*b_j, _p*d_j, _r*a_a, _s*(-g_a), _r*b_a, _r*d_a,
+    _pp*a_j**2, _pq*a_j*(-g_j), _pp*2*a_j*b_j, _pp*2*a_j*d_j, _pr*a_j*a_a, _ps*a_j*(-g_a), _pr*a_j*b_a, _pr*a_j*d_a,
+    _qq*(-g_j)**2, _pq*b_j*(-g_j), _pq*d_j*(-g_j), _qr*(-g_j)*a_a, _qs*(-g_j)*(-g_a), _qr*(-g_j)*b_a,_qr*(-g_j)*d_a,
+    _pp*b_j**2, _pp*2*b_j*d_j, _pr*b_j*a_a, _ps*b_j*(-g_a), _pr*b_j*b_a, _pr*b_j*d_a,
+    _pp*d_j**2, _pr*d_j*a_a, _ps*d_j*(-g_a), _pr*d_j*b_a, _pr*d_j*d_a,
+    _rr*a_a**2, _rs*a_a*(-g_a), _rr*2*a_a*b_a, _rr*2*a_a*d_a,
+    _ss*(-g_a)**2, _rs*b_a*(-g_a), _rs*d_a*(-g_a),
+    _rr*b_a**2, _rr*2*b_a*d_a,
+    _rr*d_a**2
+    )
 
 def getCoefData(pqrsData, norm_mlLams, mlLams, F=1):
     """Считаем коэф-ты для всех точек (p,q,r,s)"""
@@ -95,31 +126,11 @@ def getCoefData(pqrsData, norm_mlLams, mlLams, F=1):
         p, q, r, s = pqrsData.loc[i]
         if (4*p*r + (p + q*F - s*F)**2 < 0):
             continue
-        hp, hq, hr, hs, hpp, hpq, hpr, hps, hqq, hqr, hqs, hrr, hrs, hss = getDerivatives(p, q, r, s, F)
 
-        _p = hp
-        _q = hq
-        _r = hr
-        _s = hs
-        _pp, _qq, _rr, _ss = 1/2*hpp, 1/2*hqq, 1/2*hrr, 1/2*hss
-        _pq, _pr, _ps, _qr, _qs, _rs = hpq, hpr, hps, hqr, hqs, hrs
-
-        # Считаем коэффициенты разложения в данной точке (по строкам: при M1-M8, M11-M18, M22-M28, M33-M38, ..., M88)
-        calcCoefs = [
-        _p*a_j, _q*(-g_j), _p*b_j, _p*d_j, _r*a_a, _s*(-g_a), _r*b_a, _r*d_a,
-        _pp*a_j**2, _pq*a_j*(-g_j), _pp*2*a_j*b_j, _pp*2*a_j*d_j, _pr*a_j*a_a, _ps*a_j*(-g_a), _pr*a_j*b_a, _pr*a_j*d_a,
-        _qq*(-g_j)**2, _pq*b_j*(-g_j), _pq*d_j*(-g_j), _qr*(-g_j)*a_a, _qs*(-g_j)*(-g_a), _qr*(-g_j)*b_a,_qr*(-g_j)*d_a,
-        _pp*b_j**2, _pp*2*b_j*d_j, _pr*b_j*a_a, _ps*b_j*(-g_a), _pr*b_j*b_a, _pr*b_j*d_a,
-        _pp*d_j**2, _pr*d_j*a_a, _ps*d_j*(-g_a), _pr*d_j*b_a, _pr*d_j*d_a,
-        _rr*a_a**2, _rs*a_a*(-g_a), _rr*2*a_a*b_a, _rr*2*a_a*d_a,
-        _ss*(-g_a)**2, _rs*b_a*(-g_a), _rs*d_a*(-g_a),
-        _rr*b_a**2, _rr*2*b_a*d_a,
-        _rr*d_a**2
-        ]
-
+        h = calcDers_qs(p, q, r, s, F)  # TODO: проверить на 3 выборке на == getDerivatives + на статическом проверить еще == calcDers_qFsF
+        coefTable.append(calcCoefs(h))
         indexes.append(i)
-        coefTable.append(calcCoefs)
-    
+
     coefData = pd.DataFrame(coefTable, columns=lamCol, index=indexes)
     return coefData
 

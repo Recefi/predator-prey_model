@@ -684,7 +684,7 @@ def restoreParam_all_k(FLim, p, q, r, s, coefData, mpData, optPntId, lamsKey=-1,
     lam22 = coefData.loc[lamsKey, 'lam22']
     lam66 = coefData.loc[lamsKey, 'lam66']
 
-    hp, hq, hr, hs, hpp, hpq, hpr, hps, hqq, hqr, hqs, hrr, hrs, hss = tr.getDerivatives_1(p, q, r, s, FLim)
+    hp, hq, hr, hs, hpp, hpq, hpr, hps, hqq, hqr, hqs, hrr, hrs, hss = tr.calcDers_qFsF(p, q, r, s, FLim)
 
     k_q = (lam2*M2)/(hq*FLim*q)
     k_s = (lam6*M6)/(hs*FLim*s)
